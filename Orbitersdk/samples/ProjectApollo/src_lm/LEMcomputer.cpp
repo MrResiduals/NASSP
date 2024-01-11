@@ -49,11 +49,8 @@ LEMcomputer::LEMcomputer(SoundLib &s, DSKY &display, IMU &im, CDU &sc, CDU &tc, 
 
 	isLGC = true;
 
-	/* FIXME LOAD FILE SHOULD BE SET IN SCENARIO */
-	//InitVirtualAGC("Config/ProjectApollo/Luminary099.bin");
-
-	/* FIXME REMOVE THIS LATER, THIS IS TEMPORARY FOR TESTING ONLY AND SHOULD BE IN THE SCENARIO LATER */
-	/* LM PAD LOAD FOR LUMINARY 099 AND APOLLO 11  - OFFICIAL VERSION */
+	ThrustOnDelay = 30; // 0.019 seconds in units of 1/1600 seconds
+	ThrustOffDelay = 24; // 0.015 seconds in units of 1/1600 seconds
 
 	Start();
 }
@@ -86,8 +83,11 @@ void LEMcomputer::agcTimestep(double simt, double simdt)
 	if (LastCycled == 0) {					// Use simdt as difference if new run
 		LastCycled = (simt - simdt);
 		lem->PCM.last_update = LastCycled;
+		LastRCSTime = LastCycled;
 	}
 	double ThisTime = LastCycled;			// Save here
+
+	InitRCSActivity();
 
 	long cycles = (long)((simt - LastCycled) / 0.00001171875);	// Get number of CPU cycles to do
 	LastCycled += (0.00001171875 * cycles);						// Preserve the remainder
@@ -98,8 +98,15 @@ void LEMcomputer::agcTimestep(double simt, double simdt)
 		if ((ThisTime - lem->PCM.last_update) > 0.00015625) {	// If a step is needed
 			lem->PCM.Timestep(ThisTime);						// do it
 		}
+		if (ThisTime - LastRCSTime > 6.25e-04) // 1/1600 second
+		{
+			MonitorRCSActivity();
+			LastRCSTime = ThisTime;
+		}
 		x++;
 	}
+
+	CalculateRCSDutyCycle();
 }
 
 void LEMcomputer::Run ()
@@ -178,7 +185,7 @@ void LEMcomputer::Timestep(double simt, double simdt)
 			lem->PCM.last_update = simt - simdt;
 		}
 		lem->PCM.Timestep(simt);
-
+		ResetRCSDutyCycle();
 		// and do nothing more.
 		return;
 	}
@@ -261,14 +268,14 @@ void LEMcomputer::ProcessChannel13(ChannelValue val){
 
 void LEMcomputer::ProcessChannel5(ChannelValue val){
 	// This is now handled inside the ATCA
-	LEM *lem = (LEM *) OurVessel;	
-	lem->atca.ProcessLGC(5,val.to_ulong());
+	//LEM *lem = (LEM *) OurVessel;	
+	//lem->atca.ProcessLGC(5,val.to_ulong());
 }
 
 void LEMcomputer::ProcessChannel6(ChannelValue val){
 	// This is now handled inside the ATCA
-	LEM *lem = (LEM *) OurVessel;	
-	lem->atca.ProcessLGC(6,val.to_ulong());
+	//LEM *lem = (LEM *) OurVessel;	
+	//lem->atca.ProcessLGC(6,val.to_ulong());
 }
 
 void LEMcomputer::ProcessChannel142(ChannelValue val) {
