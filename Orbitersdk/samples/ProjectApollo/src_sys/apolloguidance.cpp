@@ -335,6 +335,18 @@ typedef union
 	unsigned long word;
 } AGCState;
 
+//
+// Structure for additional yaAGC bits
+//
+
+typedef union
+{
+	struct {
+		unsigned RadarGateCounter:4;
+	} u;
+	unsigned long word;
+} AGCState2;
+
 void ApolloGuidance::SaveState(FILEHANDLE scn)
 
 {
@@ -383,6 +395,13 @@ void ApolloGuidance::SaveState(FILEHANDLE scn)
 	state.u.Trap32 = vagc.Trap32;
 
 	oapiWriteScenario_int(scn, "STATE", state.word);
+
+	AGCState2 state2;
+
+	state2.word = 0;
+	state2.u.RadarGateCounter = vagc.RadarGateCounter;
+
+	oapiWriteScenario_int(scn, "STATE2", state2.word);
 
 	//
 	// Write out any non-zero EMEM state.
@@ -452,6 +471,7 @@ void ApolloGuidance::LoadState(FILEHANDLE scn)
 
 {
 	char	*line;
+	int inttemp;
 
 	//
 	// Now load the data.
@@ -522,9 +542,11 @@ void ApolloGuidance::LoadState(FILEHANDLE scn)
 			sscanf(line+8, "%d", &val);
 			vagc.InterruptRequests[num] = val;
 		}
-		else if (!strnicmp (line, "STATE", 5)) {
+		else if (papiReadScenario_int(line, "STATE", inttemp))
+		{
 			AGCState state;
-			sscanf (line+5, "%d", &state.word);
+
+			state.word = inttemp;
 
 			Reset = state.u.Reset;
 			isFirstTimestep = (state.u.isFirstTimestep != 0);
@@ -553,6 +575,14 @@ void ApolloGuidance::LoadState(FILEHANDLE scn)
 			vagc.Trap31A = state.u.Trap31A;
 			vagc.Trap31B = state.u.Trap31B;
 			vagc.Trap32 = state.u.Trap32;
+		}
+		else if (papiReadScenario_int(line, "STATE2", inttemp))
+		{
+			AGCState2 state;
+
+			state.word = inttemp;
+
+			vagc.RadarGateCounter = state.u.RadarGateCounter;
 		}
 		else if (!strnicmp (line, "ONAME", 5)) {
 			strncpy (OtherVesselName, line + 6, 64);
@@ -799,17 +829,14 @@ void ApolloGuidance::RadarRead()
 {
 	ChannelValue val13 = GetInputChannel(013);
 
-	if (val13[RangeUnitActivity] == 1) {
-		int radarBits = 0;
-		if (val13[RangeUnitSelectA] == 1) { radarBits |= 1; }
-		if (val13[RangeUnitSelectB] == 1) { radarBits |= 2; }
-		if (val13[RangeUnitSelectC] == 1) { radarBits |= 4; }
+	int radarBits = 0;
+	if (val13[RangeUnitSelectA] == 1) { radarBits |= 1; }
+	if (val13[RangeUnitSelectB] == 1) { radarBits |= 2; }
+	if (val13[RangeUnitSelectC] == 1) { radarBits |= 4; }
 
-		GetRadarData(radarBits);
+	GetRadarData(radarBits);
 
-		SetInputChannelBit(013, RangeUnitActivity, 0);
-		RaiseInterrupt(ApolloGuidance::Interrupt::RADARUPT);
-	}
+	//sprintf(oapiDebugString(), "%lf %d %o %d", oapiGetSimTime(), radarBits, vagc.Erasable[0][RegRNRAD], vagc.Erasable[0][RegRNRAD]);
 }
 
 //
@@ -1153,5 +1180,13 @@ int ChannelInput (agc_t *State)
 void ChannelRoutine (agc_t *State)
 
 {
+}
+
+void RequestRadarData(agc_t *State)
+{
+	ApolloGuidance *agc;
+
+	agc = (ApolloGuidance *)State->agc_clientdata;
+	agc->RadarRead();
 }
 
