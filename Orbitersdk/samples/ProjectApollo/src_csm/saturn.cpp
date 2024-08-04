@@ -509,8 +509,8 @@ void Saturn::initSaturn()
 
 	agc.ControlVessel(this);
 	imu.SetVessel(this, false);
-	dsky.Init(&LightingNumIntLMDCCB, &CMCDCBusFeeder, &NumericRotarySwitch);
-	dsky2.Init(&LightingNumIntLEBCB, &CMCDCBusFeeder, &Panel100NumericRotarySwitch);
+	dsky.Init(&LightingNumIntLMDCCB, &CMCDCBusFeeder, &NumericRotarySwitch, &IntegralRotarySwitch, NULL, NULL);
+	dsky2.Init(&LightingNumIntLEBCB, &CMCDCBusFeeder, &Panel100NumericRotarySwitch, &Panel100IntegralRotarySwitch, NULL, NULL);
 
 	//
 	// Configure SECS.
@@ -1270,6 +1270,10 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 	//
 
 	Timestep(simt, simdt, mjd);
+
+	if (oapiGetFocusObject() == GetHandle()) {
+		dsky.SendNetworkPacketDSKY();
+	}
 
 	sprintf(buffer, "End time(0) %lld", time(0)); 
 	TRACE(buffer);
