@@ -159,3 +159,7 @@ XRSound/
 /lua.dll.manifest
 /lua.dll
 /Cache/D3D9Client/Shaders
+/Textures/ProjectApollo/VC/CMVCTex1.dds
+/Textures/ProjectApollo/VC/CMVCTex1_emis.dds
+/Textures/ProjectApollo/VC/CMVCTex2.dds
+/Textures/ProjectApollo/VC/CMVCTex2_emis.dds
