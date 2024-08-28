@@ -902,6 +902,7 @@
 #define AID_VC_Cab_Press_Rel_Handle1    3210
 #define AID_VC_Cab_Press_Rel_Handle2    3211
 #define AID_VC_Prim_Gly_Handle          3212
+#define AID_VC_Altimeter_Cover          3213
 
 // VC Active Areas (Panel 2)
 #define AID_VC_PANEL_2			((id >= 4800) && (id <= 4999))

@@ -1543,6 +1543,8 @@ protected:
 	int hatchPanel600EnabledRight;
 	int panel382Enabled;
 
+	int altimeterCovered;
+
 	///
 	/// \brief Right-hand FDAI.
 	///

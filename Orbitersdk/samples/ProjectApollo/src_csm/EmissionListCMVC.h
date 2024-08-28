@@ -55,6 +55,7 @@ DWORD FloodLights_P8[] = {
 	// TODO Material List
 	VC_MAT_AdditionalParts_t,
 //	VC_MAT_AttitudeSetNumbers,
+	VC_MAT_Altimeter_Pluger,
 	VC_MAT_Alluminum,
 	VC_MAT_CB_black_t,
 	VC_MAT_CM_VC_Color_1,

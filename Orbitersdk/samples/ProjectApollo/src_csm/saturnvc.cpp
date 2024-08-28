@@ -1062,6 +1062,12 @@ void Saturn::RegisterActiveAreas() {
 	oapiVCRegisterArea(AID_VC_COAS, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_COAS, COASLocation + ofs, 0.05);
 
+	// Altimeter Cover
+	const VECTOR3 AltimeterLocation = { -0.524273, 0.916269 , 0.425239 };
+	oapiVCRegisterArea(AID_VC_Altimeter_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.05);
+
+
 	// THC Handle
 	oapiVCRegisterArea(AID_VC_THC_HANDLE, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_DOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_THC_HANDLE, THChandleLocation + ofs, ROT);
@@ -1673,6 +1679,29 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 
 	case AID_VC_FWDHATCH_HANDLE:
 		ForwardHatch.Toggle();
+		return true;
+
+	case AID_VC_Altimeter_Cover:
+		if (altimeterCovered) {
+			altimeterCovered = false;
+
+			//***** START_TEST_BY_JK *****
+			GROUPEDITSPEC alt_meter_plug;
+			alt_meter_plug.flags = GRPEDIT_SETUSERFLAG;
+			alt_meter_plug.UsrFlag = 3;
+			oapiEditMeshGroup(vcmesh, VC_GRP_Altimeter_Pluger, &alt_meter_plug);
+			//***** END_TEST_BY_JK *****
+
+		} else {
+			altimeterCovered = true;
+
+			//***** START_TEST_BY_JK *****
+			GROUPEDITSPEC alt_meter_plug;
+			alt_meter_plug.flags = GRPEDIT_SETUSERFLAG;
+			alt_meter_plug.UsrFlag = 1;
+			oapiEditMeshGroup(vcmesh, VC_GRP_Altimeter_Pluger, &alt_meter_plug);
+			//***** END_TEST_BY_JK *****
+		}
 		return true;
 
 	case AID_VC_COAS:
