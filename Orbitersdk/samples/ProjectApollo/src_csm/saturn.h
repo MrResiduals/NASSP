@@ -91,7 +91,6 @@ namespace mission
 #define RCS_CM_RING_1		4
 #define RCS_CM_RING_2		5
 
-
 ///
 /// \brief Cabin atmosphere status.
 /// \ingroup InternalInterface
@@ -1212,6 +1211,14 @@ public:
 	
 	void SetCMdocktgtMesh();
 
+	/// Set Altimeter Cover
+	void SetAltimeterCover();
+	void SetOrdealMesh();
+
+	/// Waste Disposal
+	void SetWasteDisposal();
+
+
 	///
 	/// \brief Set VC seats mesh
 	///
@@ -1544,6 +1551,8 @@ protected:
 	int panel382Enabled;
 
 	int altimeterCovered;
+	int ordealStowed;
+	int wasteDisposalStatus = true;
 
 	///
 	/// \brief Right-hand FDAI.

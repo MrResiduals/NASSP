@@ -47,6 +47,8 @@
 #include "LES.h"
 #include "Mission.h"
 
+#include "CM_VC_Resource.h"
+
 MESHHANDLE hSM;
 MESHHANDLE hSMRCS;
 MESHHANDLE hSMRCSLow;
@@ -1338,6 +1340,65 @@ void Saturn::SetVCSeatsMesh() {
 		SetMeshVisibilityMode(seatsfoldedidx, MESHVIS_NEVER);
 		SetMeshVisibilityMode(seatsunfoldedidx, MESHVIS_VC);
 	}
+}
+
+void Saturn::SetAltimeterCover() {
+	GROUPEDITSPEC alt_meter_plug;
+	alt_meter_plug.flags = GRPEDIT_SETUSERFLAG;
+	if (altimeterCovered) {
+		alt_meter_plug.UsrFlag = 1;
+		oapiEditMeshGroup(vcmesh, VC_GRP_Altimeter_Pluger, &alt_meter_plug);
+	} else {
+		alt_meter_plug.UsrFlag = 3;
+		oapiEditMeshGroup(vcmesh, VC_GRP_Altimeter_Pluger, &alt_meter_plug);
+	}
+}
+
+void Saturn::SetWasteDisposal() {
+	/// Play Animation 1
+	/// Play Animation 2
+	GROUPEDITSPEC wasteDisposalMesh;
+	wasteDisposalMesh.flags = GRPEDIT_SETUSERFLAG;
+	if (wasteDisposalStatus) {
+		wasteDisposalMesh.UsrFlag = 3;
+		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalDoor, &wasteDisposalMesh);
+		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalFrame, &wasteDisposalMesh);
+	} else {
+		wasteDisposalMesh.UsrFlag = 1;
+		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalDoor, &wasteDisposalMesh);
+		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalFrame, &wasteDisposalMesh);
+	}
+}
+
+void Saturn::SetOrdealMesh() {
+	GROUPEDITSPEC ordealMesh;
+	ordealMesh.flags = GRPEDIT_SETUSERFLAG;
+	std::vector<DWORD> ordealMeshParts;
+	ordealMeshParts.push_back(VC_GRP_Screws_Panel13);
+	ordealMeshParts.push_back(VC_GRP_Group_78_OrdealLighting);
+	ordealMeshParts.push_back(VC_GRP_Group_78);
+	ordealMeshParts.push_back(VC_GRP_ORDEAL_Rot);
+	ordealMeshParts.push_back(VC_GRP_SwitchGuard_P13);
+	ordealMeshParts.push_back(VC_GRP_SwitchHolder_P13);
+	ordealMeshParts.push_back(VC_GRP_Sw_P13_01);
+	ordealMeshParts.push_back(VC_GRP_Sw_P13_02);
+	ordealMeshParts.push_back(VC_GRP_Sw_P13_03);
+	ordealMeshParts.push_back(VC_GRP_Sw_P13_04);
+	ordealMeshParts.push_back(VC_GRP_Sw_P13_05);
+	ordealMeshParts.push_back(VC_GRP_Sw_P13_06);
+
+	if (ordealStowed) {
+		ordealMesh.UsrFlag = 3;
+		for (unsigned int i=0; i < ordealMeshParts.size(); i++) {
+			oapiEditMeshGroup(vcmesh, ordealMeshParts[i], &ordealMesh);
+		}
+	} else {
+		ordealMesh.UsrFlag = 1;
+		for (unsigned int i=0; i < ordealMeshParts.size(); i++) {
+			oapiEditMeshGroup(vcmesh, ordealMeshParts[i], &ordealMesh);
+		}
+	}
+
 }
 
 void Saturn::SetCOASMesh() {

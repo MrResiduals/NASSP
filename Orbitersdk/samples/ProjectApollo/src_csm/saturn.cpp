@@ -1484,6 +1484,7 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	}
 	oapiWriteScenario_int (scn, "COASENABLED", coasEnabled);
 	oapiWriteScenario_int (scn, "ALTIMETERCOVERED", altimeterCovered);
+	oapiWriteScenario_int (scn, "ORDEALSTOWED", ordealStowed);
 	oapiWriteScenario_int (scn, "ORDEALENABLED", ordealEnabled);
 	oapiWriteScenario_int (scn, "OPTICSDSKYENABLED", opticsDskyEnabled);
 	oapiWriteScenario_int (scn, "HATCHPANEL600ENABLED", hatchPanel600EnabledLeft);
@@ -2189,6 +2190,9 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	}
 	else if (!strnicmp (line, "ALTIMETERCOVERED", 16)) {
 		sscanf (line + 16, "%i", &altimeterCovered);
+	}
+	else if (!strnicmp (line, "ORDEALSTOWED", 12)) {
+		sscanf (line + 12, "%i", &ordealStowed);
 	}
 	else if (!strnicmp(line, "CHKVAR_", 7)) {
 		for (int i = 0; i < 16; i++) {

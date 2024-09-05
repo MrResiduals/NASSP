@@ -55,6 +55,17 @@
 #include "EmissionListCMVC.h"
 
 
+/// BEGINN TEST by JORDAN
+
+/// Waste Disposal
+int meshidxWasteDisposal;
+int meshidxWasteDisposalAll;
+UINT wasteDisposalAnim;
+UINT wasteDisposalAnimAll;
+
+/// END TEST by JORDAN
+
+
 // ==============================================================
 // VC Constants
 // ==============================================================
@@ -937,6 +948,8 @@ void Saturn::clbkVisualCreated(VISHANDLE vis, int refcount) {
         vcmesh = GetDevMesh(vis, vcidx);
 //		seatsunfoldedmesh = GetDevMesh(vis, seatsunfoldedidx);
 //		seatsfoldedmesh = GetDevMesh(vis, seatsfoldedidx);
+		SetAltimeterCover();
+		SetOrdealMesh();
 	}
 }
 
@@ -1067,6 +1080,15 @@ void Saturn::RegisterActiveAreas() {
 	oapiVCRegisterArea(AID_VC_Altimeter_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.05);
 
+	// Ordeal Visibility
+	const VECTOR3 OrdealLocation = { -0.946135, 1.12302, -0.112392 };
+	oapiVCRegisterArea(AID_VC_Ordeal_Stowed, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Ordeal_Stowed, OrdealLocation + ofs, 0.05);
+	
+	// Waste Disposal
+	const VECTOR3 WasteKnobLocation = { 1.0773, -0.255847, -0.165491 };
+	oapiVCRegisterArea(AID_VC_Waste_Disposal, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Waste_Disposal, WasteKnobLocation + ofs, 0.05);
 
 	// THC Handle
 	oapiVCRegisterArea(AID_VC_THC_HANDLE, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_DOWN);
@@ -1684,24 +1706,28 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 	case AID_VC_Altimeter_Cover:
 		if (altimeterCovered) {
 			altimeterCovered = false;
-
-			//***** START_TEST_BY_JK *****
-			GROUPEDITSPEC alt_meter_plug;
-			alt_meter_plug.flags = GRPEDIT_SETUSERFLAG;
-			alt_meter_plug.UsrFlag = 3;
-			oapiEditMeshGroup(vcmesh, VC_GRP_Altimeter_Pluger, &alt_meter_plug);
-			//***** END_TEST_BY_JK *****
-
 		} else {
 			altimeterCovered = true;
-
-			//***** START_TEST_BY_JK *****
-			GROUPEDITSPEC alt_meter_plug;
-			alt_meter_plug.flags = GRPEDIT_SETUSERFLAG;
-			alt_meter_plug.UsrFlag = 1;
-			oapiEditMeshGroup(vcmesh, VC_GRP_Altimeter_Pluger, &alt_meter_plug);
-			//***** END_TEST_BY_JK *****
 		}
+		SetAltimeterCover();
+		return true;
+
+	case AID_VC_Waste_Disposal:
+		if (wasteDisposalStatus) {
+			wasteDisposalStatus = false;
+		} else {
+			wasteDisposalStatus = true;
+		}
+		SetWasteDisposal();
+		return true;
+
+	case AID_VC_Ordeal_Stowed:
+		if (ordealStowed) {
+			ordealStowed = false;
+		} else {
+			ordealStowed = true;
+		}
+		SetOrdealMesh();
 		return true;
 
 	case AID_VC_COAS:
@@ -2581,6 +2607,26 @@ void Saturn::DefineVCAnimations()
 
 {
 	MainPanelVC.ClearSwitches();
+
+	/// BEGINN TEST by JORDAN
+	/// Waste Disposal
+
+	// Knob
+	static UINT wasteDisposal[1] = { VC_GRP_WasteDisposalDoor };
+	static MGROUP_ROTATE wasteDisposalKnob(meshidxWasteDisposal, wasteDisposal, 1, _V(1.0773, -0.255847, -0.165491), _V(-1, 0, 0), (float)(-60.0 / 180.0 * PI));
+	wasteDisposalAnim = CreateAnimation(0.0);
+	AddAnimationComponent(wasteDisposalAnim, 0, 1, &wasteDisposalKnob);
+
+
+	// knob + frame
+	static UINT wasteDisposalAll[2] = { VC_GRP_WasteDisposalDoor, VC_GRP_WasteDisposalFrame };
+	static MGROUP_ROTATE wasteDisposalKnobAll(meshidxWasteDisposalAll, wasteDisposalAll, 2, _V(1.07709, -0.257737, -0.098881), _V(0, 1, 0), (float)(-120.0 / 180.0 * PI));
+	wasteDisposalAnimAll = CreateAnimation(0.0);
+	AddAnimationComponent(wasteDisposalAnimAll, 0, 1, &wasteDisposalKnobAll);
+
+
+	/// END TEST by JORDAN
+
 
 	// Panel 1
 
