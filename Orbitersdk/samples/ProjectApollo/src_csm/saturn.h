@@ -1552,7 +1552,20 @@ protected:
 
 	int altimeterCovered;
 	int ordealStowed;
+
+/// BEGINN TEST by JORDAN
+
+/// Waste Disposal
 	int wasteDisposalStatus = true;
+	double wasteDisposalProc;
+	int meshidxWasteDisposal;
+	int meshidxWasteDisposalAll;
+	UINT wasteDisposalAnim;
+	UINT wasteDisposalAnimAll;
+	AnimState wasteDisposalState;
+	AnimState wasteDisposalStateAll;
+
+/// END TEST by JORDAN
 
 	///
 	/// \brief Right-hand FDAI.

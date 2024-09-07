@@ -1218,6 +1218,50 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 	sprintf(buffer, "MissionTime %f, simt %f, simdt %f, time(0) %lld", MissionTime, simt, simdt, time(0)); 
 	TRACE(buffer);
 
+
+
+	//By Jordan
+	if (wasteDisposalState.Opening()) {
+		double dp = simdt * 1.5;
+		wasteDisposalStateAll.action = AnimState::STOPPED;
+		wasteDisposalState.Move(dp);
+		SetAnimation(wasteDisposalAnim, wasteDisposalState.pos);
+		if (wasteDisposalState.pos >= 1.0) {
+			wasteDisposalState.action = AnimState::STOPPED;
+			wasteDisposalStateAll.action = AnimState::OPENING;
+		}
+	};
+	if (wasteDisposalStateAll.Opening() && wasteDisposalState.Stopped()) {
+		double dp = simdt * 1.5;
+		wasteDisposalStateAll.Move(dp);
+		SetAnimation(wasteDisposalAnimAll, wasteDisposalStateAll.pos);
+		if (wasteDisposalStateAll.pos >= 1.0) {
+			wasteDisposalStateAll.action = AnimState::STOPPED;
+		}
+	};
+	if (wasteDisposalStateAll.Closing()) {
+		double dp = simdt * 1.5;
+		wasteDisposalState.action = AnimState::STOPPED;
+		wasteDisposalStateAll.Move(dp);
+		SetAnimation(wasteDisposalAnimAll, wasteDisposalStateAll.pos);
+		if (wasteDisposalStateAll.pos <= 0.0) {
+			wasteDisposalStateAll.action = AnimState::STOPPED;
+			wasteDisposalState.action = AnimState::CLOSING;
+		}
+	};
+	if (wasteDisposalState.Closing() && wasteDisposalStateAll.Stopped()) {
+		double dp = simdt * 1.5;
+		wasteDisposalState.Move(dp);
+		SetAnimation(wasteDisposalAnim, wasteDisposalState.pos);
+		if (wasteDisposalState.pos <= 0.0) {
+			wasteDisposalState.action = AnimState::STOPPED;
+		}
+	};
+	
+	// By Jordan End
+
+
+
 	//
 	// We die horribly if you set 100x or higher acceleration during launch.
 	//

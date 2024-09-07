@@ -54,18 +54,6 @@
 #include "CM-VC-SeatsUnfolded_Resource.h"
 #include "EmissionListCMVC.h"
 
-
-/// BEGINN TEST by JORDAN
-
-/// Waste Disposal
-int meshidxWasteDisposal;
-int meshidxWasteDisposalAll;
-UINT wasteDisposalAnim;
-UINT wasteDisposalAnimAll;
-
-/// END TEST by JORDAN
-
-
 // ==============================================================
 // VC Constants
 // ==============================================================
@@ -2620,7 +2608,7 @@ void Saturn::DefineVCAnimations()
 
 	// knob + frame
 	static UINT wasteDisposalAll[2] = { VC_GRP_WasteDisposalDoor, VC_GRP_WasteDisposalFrame };
-	static MGROUP_ROTATE wasteDisposalKnobAll(meshidxWasteDisposalAll, wasteDisposalAll, 2, _V(1.07709, -0.257737, -0.098881), _V(0, 1, 0), (float)(-120.0 / 180.0 * PI));
+	static MGROUP_ROTATE wasteDisposalKnobAll(meshidxWasteDisposalAll, wasteDisposalAll, 2, _V(1.07709, -0.257737, -0.098881), _V(0, -1, 0), (float)(-120.0 / 180.0 * PI));
 	wasteDisposalAnimAll = CreateAnimation(0.0);
 	AddAnimationComponent(wasteDisposalAnimAll, 0, 1, &wasteDisposalKnobAll);
 

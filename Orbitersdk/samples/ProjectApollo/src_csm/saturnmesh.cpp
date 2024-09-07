@@ -1355,18 +1355,12 @@ void Saturn::SetAltimeterCover() {
 }
 
 void Saturn::SetWasteDisposal() {
-	/// Play Animation 1
-	/// Play Animation 2
-	GROUPEDITSPEC wasteDisposalMesh;
-	wasteDisposalMesh.flags = GRPEDIT_SETUSERFLAG;
 	if (wasteDisposalStatus) {
-		wasteDisposalMesh.UsrFlag = 3;
-		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalDoor, &wasteDisposalMesh);
-		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalFrame, &wasteDisposalMesh);
+		wasteDisposalState.action = AnimState::OPENING;
+		wasteDisposalStateAll.action = AnimState::OPENING;
 	} else {
-		wasteDisposalMesh.UsrFlag = 1;
-		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalDoor, &wasteDisposalMesh);
-		oapiEditMeshGroup(vcmesh, VC_GRP_WasteDisposalFrame, &wasteDisposalMesh);
+		wasteDisposalState.action = AnimState::CLOSING;
+		wasteDisposalStateAll.action = AnimState::CLOSING;
 	}
 }
 
