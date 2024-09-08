@@ -121,6 +121,7 @@ DWORD FloodLights_P8[] = {
 	VC_MAT_Panel306,
 	VC_MAT_EventTimerLEB,
 	VC_MAT_csm_waste_disposal_rotary,
+	VC_MAT_Panel382_Cover,
 
 	// DSKY Panel 2 Lights Materials
 	VC_MAT_DSKY_Lights_GIMBAL_LOCK,

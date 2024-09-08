@@ -1061,7 +1061,7 @@ void Saturn::clbkPostCreation()
 	// Load Apollo-13 specific sounds.
 	//
 
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 		if (!KranzPlayed)
 			soundlib.LoadMissionSound(SKranz, A13_KRANZ, NULL, INTERNAL_ONLY);
 		if (!CryoStir)
@@ -1221,6 +1221,25 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 
 
 	//By Jordan
+	// ANIMATED MESHES
+	if (panel382CoverState.Opening()) {
+		double dp = simdt * 1.5;
+		panel382CoverState.Move(dp);
+		SetAnimation(panel382CoverAnim, panel382CoverState.pos);
+		if (panel382CoverState.pos >= 1.0) {
+			panel382CoverState.action = AnimState::STOPPED;
+		}
+	};
+
+	if (panel382CoverState.Closing()) {
+		double dp = simdt * 1.5;
+		panel382CoverState.Move(dp);
+		SetAnimation(panel382CoverAnim, panel382CoverState.pos);
+		if (panel382CoverState.pos <= 0.0) {
+			panel382CoverState.action = AnimState::STOPPED;
+		}
+	};
+
 	if (wasteDisposalState.Opening()) {
 		double dp = simdt * 1.5;
 		wasteDisposalStateAll.action = AnimState::STOPPED;
@@ -1506,7 +1525,7 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	if (AutoSlow) {
 		oapiWriteScenario_int (scn, "AUTOSLOW", 1);
 	}
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 		oapiWriteScenario_int (scn, "A13STATE", GetA13State());
 	}
 	if (SIVBPayload != PAYLOAD_LEM) {
@@ -4262,7 +4281,7 @@ void Saturn::LoadDefaultSounds()
 void Saturn::StageSix(double simt){
 	UpdateMassAndCoG();
 
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 
 		//
 		// Play cryo-stir audio.

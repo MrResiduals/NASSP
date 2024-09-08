@@ -1072,6 +1072,11 @@ void Saturn::RegisterActiveAreas() {
 	const VECTOR3 OrdealLocation = { -0.946135, 1.12302, -0.112392 };
 	oapiVCRegisterArea(AID_VC_Ordeal_Stowed, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_Ordeal_Stowed, OrdealLocation + ofs, 0.05);
+
+	// Panel382Cover
+	const VECTOR3 Panel382CoverLocation = { -1.0863, 0.1907, -0.66875 };
+	oapiVCRegisterArea(AID_VC_Panel382_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Panel382_Cover, Panel382CoverLocation + ofs, 0.05);
 	
 	// Waste Disposal
 	const VECTOR3 WasteKnobLocation = { 1.0773, -0.255847, -0.165491 };
@@ -1689,6 +1694,15 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 
 	case AID_VC_FWDHATCH_HANDLE:
 		ForwardHatch.Toggle();
+		return true;
+
+	case AID_VC_Panel382_Cover:
+		if (panel382CoverStatus) {
+			panel382CoverStatus = false;
+		} else {
+			panel382CoverStatus = true;
+		}
+		SetPanel382Cover();
 		return true;
 
 	case AID_VC_Altimeter_Cover:
@@ -2598,7 +2612,6 @@ void Saturn::DefineVCAnimations()
 
 	/// BEGINN TEST by JORDAN
 	/// Waste Disposal
-
 	// Knob
 	static UINT wasteDisposal[1] = { VC_GRP_WasteDisposalDoor };
 	static MGROUP_ROTATE wasteDisposalKnob(meshidxWasteDisposal, wasteDisposal, 1, _V(1.0773, -0.255847, -0.165491), _V(-1, 0, 0), (float)(-60.0 / 180.0 * PI));
@@ -2611,6 +2624,13 @@ void Saturn::DefineVCAnimations()
 	static MGROUP_ROTATE wasteDisposalKnobAll(meshidxWasteDisposalAll, wasteDisposalAll, 2, _V(1.07709, -0.257737, -0.098881), _V(0, -1, 0), (float)(-120.0 / 180.0 * PI));
 	wasteDisposalAnimAll = CreateAnimation(0.0);
 	AddAnimationComponent(wasteDisposalAnimAll, 0, 1, &wasteDisposalKnobAll);
+
+	// ***ATTENTION*** ANIMATION BUG IF I PUT THE CODE FOR PANEL382COVER BEFORE WASTEDISPOSAL
+	// Panel382Cover
+	static UINT Panel382Cover[1] = { VC_GRP_Panel382_Cover };
+	static MGROUP_ROTATE panel382CoverMesh(meshidxpanel382Cover, Panel382Cover, 1, _V(-1.0863, 0.2566, -0.66875), _V(0, 0, 1), (float)(120.0 / 180.0 * PI));
+	panel382CoverAnim = CreateAnimation(0.0);
+	AddAnimationComponent(panel382CoverAnim, 0, 1, &panel382CoverMesh);
 
 
 	/// END TEST by JORDAN

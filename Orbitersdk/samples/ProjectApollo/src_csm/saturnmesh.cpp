@@ -1364,6 +1364,15 @@ void Saturn::SetWasteDisposal() {
 	}
 }
 
+void Saturn::SetPanel382Cover() {
+	if (panel382CoverStatus) {
+		panel382CoverState.action = AnimState::OPENING;
+	} else {
+		panel382CoverState.action = AnimState::CLOSING;
+	}
+}
+
+
 void Saturn::SetOrdealMesh() {
 	GROUPEDITSPEC ordealMesh;
 	ordealMesh.flags = GRPEDIT_SETUSERFLAG;
