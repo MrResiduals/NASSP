@@ -1660,6 +1660,21 @@ bool ProjectApolloMFD::SetReferencePlanet (char *rstr)
 	return false;
 }
 
+bool ProjectApolloMFD::SetLaunchTime(char *rstr)
+{
+	double DT;
+
+	if (sscanf(rstr, "%lf", &DT) == 1)
+	{
+		if (saturn)
+		{
+			saturn->UpdateLaunchTime(DT);
+			return true;
+		}
+	}
+	return false;
+}
+
 bool ProjectApolloMFD::SetCrewNumber (char *rstr)
 {
 	int n;
@@ -1936,6 +1951,12 @@ void ProjectApolloMFD::menuVAGCCoreDump()
 		saturn->VirtualAGCCoreDump();
 	else if (lem)
 		lem->VirtualAGCCoreDump();
+}
+
+void ProjectApolloMFD::menuChangeLaunchTime()
+{
+	bool LaunchTimeInput(void *id, char *str, void *data);
+	oapiOpenInputBox("Choose delay in launch time (positive value):", LaunchTimeInput, 0, 20, (void*)this);
 }
 
 void ProjectApolloMFD::menuSetCrewNumber()
@@ -2491,6 +2512,11 @@ bool SourceInput (void *id, char *str, void *data)
 bool ReferencePlanetInput (void *id, char *str, void *data)
 {
 	return ((ProjectApolloMFD*)data)->SetReferencePlanet(str);
+}
+
+bool LaunchTimeInput(void *id, char *str, void *data)
+{
+	return ((ProjectApolloMFD*)data)->SetLaunchTime(str);
 }
 
 bool CrewNumberInput (void *id, char *str, void *data)

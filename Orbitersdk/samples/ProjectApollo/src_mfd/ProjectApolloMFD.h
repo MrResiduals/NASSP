@@ -47,6 +47,7 @@ public:
 	void GetStateVector (void);
 	bool SetSource(char *rstr);
 	bool SetReferencePlanet(char *rstr);
+	bool SetLaunchTime(char *rstr);
 	bool SetCrewNumber (char *rstr);
 	bool SetPrimECSTestHeaterPower (char *rstr);
 	bool SetSecECSTestHeaterPower (char *rstr);
@@ -80,6 +81,7 @@ public:
 	void menuKillRot();
 	void menuSaveEMSScroll();
 	void menuVAGCCoreDump();
+	void menuChangeLaunchTime();
 	void menuSetCrewNumber();
 	void menuSetCDRInSuit();
 	void menuSetLMPInSuit();
