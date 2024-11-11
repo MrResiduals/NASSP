@@ -360,8 +360,10 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		opt.WeightsTable = GetWeightsTable(calcParams.src, true, true);
 
 		AP11ManeuverPAD(opt, *form);
+		form->type = 2;
 
 		sprintf(form->purpose, "Evasive");
+		sprintf(form->remarks, "No ullage, LM weight is %.0f.", form->LMWeight);
 	}
 	break;
 	case 17: //Block Data 1
@@ -1284,6 +1286,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		opt.WeightsTable = GetWeightsTable(calcParams.src, true, true);
 
 		AP11ManeuverPAD(opt, *form);
+		form->type = 2;
 		sprintf(form->purpose, "SEP");
 
 		AGCStateVectorUpdate(buffer1, sv, true);
