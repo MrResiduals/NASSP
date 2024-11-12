@@ -55,6 +55,7 @@ DWORD FloodLights_P8[] = {
 	// TODO Material List
 	VC_MAT_AdditionalParts_t,
 //	VC_MAT_AttitudeSetNumbers,
+	VC_MAT_Altimeter_Pluger,
 	VC_MAT_Alluminum,
 	VC_MAT_CB_black_t,
 	VC_MAT_CM_VC_Color_1,
@@ -119,6 +120,8 @@ DWORD FloodLights_P8[] = {
 	VC_MAT_MissionTimer_P2,
 	VC_MAT_Panel306,
 	VC_MAT_EventTimerLEB,
+	VC_MAT_csm_waste_disposal_rotary,
+	VC_MAT_Panel382_Cover,
 
 	// DSKY Panel 2 Lights Materials
 	VC_MAT_DSKY_Lights_GIMBAL_LOCK,
@@ -126,7 +129,7 @@ DWORD FloodLights_P8[] = {
 	VC_MAT_DSKY_Lights_NO_ATT,
 	VC_MAT_DSKY_Lights_OPR_ERR,
 	VC_MAT_DSKY_Lights_PROG,
-	VC_MAT_DSKY_Lights_RESTART,
+	VC_MAT_DSKY_Lights_RESTART,	
 	VC_MAT_DSKY_Lights_STBY,
 	VC_MAT_DSKY_Lights_TEMP,
 	VC_MAT_DSKY_Lights_TRACKER,

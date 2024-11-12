@@ -716,6 +716,8 @@ void Saturn::initSaturn()
 	SLARotationLimit = 45;
 	SLAWillSeparate = true;
 
+	UseWideSLA = false;
+
 	hStage1Mesh = 0;
 	hStage2Mesh = 0;
 	hStage3Mesh = 0;
@@ -796,8 +798,8 @@ void Saturn::initSaturn()
 
 	agc.ControlVessel(this);
 	imu.SetVessel(this, false);
-	dsky.Init(&LightingNumIntLMDCCB, &CMCDCBusFeeder, &NumericRotarySwitch);
-	dsky2.Init(&LightingNumIntLEBCB, &CMCDCBusFeeder, &Panel100NumericRotarySwitch);
+	dsky.Init(&LightingNumIntLMDCCB, &CMCDCBusFeeder, &NumericRotarySwitch, &IntegralRotarySwitch, NULL, NULL);
+	dsky2.Init(&LightingNumIntLEBCB, &CMCDCBusFeeder, &Panel100NumericRotarySwitch, &Panel100IntegralRotarySwitch, NULL, NULL);
 
 	//
 	// Configure SECS.
@@ -998,6 +1000,18 @@ void Saturn::initSaturn()
 	FovSave = 0;
 
 	//
+	// Flashlight
+	//
+	flashlight = 0;
+	flashlightColor = { 1,1,1,0 };
+	flashlightColor2 = { 0,0,0,0 };
+	flashlightPos = { 0,0,0 };
+	vesselPosGlobal = { 0,0,0 };
+	flashlightDirGlobal = { 0,0,1 };
+	flashlightDirLocal = { 0,0,1 };
+	flashlightOn = 0;
+
+	//
 	// Save the last view offset set.
 	//
 
@@ -1102,6 +1116,9 @@ void Saturn::initSaturn()
 	LMAscentFuelMassKg = 2345.0;
 	LMAscentEmptyMassKg = 2150.0;
 	LMDescentEmptyMassKg = 2224.0;
+
+	customPayloadMass = 0;
+	customPayloadClass[0] = 0;
 
 	UseATC = false;
 
@@ -1348,7 +1365,7 @@ void Saturn::clbkPostCreation()
 	// Load Apollo-13 specific sounds.
 	//
 
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 		if (!KranzPlayed)
 			soundlib.LoadMissionSound(SKranz, A13_KRANZ, NULL, INTERNAL_ONLY);
 		if (!CryoStir)
@@ -1497,6 +1514,66 @@ void Saturn::Undocking(int port)
 	UndockConnectors(port);
 }
 
+void Saturn::SetAnimations(double simdt)
+{
+	// By Jordan
+	// ANIMATED MESHES
+
+	if (panel382CoverState.action == AnimState::CLOSING || panel382CoverState.action == AnimState::OPENING) {
+		double speed = 0.5; // Anim length in Seconds
+		double dp = simdt / speed;
+		if (panel382CoverState.action == AnimState::CLOSING) {
+			if (panel382CoverState.pos > 0.0)
+				panel382CoverState.pos = max (0.0, panel382CoverState.pos-dp);
+			else
+				panel382CoverState.action = AnimState::CLOSED;
+		} else { // opening
+			if (panel382CoverState.pos < 1.0)
+				panel382CoverState.pos = min (1.0, panel382CoverState.pos+dp);
+			else
+				panel382CoverState.action = AnimState::OPEN;
+		}
+		SetAnimation (panel382CoverAnim, panel382CoverState.pos);
+	}
+
+	if (wasteDisposalState.action == AnimState::CLOSING || wasteDisposalState.action == AnimState::OPENING) {
+		double speed = 1.0; // Anim length in Seconds **NOT SURE ABOUT THIS***
+		//double dp = oapiGetSimStep() * speed;
+		double dp = simdt / speed;
+		if (wasteDisposalState.action == AnimState::CLOSING) {
+			if (wasteDisposalState.pos > 0.0)
+				wasteDisposalState.pos = max (0.0, wasteDisposalState.pos-dp);
+			else
+				wasteDisposalState.action = AnimState::CLOSED;
+		} else { // opening
+			if (wasteDisposalState.pos < 1.0)
+				wasteDisposalState.pos = min (1.0, wasteDisposalState.pos+dp);
+			else
+				wasteDisposalState.action = AnimState::OPEN;
+		}
+		SetAnimation (wasteDisposalAnim, wasteDisposalState.pos);
+	}
+
+	if (altimeterCoverState.action == AnimState::CLOSING || altimeterCoverState.action == AnimState::OPENING) {
+		double speed = 2.0; // Anim length in Seconds
+		double dp = simdt / speed;
+		if (altimeterCoverState.action == AnimState::CLOSING) {
+			if (altimeterCoverState.pos > 0.0)
+				altimeterCoverState.pos = max (0.0, altimeterCoverState.pos-dp);
+			else
+				altimeterCoverState.action = AnimState::CLOSED;
+		} else { // Stowing
+			if (altimeterCoverState.pos < 1.0)
+				altimeterCoverState.pos = min (1.0, altimeterCoverState.pos+dp);
+			else
+				altimeterCoverState.action = AnimState::OPEN; //Stowed
+		}
+		SetAnimation (altimeterCoverAnim, altimeterCoverState.pos);
+	}
+
+	// By Jordan End
+}
+
 void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 
 {
@@ -1504,6 +1581,8 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 	TRACESETUP("Saturn::clbkPreStep");
 	sprintf(buffer, "MissionTime %f, simt %f, simdt %f, time(0) %lld", MissionTime, simt, simdt, time(0)); 
 	TRACE(buffer);
+
+	SetAnimations(simdt);
 
 	//
 	// We die horribly if you set 100x or higher acceleration during launch.
@@ -1557,6 +1636,15 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 	//
 
 	Timestep(simt, simdt, mjd);
+
+	if (oapiGetFocusObject() == GetHandle()) {
+		dsky.SendNetworkPacketDSKY();
+	}
+
+	if ((oapiGetFocusObject() == GetHandle()) && (oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
+		//We have focus on this vessel, and are in the VC
+		MoveFlashlight();
+	}
 
 	sprintf(buffer, "End time(0) %lld", time(0)); 
 	TRACE(buffer);
@@ -1745,12 +1833,17 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	if (AutoSlow) {
 		oapiWriteScenario_int (scn, "AUTOSLOW", 1);
 	}
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 		oapiWriteScenario_int (scn, "A13STATE", GetA13State());
 	}
 	if (SIVBPayload != PAYLOAD_LEM) {
 		oapiWriteScenario_int (scn, "S4PL", SIVBPayload);
 	}
+	oapiWriteScenario_int(scn, "WIDESLA", UseWideSLA);
+	oapiWriteScenario_float(scn, "CUSTOMPAYLOADMASS", customPayloadMass);
+	if (customPayloadClass[0])
+		oapiWriteScenario_string(scn, "CUSTOMPAYLOADCLASS", customPayloadClass);
+
 	oapiWriteScenario_string (scn, "LANG", AudioLanguage);
 	
 	if (PayloadName[0])
@@ -1766,6 +1859,8 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 		oapiWriteScenario_float(scn, "LMASCEMPTY", LMAscentEmptyMassKg);
 	}
 	oapiWriteScenario_int (scn, "COASENABLED", coasEnabled);
+	oapiWriteScenario_int (scn, "ALTIMETERCOVERED", altimeterCovered);
+	oapiWriteScenario_int (scn, "ORDEALSTOWED", ordealStowed);
 	oapiWriteScenario_int (scn, "ORDEALENABLED", ordealEnabled);
 	oapiWriteScenario_int (scn, "OPTICSDSKYENABLED", opticsDskyEnabled);
 	oapiWriteScenario_int (scn, "HATCHPANEL600ENABLED", hatchPanel600EnabledLeft);
@@ -2347,6 +2442,18 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	else if (!strnicmp(line, "S4PL", 4)) {
 		sscanf(line + 4, "%d", &SIVBPayload);
 	}
+	else if (!strnicmp(line, "WIDESLA", 7)) {
+		int i;
+		sscanf(line + 7, "%d", &i);
+		UseWideSLA = (i != 0);
+	}
+	else if (!strnicmp(line, "CUSTOMPAYLOADMASS", 17)) {
+		sscanf(line + 17, "%f", &ftcp);
+		customPayloadMass = ftcp;
+	}
+	else if (!strnicmp(line, "CUSTOMPAYLOADCLASS", 18)) {
+		strncpy(customPayloadClass, line + 19, 256);
+	}
 	else if (!strnicmp(line, "SMFUELLOAD", 10)) {
 		sscanf(line + 10, "%f", &ftcp);
 		SM_FuelMass = ftcp;
@@ -2468,6 +2575,16 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	}
 	else if (!strnicmp (line, "COASENABLED", 11)) {
 		sscanf (line + 11, "%i", &coasEnabled);
+	}
+	else if (!strnicmp (line, "ALTIMETERCOVERED", 16)) {
+		sscanf (line + 16, "%i", &altimeterCovered);
+		if (altimeterCovered) {
+			altimeterCoverState.pos = 1.0;
+//			SetAnimation(altimeterCoverAnim, altimeterCoverState.pos);
+		}
+	}
+	else if (!strnicmp (line, "ORDEALSTOWED", 12)) {
+		sscanf (line + 12, "%i", &ordealStowed);
 	}
 	else if (!strnicmp(line, "CHKVAR_", 7)) {
 		for (int i = 0; i < 16; i++) {
@@ -2879,6 +2996,10 @@ void Saturn::UpdatePayloadMass()
 
 	case PAYLOAD_DOCKING_ADAPTER:
 		S4PL_Mass = 4700.0; // see http://www.ibiblio.org/mscorbit/mscforum/index.php?topic=2064.0
+		break;
+
+	case PAYLOAD_CUSTOM:
+		S4PL_Mass = customPayloadMass;
 		break;
 
 	default:
@@ -3654,6 +3775,10 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 				agc.SetInputChannelBit(016,MarkReject,0);
 				return 1;
 		}
+	}
+
+	if ((down) && (key == OAPI_KEY_F)) {
+		ToggleFlashlight();
 	}
 
 	// MCC CAPCOM interface key handling                                                                                                
@@ -4546,7 +4671,7 @@ void Saturn::LoadDefaultSounds()
 void Saturn::StageSix(double simt){
 	UpdateMassAndCoG();
 
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 
 		//
 		// Play cryo-stir audio.
@@ -4682,7 +4807,7 @@ void Saturn::StageSix(double simt){
 			
 			double O2Tank1Mass = O2Tanks[0]->mass/1E3;
 
-			SetThrusterLevel(th_o2_vent, O2Tank1Mass/145149.5584);
+			SetThrusterLevel(th_o2_vent, O2Tank1Mass/145.1495584);
 
 			SetPropellantMass(ph_o2_vent, O2Tank1Mass);
 		}

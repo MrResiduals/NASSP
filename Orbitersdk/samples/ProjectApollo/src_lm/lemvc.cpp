@@ -725,6 +725,12 @@ bool LEM::clbkLoadVC (int id)
 	vcFreeCamy = 0;
 	vcFreeCamz = 0;
 
+	//Flashlight
+	DelLightEmitter(flashlight);
+	flashlight = (::SpotLight*)AddSpotLight(flashlightPos, flashlightDirLocal, 3, 0, 0, 3, 0, RAD * 45, flashlightColor, flashlightColor, flashlightColor2);
+	flashlight->SetVisibility(LightEmitter::VIS_COCKPIT);
+	flashlight->Activate(flashlightOn);
+
 	switch (id) {
 	case LMVIEW_CDR:
 		viewpos = LMVIEW_CDR;
@@ -994,7 +1000,7 @@ void LEM::RegisterActiveAreas()
 	}
 
 	// LMVC Lighting
-    oapiVCRegisterArea(AID_LMVC_LIGHTING,  PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
+	oapiVCRegisterArea(AID_LMVC_LIGHTING,  PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
 
 	oapiVCRegisterArea(AID_VC_LM_CWS_LEFT, _R(238*TexMul, 27*TexMul, 559*TexMul, 153*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 	oapiVCRegisterArea(AID_VC_MISSION_CLOCK, _R(60*TexMul, 259*TexMul, 202*TexMul, 281*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
@@ -2871,8 +2877,8 @@ void LEM::DefineVCAnimations()
 	const VECTOR3 p11row4_vector = { 0.003 * sin(P11R4_TILT - (90.0 * RAD)), 0.003 * -cos(P11R4_TILT - (90.0 * RAD)), 0.0 };
 	const VECTOR3 p11row5_vector = { 0.003 * sin(P11R5_TILT - (90.0 * RAD)), 0.003 * -cos(P11R5_TILT - (90.0 * RAD)), 0.0 };
 
-	CircuitBrakerSwitch* breakerrow1[P11R1_CBCOUNT] = { &SE_WND_HTR_AC_CB, &HE_PQGS_PROP_DISP_AC_CB, &SBD_ANT_AC_CB, &ORDEAL_AC_CB, &AGS_AC_CB, &AOT_LAMP_ACB_CB, &LMP_FDAI_AC_CB, &NUM_LTG_AC_CB, &AC_B_INV_1_FEED_CB,
-		&AC_B_INV_2_FEED_CB, &AC_A_INV_1_FEED_CB, &AC_A_INV_2_FEED_CB, &AC_A_BUS_VOLT_CB, &CDR_WND_HTR_AC_CB, &TAPE_RCDR_AC_CB, &AOT_LAMP_ACA_CB, &RDZ_RDR_AC_CB, &DECA_GMBL_AC_CB, &INTGL_LTG_AC_CB };
+	CircuitBrakerSwitch* breakerrow1[P11R1_CBCOUNT] = { &SE_WND_HTR_AC_CB, &HE_PQGS_PROP_DISP_AC_CB, &SBD_ANT_AC_CB, &ORDEAL_AC_CB, &AGS_AC_CB, &AOT_LAMP_ACB_CB, &LMP_FDAI_AC_CB, &NUM_LTG_AC_CB, &AC_B_INV_2_FEED_CB,
+		&AC_B_INV_1_FEED_CB, &AC_A_INV_2_FEED_CB, &AC_A_INV_1_FEED_CB, &AC_A_BUS_VOLT_CB, &CDR_WND_HTR_AC_CB, &TAPE_RCDR_AC_CB, &AOT_LAMP_ACA_CB, &RDZ_RDR_AC_CB, &DECA_GMBL_AC_CB, &INTGL_LTG_AC_CB };
 
 	for (int i = 0;i < P11R1_CBCOUNT;i++)
 	{
@@ -3519,4 +3525,32 @@ void LEM::SetVCLighting(UINT meshidx, int material, int EmissionMode, double sta
 		pCore->MeshMaterial(hMesh, material, EmissionMode, &value, true);
 #endif
 		}
+}
+
+void LEM::MoveFlashlight()
+{
+	if (flashlightOn) { //Only move the light emmitter if the flashlight is on
+		//Huge thanks the Jordan64 for helping get the direction stuff working! :)
+		GetCameraOffset(flashlightPos);
+		oapiCameraGlobalDir(&flashlightDirGlobal);
+		GetGlobalPos(vesselPosGlobal);
+		Global2Local(vesselPosGlobal + flashlightDirGlobal, flashlightDirLocal);
+		normalise(flashlightDirLocal);
+
+		flashlight->SetPosition(flashlightPos);
+		flashlight->SetDirection(flashlightDirLocal);
+	}
+}
+
+void LEM::SetFlashlightOn(bool state)
+{
+	flashlight->Activate(state);
+	flashlightOn = state;
+}
+
+void LEM::ToggleFlashlight()
+{
+	if ((oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
+		SetFlashlightOn(!flashlightOn);
+	}
 }

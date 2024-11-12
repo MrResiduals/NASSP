@@ -5408,6 +5408,32 @@ double EMXINGElevSlope(VECTOR3 R, VECTOR3 V, VECTOR3 R_S, int body)
 	return (dotp(rho_dot, N) + dotp(rho_apo, N_dot))*length(rho);
 }
 
+double LongitudeConversion(double lng, double T, double w_E, double lng_0, bool inertial_to_geographic)
+{
+	//For ECI to ECEF conversion
+
+	//lng: inertial or ECEF longitude
+	//T: Current time
+	//w_E: Body rotation rate
+	//lng_0: hour angle at T = 0
+	//inertial_to_geographic: conversion direction
+
+	double K;
+	if (inertial_to_geographic)
+	{
+		K = -1.0;
+	}
+	else
+	{
+		K = 1.0;
+	}
+
+	lng = lng + K*(lng_0 + w_E * T);
+
+	normalizeAngle(lng, false);
+	return lng;
+}
+
 CELEMENTS KeplerToEquinoctial(CELEMENTS kep)
 {
 	CELEMENTS aeq;
@@ -6219,9 +6245,12 @@ SV PositionMatch(int Epoch, SV sv_A, SV sv_P, double mu)
 	SV sv_A1, sv_P1;
 	VECTOR3 u, R_A1, U_L;
 	double phase, n, dt, ddt;
+	int nmax, nn;
 	bool error;
 
 	dt = 0.0;
+	nn = 0;
+	nmax = 100;
 
 	u = unit(crossp(sv_P.R, sv_P.V));
 	U_L = unit(crossp(u, sv_P.R));
@@ -6230,7 +6259,7 @@ SV PositionMatch(int Epoch, SV sv_A, SV sv_P, double mu)
 	do
 	{
 		R_A1 = unit(sv_A1.R - u * dotp(sv_A1.R, u))*length(sv_A1.R);
-		phase = acos(dotp(unit(R_A1), unit(sv_P.R)));
+		phase = acos2(dotp(unit(R_A1), unit(sv_P.R)));
 		if (dotp(U_L, R_A1) > 0)
 		{
 			phase = -phase;
@@ -6239,7 +6268,8 @@ SV PositionMatch(int Epoch, SV sv_A, SV sv_P, double mu)
 		ddt = phase / n;
 		sv_A1 = coast(Epoch, sv_A1, ddt);
 		dt += ddt;
-	} while (abs(ddt) > 0.01);
+		nn++;
+	} while (abs(ddt) > 0.01 && nmax > nn);
 
 	return sv_A1;
 }

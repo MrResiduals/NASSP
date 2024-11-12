@@ -92,7 +92,6 @@ namespace mission
 #define RCS_CM_RING_1		4
 #define RCS_CM_RING_2		5
 
-
 ///
 /// \brief Cabin atmosphere status.
 /// \ingroup InternalInterface
@@ -1215,6 +1214,14 @@ public:
 	
 	void SetCMdocktgtMesh();
 
+	/// Set Altimeter Cover
+	void SetAltimeterCover();
+	void SetOrdealMesh();
+
+	/// Waste Disposal
+	void SetWasteDisposal();
+	void SetPanel382Cover();
+
 	///
 	/// \brief Set VC seats mesh
 	///
@@ -1281,8 +1288,25 @@ public:
 	virtual SIBSystems *GetSIB() { return NULL; }
 	virtual SICSystems *GetSIC() { return NULL; }
 	SECS *GetSECS() { return &secs; }
+	mission::Mission *GetMission() { return pMission; }
 
 	void ClearMeshes();
+	void SetAnimations(double);
+
+	//
+	// Flashlight for VC
+	//
+	void MoveFlashlight();
+	void SetFlashlightOn(bool state);
+	void ToggleFlashlight();
+	SpotLight* flashlight;
+	COLOUR4 flashlightColor;
+	COLOUR4 flashlightColor2;
+	VECTOR3 flashlightPos;
+	VECTOR3 vesselPosGlobal;
+	VECTOR3 flashlightDirGlobal;
+	VECTOR3 flashlightDirLocal;
+	bool flashlightOn;
 
 protected:
 
@@ -1382,6 +1406,12 @@ protected:
 	/// \brief SLA panels separation flag.
 	///
 	bool SLAWillSeparate;
+
+	///
+	/// True if wide ELS-type SLA panels are installed.
+	/// \brief Use wide ELS-type SLA panels.
+	///
+	bool UseWideSLA;
 
 	bool SIMBayPanelJett;
 
@@ -1545,6 +1575,35 @@ protected:
 	int hatchPanel600EnabledLeft;
 	int hatchPanel600EnabledRight;
 	int panel382Enabled;
+
+	int altimeterCovered;
+	int ordealStowed;
+
+/// BEGINN TEST by JORDAN
+
+/// Waste Disposal
+	int wasteDisposalStatus = true;
+	double wasteDisposalProc;
+	int meshidxWasteDisposal;
+	int meshidxWasteDisposalAll;
+	UINT wasteDisposalAnim;
+	AnimState wasteDisposalState;
+
+/// Panel 382 Cover
+	int panel382CoverStatus = true;
+	double panel382CoverProc;
+	int meshidxpanel382Cover;
+	UINT panel382CoverAnim;
+	AnimState panel382CoverState;
+
+/// Altimeter Cover
+	int altimeterCoverStatus;
+	double altimeterCoverProc;
+	int meshidxaltimeterCover;
+	UINT altimeterCoverAnim;
+	AnimState altimeterCoverState;
+	
+/// END TEST by JORDAN
 
 	///
 	/// \brief Right-hand FDAI.
@@ -3728,6 +3787,8 @@ protected:
 	// GSE
 	Pump* GSEGlycolPump;
 	h_Radiator* GSERadiator;
+	h_Tank *GSECryoO2Dewar;
+	h_Tank *GSECryoH2Dewar;
 
 	// EPS
 	CryoPressureSwitch H2CryoPressureSwitch;
@@ -4393,6 +4454,12 @@ protected:
 	double LMAscentFuelMassKg;	///< Mass of fuel in ascent stage of LEM.
 	double LMDescentEmptyMassKg;
 	double LMAscentEmptyMassKg;
+
+	//
+	// Custom Payload data.
+	//
+	double customPayloadMass;
+	char customPayloadClass[256];
 
 	//
 	// Random motion.
