@@ -75,7 +75,7 @@ double CSMTankPressTransducer::GetValue()
 CSMCO2PressTransducer::CSMCO2PressTransducer(char *i_name, double minIn, double maxIn) :
 	CSMTankTransducer(i_name, minIn, maxIn)
 {
-	scaleFactor = (maxIn - minIn) / 25.0;
+
 }
 
 double CSMCO2PressTransducer::Voltage()
@@ -83,7 +83,7 @@ double CSMCO2PressTransducer::Voltage()
 	if (!IsPowered())
 		return 0.0;
 
-	double v = sqrt(max(0.0, (GetValue() - minInputValue) / scaleFactor));
+	double v = pow((GetValue()/1.2374787219), (1/1.9808911771)); //gives a power curve providing 2.50V at 7.6mmHG and 5.0V at 30mmHG
 
 	if (v < 0.0)
 		return 0.0;
@@ -95,6 +95,7 @@ double CSMCO2PressTransducer::Voltage()
 
 	return v;
 }
+
 
 double CSMCO2PressTransducer::GetValue()
 {
