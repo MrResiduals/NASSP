@@ -110,10 +110,10 @@ double SaturnH2PressureMeter::QueryValue()
 
 void SaturnH2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	if (Index == 1) 
-		oapiBlt(drawSurface, NeedleSurface,  0, (130 - (int)(v / 400.0 * 104.0)), 0, 0, 10, 10, SURF_PREDEF_CK);
+	if (Index == 1)
+		oapiBlt(drawSurface, NeedleSurface, 0, (129 - (int)(v * 0.2942857146)), 0, 0, 10, 10, SURF_PREDEF_CK);
 	else
-		oapiBlt(drawSurface, NeedleSurface, 53, (130 - (int)(v / 400.0 * 104.0)), 10, 0, 10, 10, SURF_PREDEF_CK);
+		oapiBlt(drawSurface, NeedleSurface, 53, (129 - (int)(v * 0.2942857146)), 10, 0, 10, 10, SURF_PREDEF_CK);
 }
 
 
@@ -126,52 +126,67 @@ void SaturnO2PressureMeter::Init(int i, SURFHANDLE surf, SwitchRow &row, Saturn 
 	O2PressIndSwitch = o2PressIndSwitch;
 }
 
-double SaturnO2PressureMeter::QueryValue()
+double SaturnO2PressureMeter::QueryValue() //Returns meter proportional voltage from transducer voltage to scale display
 {
-	//Scale voltage (0-5V) to 0 to 1000 range on display
-	//TBD: Display goes from 100 to 1050, but should actually start at 50
-	double val;
+	double XducerV;
+	double MeterV;
 	if (Index == 1)
 		if (O2PressIndSwitch->IsUp())
-			val = Sat->O2Tank1PressSensor.Voltage();
+			XducerV = Sat->O2Tank1PressSensor.Voltage();
 		else
-			val = Sat->O2SurgeTankPressSensor.Voltage();
+			XducerV = Sat->O2SurgeTankPressSensor.Voltage();
 	else
-		val = Sat->O2Tank2PressSensor.Voltage();
+		XducerV = Sat->O2Tank2PressSensor.Voltage();
 
-	if (val < 0.25) //100 PSI
+	if (XducerV <= 0.0) //50 PSI
 	{
-		return 0.0;
+		MeterV = 0.0;
 	}
-	else if (val < 2.25) //100-500 psi
+	else if (XducerV <= 3.25) //50-700 psi
 	{
-		return (val - 0.25)*122.64; //245.28 at 500 psi
+		MeterV = 0.615384620189831*XducerV + 0.000000000759321;
 	}
-	else if (val < 3.75) //500-800 psi
+	else if (XducerV <= 3.75) //700-800 psi
 	{
-		return (val - 0.8055)*169.81; //500 at 800 psi
+		MeterV = 0.9999999676*XducerV - 1.2499998785;
 	}
-	else if (val < 4.25) //800-900 psi
+	else if (XducerV <= 4.00) //800-850 psi
 	{
-		return (val - 2.3553)*358.5; //679.25 at 900 psi
+		MeterV = 1.2581856262*XducerV - 2.2181960983;
 	}
-	else if (val < 4.5) //900-950 psi
+	else if (XducerV <= 4.5) //850-950 psi
 	{
-		return (val - 3.39284)*792.44; //877.36 at 950 psi
+		MeterV = -53.0805807926226*pow(XducerV, 4) + 895.008103586675*pow(XducerV, 3) - 5653.6724668028*pow(XducerV, 2) + 15860.671689824*XducerV - 16673.0026906803;
 	}
-	else if (val < 5.0) //950-1050 psi
+	else if (XducerV <= 5.0) //950-1050 psi
 	{
-		return (val - 2.1038)*345.28; //1000 at 1050 psi
+		MeterV = 1.1795223365*XducerV - 0.8976116825;
 	}
 	else
 	{
-		return 1000.0;
+		MeterV = 5.0;
 	}
+
+	return MeterV;
 }
+/*
+double SaturnO2PressureMeter::QueryValue() //Returns pressure value from transducer voltage
+{
+	double XducerV;
+	if (Index == 1)
+		if (O2PressIndSwitch->IsUp())
+			XducerV = Sat->O2Tank1PressSensor.Voltage();
+		else
+			XducerV = Sat->O2SurgeTankPressSensor.Voltage();
+	else
+		XducerV = Sat->O2Tank2PressSensor.Voltage();
 
+	return 200.0*XducerV + 50.0;
+}
+*/
 void SaturnO2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	if (Index == 1) 
+	if (Index == 1)
 		DoDrawSwitch(drawSurface, NeedleSurface, v, 86, 0);
 	else
 		DoDrawSwitch(drawSurface, NeedleSurface, v, 139, 10);
@@ -179,7 +194,7 @@ void SaturnO2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 
 void SaturnO2PressureMeter::DoDrawSwitch(SURFHANDLE surf, SURFHANDLE needle, double value, int xOffset, int xNeedle)
 {
-	oapiBlt(surf, needle, xOffset, 130 - (int)(value*0.106), xNeedle, 0, 10, 10, SURF_PREDEF_CK);
+	oapiBlt(surf, needle, xOffset, 129 - ((int)(value*20.6)), xNeedle, 0, 10, 10, SURF_PREDEF_CK);
 }
 
 
@@ -196,10 +211,11 @@ double SaturnCryoQuantityMeter::QueryValue()
 {
 	if (!strcmp("H2", Substance)) {
 		if (Index == 1)
-			return Sat->H2Tank1QuantitySensor.Voltage();
+			return Sat->H2Tank1QuantitySensor.Voltage(); //Uses direct voltage instead of a value
 		else
 			return Sat->H2Tank2QuantitySensor.Voltage();
-	} else {
+	}
+	else {
 		if (Index == 1)
 			return Sat->O2Tank1QuantitySensor.Voltage();
 		else
@@ -210,19 +226,20 @@ double SaturnCryoQuantityMeter::QueryValue()
 void SaturnCryoQuantityMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
 	if (!strcmp("H2", Substance)) {
-		if (Index == 1) 
-			oapiBlt(drawSurface, NeedleSurface,  172, (130 - (int)(v * 20.8)), 0, 0, 10, 10, SURF_PREDEF_CK);
+		if (Index == 1)
+			oapiBlt(drawSurface, NeedleSurface, 172, (129 - (int)(v * 20.6)), 0, 0, 10, 10, SURF_PREDEF_CK);
 		else
-			oapiBlt(drawSurface, NeedleSurface,  225, (130 - (int)(v * 20.8)), 10, 0, 10, 10, SURF_PREDEF_CK);
-	} else {
-		if (Index == 1) 
-			oapiBlt(drawSurface, NeedleSurface,  258, (130 - (int)(v * 20.8)), 0, 0, 10, 10, SURF_PREDEF_CK);
+			oapiBlt(drawSurface, NeedleSurface, 225, (129 - (int)(v * 20.6)), 10, 0, 10, 10, SURF_PREDEF_CK);
+	}
+	else {
+		if (Index == 1)
+			oapiBlt(drawSurface, NeedleSurface, 258, (129 - (int)(v * 20.6)), 0, 0, 10, 10, SURF_PREDEF_CK);
 		else {
 			//
 			// Apollo 13 O2 tank 2 quantity display failed offscale high around 46:45.
 			//
 
-			#define O2FAILURETIME	(46.0 * 3600.0 + 45.0 * 60.0)
+#define O2FAILURETIME	(46.0 * 3600.0 + 45.0 * 60.0)
 
 			if (Sat->GetMission()->DoApollo13Failures()) {
 				if (Sat->GetMissionTime() >= (O2FAILURETIME + 5.0)) {
@@ -232,7 +249,7 @@ void SaturnCryoQuantityMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 					v += (1.05 - value) * ((Sat->GetMissionTime() - O2FAILURETIME) / 5.0);
 				}
 			}
-			oapiBlt(drawSurface, NeedleSurface,  311, (130 - (int)(v * 20.8)), 10, 0, 10, 10, SURF_PREDEF_CK);
+			oapiBlt(drawSurface, NeedleSurface, 311, (129 - (int)(v * 20.6)), 10, 0, 10, 10, SURF_PREDEF_CK);
 		}
 	}
 }
