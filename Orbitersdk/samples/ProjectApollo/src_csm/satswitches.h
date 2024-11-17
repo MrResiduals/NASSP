@@ -89,9 +89,7 @@ protected:
 	int Index;
 	SURFHANDLE NeedleSurface;
 	Saturn *Sat;
-	ToggleSwitch *O2PressIndSwitch;	
-
-	void DoDrawSwitch(SURFHANDLE surf, SURFHANDLE needle, double value, int xOffset, int xNeedle);
+	ToggleSwitch *O2PressIndSwitch;
 };
 
 class SaturnCryoQuantityMeter : public CurvedMeter {

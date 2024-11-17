@@ -187,14 +187,9 @@ double SaturnO2PressureMeter::QueryValue() //Returns pressure value from transdu
 void SaturnO2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
 	if (Index == 1)
-		DoDrawSwitch(drawSurface, NeedleSurface, v, 86, 0);
+		oapiBlt(drawSurface, NeedleSurface, 86, (129 - (int)(v * 20.6)), 0, 0, 10, 10, SURF_PREDEF_CK);
 	else
-		DoDrawSwitch(drawSurface, NeedleSurface, v, 139, 10);
-}
-
-void SaturnO2PressureMeter::DoDrawSwitch(SURFHANDLE surf, SURFHANDLE needle, double value, int xOffset, int xNeedle)
-{
-	oapiBlt(surf, needle, xOffset, 129 - ((int)(value*20.6)), xNeedle, 0, 10, 10, SURF_PREDEF_CK);
+		oapiBlt(drawSurface, NeedleSurface, 139, (129 - (int)(v * 20.6)), 10, 0, 10, 10, SURF_PREDEF_CK);
 }
 
 
