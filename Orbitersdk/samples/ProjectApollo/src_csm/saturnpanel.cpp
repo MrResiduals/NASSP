@@ -5582,10 +5582,10 @@ void Saturn::InitSwitches() {
 	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 350, 10);
 	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 50, 1050, 10);
 	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 50, 1050, 10);
-	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5, 10);
-	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5, 10);
-	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5, 10);
-	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5, 10);
+	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5.0, 10);
+	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5.0, 10);
+	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5.0, 10);
+	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5.0, 10);
 
 	CSMACVoltMeter.Register(PSH, "ACVoltMeter", 89, 131, 3);
 	CSMDCVoltMeter.Register(PSH, "DCVoltMeter", 19, 46, 3);
