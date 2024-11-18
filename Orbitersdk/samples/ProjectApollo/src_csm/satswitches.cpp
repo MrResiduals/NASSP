@@ -182,7 +182,7 @@ void SaturnO2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 
 void SaturnO2PressureMeter::OnPostStep(double SimT, double DeltaT, double MJD)
 {
-	double v = QueryValue();
+	double v = GetDisplayValue();
 	OurVessel->SetAnimation(anim_switch, (v * 0.2)); //Scales VC meter 0-1
 }
 
