@@ -5578,14 +5578,14 @@ void Saturn::InitSwitches() {
 	DirectUllageButton.Register(PSH, "DirectUllageButton", false);
 	ThrustOnButton.Register(PSH, "ThrustOnButton", false);
 
-	H2Pressure1Meter.Register(PSH, "H2Pressure1Meter", 0, 400, 10);
-	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 400, 10);
-	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 0, 1000, 10); //Scaled for consistent display in 2D and VC
-	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 0, 1000, 10);
-	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5.0, 10);
-	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5.0, 10);
-	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5.0, 10);
-	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5.0, 10);
+	H2Pressure1Meter.Register(PSH, "H2Pressure1Meter", 0, 350, 10);
+	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 350, 10);
+	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 50, 1050, 10);
+	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 50, 1050, 10);
+	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5, 10); //Why are these 0-5 instead of 0-100?
+	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5, 10);
+	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5, 10);
+	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5, 10);
 
 	CSMACVoltMeter.Register(PSH, "ACVoltMeter", 89, 131, 3);
 	CSMDCVoltMeter.Register(PSH, "DCVoltMeter", 19, 46, 3);

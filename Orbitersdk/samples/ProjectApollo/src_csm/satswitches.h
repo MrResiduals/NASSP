@@ -84,6 +84,7 @@ public:
 	void Init(int i, SURFHANDLE surf, SwitchRow &row, Saturn *s, ToggleSwitch *o2PressIndSwitch);
 	double QueryValue();
 	void DoDrawSwitch(double v, SURFHANDLE drawSurface);
+	virtual void OnPostStep(double SimT, double DeltaT, double MJD);
 
 protected:
 	int Index;

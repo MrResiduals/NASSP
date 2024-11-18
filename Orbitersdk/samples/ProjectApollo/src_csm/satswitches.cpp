@@ -192,6 +192,12 @@ void SaturnO2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 		oapiBlt(drawSurface, NeedleSurface, 139, (129 - (int)(v * 20.6)), 10, 0, 10, 10, SURF_PREDEF_CK);
 }
 
+void SaturnO2PressureMeter::OnPostStep(double SimT, double DeltaT, double MJD)
+{
+	double v = QueryValue();
+	OurVessel->SetAnimation(anim_switch, (v * 0.2)); //Scales VC meter 0-1
+}
+
 
 void SaturnCryoQuantityMeter::Init(char *sub, int i, SURFHANDLE surf, SwitchRow &row, Saturn *s)
 {
@@ -576,7 +582,7 @@ double SaturnSuitPressMeter::QueryValue()
 void SaturnSuitPressMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
 	if (v <= 6.0)
-		oapiBlt(drawSurface, NeedleSurface, 101, (109 - (int)(v * 8.5833333333)), 0, 0, 10, 10, SURF_PREDEF_CK); //scaling done in meter for now, should be done by sensor itself
+		oapiBlt(drawSurface, NeedleSurface, 101, (109 - (int)(v * 8.5833333333)), 0, 0, 10, 10, SURF_PREDEF_CK); //scaling done in meter for now, should be done by sensor itself?
 	else
 		oapiBlt(drawSurface, NeedleSurface, 101, (109 - (int)((v * 4.6818181818) + 23.4090909091)), 0, 0, 10, 10, SURF_PREDEF_CK);
 }
@@ -601,7 +607,7 @@ double SaturnCabinPressMeter::QueryValue()
 void SaturnCabinPressMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
 	if (v <= 6.0)
-		oapiBlt(drawSurface, NeedleSurface, 153, (109 - (int)(v * 8.5833333333)), 10, 0, 10, 10, SURF_PREDEF_CK); //scaling done in meter for now, should be done by sensor itself
+		oapiBlt(drawSurface, NeedleSurface, 153, (109 - (int)(v * 8.5833333333)), 10, 0, 10, 10, SURF_PREDEF_CK); //scaling done in meter for now, should be done by sensor itself?
 	else
 		oapiBlt(drawSurface, NeedleSurface, 153, (109 - (int)((v * 4.6818181818) + 23.4090909091)), 10, 0, 10, 10, SURF_PREDEF_CK);
 }
@@ -631,7 +637,7 @@ void SaturnPartPressCO2Meter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 void SaturnPartPressCO2Meter::OnPostStep(double SimT, double DeltaT, double MJD)
 {
 	double v = GetDisplayValue();
-	OurVessel->SetAnimation(anim_switch, (pow(v, 0.5048232894) * 0.1796034974)); //Scales VC CO2 meter 0-1
+	OurVessel->SetAnimation(anim_switch, (pow(v, 0.5048232894) * 0.1796034974)); //Scales VC meter 0-1
 }
 
 void SaturnRoundMeter::Init(oapi::Pen *p0, oapi::Pen *p1, SwitchRow &row, Saturn *s)
