@@ -169,27 +169,15 @@ double SaturnO2PressureMeter::QueryValue() //Returns meter proportional voltage 
 
 	return MeterV;
 }
-/*
-double SaturnO2PressureMeter::QueryValue() //Returns pressure value from transducer voltage
-{
-	double XducerV;
-	if (Index == 1)
-		if (O2PressIndSwitch->IsUp())
-			XducerV = Sat->O2Tank1PressSensor.Voltage();
-		else
-			XducerV = Sat->O2SurgeTankPressSensor.Voltage();
-	else
-		XducerV = Sat->O2Tank2PressSensor.Voltage();
 
-	return 200.0*XducerV + 50.0;
-}
-*/
 void SaturnO2PressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
 	if (Index == 1)
 		oapiBlt(drawSurface, NeedleSurface, 86, (129 - (int)(v * 20.6)), 0, 0, 10, 10, SURF_PREDEF_CK);
 	else
 		oapiBlt(drawSurface, NeedleSurface, 139, (129 - (int)(v * 20.6)), 10, 0, 10, 10, SURF_PREDEF_CK);
+
+	//sprintf(oapiDebugString(), "v %lf QV %lf XV %lf", v, QueryValue(), Sat->O2Tank1PressSensor.Voltage());
 }
 
 void SaturnO2PressureMeter::OnPostStep(double SimT, double DeltaT, double MJD)
