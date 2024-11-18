@@ -5582,7 +5582,7 @@ void Saturn::InitSwitches() {
 	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 350, 10);
 	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 50, 1050, 10);
 	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 50, 1050, 10);
-	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5, 10); //Why are these 0-5 instead of 0-100?
+	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5, 10);
 	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5, 10);
 	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5, 10);
 	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5, 10);
@@ -5598,16 +5598,16 @@ void Saturn::InitSwitches() {
 	FuelCellCondenserTempMeter.Register(PSH, "FuelCellCondenserTempMeter", 150, 250, 2);
 
 	SuitTempMeter.Register(PSH, "SuitTempMeter", 20, 95, 2);
-	CabinTempMeter.Register(PSH, "CabinTempMeter", 40, 120, 2);
-	SuitPressMeter.Register(PSH, "SuitPressMeter", 0, 16, 2);
-	CabinPressMeter.Register(PSH, "CabinPressMeter", 0, 16, 2);
+	CabinTempMeter.Register(PSH, "CabinTempMeter", 40, 125, 2);
+	SuitPressMeter.Register(PSH, "SuitPressMeter", 0, 17, 2);
+	CabinPressMeter.Register(PSH, "CabinPressMeter", 0, 17, 2);
 	PartPressCO2Meter.Register(PSH, "PartPressCO2Meter", 0, 30, 2);
 
-	SuitComprDeltaPMeter.Register(PSH, "SuitComprDeltaPMeter", -0.1, 1.1, 5);
-	LeftO2FlowMeter.Register(PSH, "LeftO2FlowMeter", 0.1, 1.1, 5);
+	SuitComprDeltaPMeter.Register(PSH, "SuitComprDeltaPMeter", 0.0, 1.0, 5);
+	LeftO2FlowMeter.Register(PSH, "LeftO2FlowMeter", 0.2, 1.0, 5);
 
 	SuitCabinDeltaPMeter.Register(PSH, "SuitCabinDeltaPMeter", -6, 6, 5);
-	RightO2FlowMeter.Register(PSH, "RightO2FlowMeter", 0.1, 1.1, 5);
+	RightO2FlowMeter.Register(PSH, "RightO2FlowMeter", 0.2, 1.0, 5);
 
 	EcsRadTempInletMeter.Register(PSH, "EcsRadTempInletMeter", 50, 130, 5);
 	EcsRadTempPrimOutletMeter.Register(PSH, "EcsRadTempPrimOutletMeter", -60, 110, 5, 50);
