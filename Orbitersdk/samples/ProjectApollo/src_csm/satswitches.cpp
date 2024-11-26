@@ -495,40 +495,52 @@ void SaturnFuelCellO2FlowMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 }
 
 
-double SaturnFuelCellTempMeter::QueryValue()
+double SaturnFuelCellTempMeter::QueryValue() //returns scaled voltage for meter
 {
-	double inputFromSCE = (Sat->GetSCE()->GetVoltage(2, FuelCellIndicatorsSwitch->GetState() + 6)); // 0-5V range
-	double gaugeOutput = 0.0;
+	double SCEVolts = Sat->GetSCE()->GetVoltage(2, FuelCellIndicatorsSwitch->GetState() + 6);
+	double MeterV;
 
-	if (inputFromSCE < 3.404) {
-		gaugeOutput = inputFromSCE * 0.779;
+	if (SCEVolts < 3.670)
+	{
+		MeterV = 0.719117056156418*SCEVolts + 0.014535504998879;
 	}
-	else if (inputFromSCE < 4.468) {
-		gaugeOutput = (inputFromSCE-3.404) * 1.733 + 2.653;
-	}
-	else {
-		gaugeOutput = (inputFromSCE-4.468) * 0.945 + 4.497;
-	}
+	else
+		MeterV = -1.245728362366210*pow(SCEVolts, 4) + 21.555110610090500*pow(SCEVolts, 3) - 139.540785275859000*pow(SCEVolts, 2) + 402.127332241837000*SCEVolts - 432.923106966540000;
 
-	
-	//sprintf(oapiDebugString(), "%lf %lf", inputFromSCE, gaugeOutput);
-	return gaugeOutput;
+	return MeterV;
 }
 
 void SaturnFuelCellTempMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	oapiBlt(drawSurface, NeedleSurface, 86, 112 - (int)(v * 21.6), 0, 0, 10, 10, SURF_PREDEF_CK);
+	oapiBlt(drawSurface, NeedleSurface, 86, 109 - (int)(v * 20.6), 0, 0, 10, 10, SURF_PREDEF_CK);
+
+	//sprintf(oapiDebugString(), "v %lf QV %lf", v, QueryValue());
 }
 
 
-double SaturnFuelCellCondenserTempMeter::QueryValue()
+double SaturnFuelCellCondenserTempMeter::QueryValue() //returns scaled voltage for meter
 {
-	return (Sat->GetSCE()->GetVoltage(2, FuelCellIndicatorsSwitch->GetState() + 3)*21.0 + 145.0);
+	double SCEVolts = Sat->GetSCE()->GetVoltage(2, FuelCellIndicatorsSwitch->GetState() + 3);
+	double MeterV = 0.000941918166177*pow(SCEVolts, 5) - 0.009069653653491*pow(SCEVolts, 4) + 0.040305650554429*pow(SCEVolts, 3) - 0.088756050044652*pow(SCEVolts, 2) + 1.030785609061760*SCEVolts - 0.251417380779603;
+
+	if (MeterV < 0.0)
+	{
+		return 0.0;
+	}
+	else if (MeterV > 5.0)
+	{
+		return 5.0;
+	}
+	else
+
+		return MeterV;
 }
 
 void SaturnFuelCellCondenserTempMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	oapiBlt(drawSurface, NeedleSurface, 139, (109 - (int)((v - 150.0) / 100.0 * 103.0)), 10, 0, 10, 10, SURF_PREDEF_CK);
+	oapiBlt(drawSurface, NeedleSurface, 139, 109 - (int)(20.6 * v), 10, 0, 10, 10, SURF_PREDEF_CK);
+
+	//sprintf(oapiDebugString(), "v %lf QV %lf pixel %lf", v, QueryValue(), (v*20.6));
 }
 
 
