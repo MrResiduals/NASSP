@@ -731,6 +731,20 @@ bool LEM::clbkLoadVC (int id)
 	flashlight->SetVisibility(LightEmitter::VIS_COCKPIT);
 	flashlight->Activate(flashlightOn);
 
+	//FloodLight Right Pilot
+	DelLightEmitter(floodLight_Right);
+	floodLight_Right = (::PointLight*)AddPointLight(floodLightPos_Right, 3, 0, 0, 3, floodLightColor_Right, floodLightColor_Right, floodLightColor2_Right);
+	floodLight_Right->SetVisibility(LightEmitter::VIS_COCKPIT);
+	floodLight_Right->Activate(true);
+	floodLight_Right->SetIntensity(1);
+
+	//FloodLight Left Commander
+	DelLightEmitter(floodLight_Left);
+	floodLight_Left = (::PointLight*)AddPointLight(floodLightPos_Left, 3, 0, 0, 3, floodLightColor_Left, floodLightColor_Left, floodLightColor2_Left);
+	floodLight_Left->SetVisibility(LightEmitter::VIS_COCKPIT);
+	floodLight_Left->Activate(true);
+	floodLight_Left->SetIntensity(1);
+
 	switch (id) {
 	case LMVIEW_CDR:
 		viewpos = LMVIEW_CDR;
@@ -1594,22 +1608,27 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 
 //		sprintf(oapiDebugString(), "Integral Voltage = %lf", lca.GetNumericVoltage());
 
+		double floodRotaryValue = FloodLights.GetCDRRotaryVoltage() / 28.0;
+		floodRotaryValue = 0.0;
+
 		// MAT_LIGHT changes the Brightness of the Material
 		// MAT_EMISSION changes the Brightness of the Material controlled by its _emis Texture
-		SetVCLighting(vcidx, FloodLights_LMVC,    MAT_LIGHT, FloodLights.GetCDRRotaryVoltage() / 28.0, NUM_ELEMENTS(FloodLights_LMVC));
-		SetVCLighting(vcidx, IntegralLights_LMVC, MAT_EMISSION, ((lca.GetIntegralVoltage() / 75.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0)) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
-		SetVCLighting(vcidx, IntegralLights_LMVC_NoTex, MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0)) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
-		SetVCLighting(vcidx, NumericLights_LMVC,  MAT_LIGHT, ((lca.GetNumericVoltage() / 110.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0) )/2, NUM_ELEMENTS(NumericLights_LMVC));
+		SetVCLighting(vcidx, FloodLights_LMVC,    MAT_LIGHT, floodRotaryValue, NUM_ELEMENTS(FloodLights_LMVC));
+		floodLight_Left->SetIntensity(FloodLights.GetCDRRotaryVoltage() / 28.0);
+		floodLight_Right->SetIntensity(FloodLights.GetLMPRotaryVoltage() / 28.0);
+		SetVCLighting(vcidx, IntegralLights_LMVC, MAT_EMISSION, ((lca.GetIntegralVoltage() / 75.0) + floodRotaryValue) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
+		SetVCLighting(vcidx, IntegralLights_LMVC_NoTex, MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + floodRotaryValue) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
+		SetVCLighting(vcidx, NumericLights_LMVC,  MAT_LIGHT, ((lca.GetNumericVoltage() / 110.0) + floodRotaryValue )/2, NUM_ELEMENTS(NumericLights_LMVC));
 
 		if (CWEA.GetMasterAlarm()) {
 			SetVCLighting(vcidx, MasterAlarm_NoTex,  MAT_LIGHT, 1, NUM_ELEMENTS(MasterAlarm_NoTex));
 		}
 
-		SetVCLighting(vcidx, &DSKY_CW_Lights[0],  MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0))/2.0, DSKY_CW_Lights.size());
+		SetVCLighting(vcidx, &DSKY_CW_Lights[0],  MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + floodRotaryValue)/2.0, DSKY_CW_Lights.size());
 
 		//External Meshes ***If Second parameter is 0 then the mesh contains only one Material***
-		SetVCLighting(xpointershadesidx, 0, MAT_LIGHT, FloodLights.GetCDRRotaryVoltage() / 28.0, 1); //FloodLights_XPointer_Shades
-		SetVCLighting(windowshadesidx,   0, MAT_LIGHT, FloodLights.GetCDRRotaryVoltage() / 28.0, 1); //FloodLights_WindowShades
+		SetVCLighting(xpointershadesidx, 0, MAT_LIGHT, floodRotaryValue, 1); //FloodLights_XPointer_Shades
+		SetVCLighting(windowshadesidx,   0, MAT_LIGHT, floodRotaryValue, 1); //FloodLights_WindowShades
 
 		if (deda.OprErrLit()) {
 			SetVCLighting(vcidx, VC_MAT_DEDA_Light,  MAT_LIGHT, 1, 1);
@@ -3553,4 +3572,19 @@ void LEM::ToggleFlashlight()
 	if ((oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
 		SetFlashlightOn(!flashlightOn);
 	}
+}
+
+void LEM::UpdateFloodLights()
+{
+	VECTOR3 camPos;
+	VECTOR3 ofs;
+	GetCameraOffset(camPos);
+	GetMeshOffset(vcidx, ofs); // First get or VC Offset
+
+	// Debug string for finding Camera and VC mesh Position
+//	sprintf(oapiDebugString(), "%.3f  %.3f  %.3f ** %.3f  %.3f  %.3f ", camPos.x, camPos.y, camPos.z, ofs.x, ofs.y, ofs.z );
+
+	// Set the Floodlights 
+	floodLight_Left->SetPosition(ofs + floodLightPos_Left);
+	floodLight_Right->SetPosition(ofs + floodLightPos_Right);
 }

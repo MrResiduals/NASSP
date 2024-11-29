@@ -2706,28 +2706,30 @@ void Saturn::DefineVCAnimations()
 		VC_GRP_Sw_P13_06
 };
 
-	static MGROUP_ROTATE    ordealMeshGrp01(0, ordealMeshGrp, 12, _V( -0.931150,  0.988850, -0.002250), _V(0.387345, -0.375881,  0.84183), (float)(30.0 * RAD));
-	static MGROUP_ROTATE    ordealMeshGrp02(0, ordealMeshGrp, 12, _V( -0.931150,  0.988850, -0.002250), _V(0.746545,  0.663823, -0.04483), (float)(-30.0 * RAD));
-	static MGROUP_TRANSLATE ordealMeshGrp03(0, ordealMeshGrp, 12, _V(  0.073797,  0.069020, -0.000764));
-	static MGROUP_TRANSLATE ordealMeshGrp04(0, ordealMeshGrp, 12, _V(  0.051126, -0.115257,  0.001830));
-	static MGROUP_TRANSLATE ordealMeshGrp05(0, ordealMeshGrp, 12, _V( -0.057379, -0.116399,  0.007764));
-	static MGROUP_TRANSLATE ordealMeshGrp06(0, ordealMeshGrp, 12, _V( -0.036444, -0.112457,  0.000090));
-	static MGROUP_TRANSLATE ordealMeshGrp07(0, ordealMeshGrp, 12, _V( -0.036483, -0.111465, -0.000027));
-	static MGROUP_TRANSLATE ordealMeshGrp08(0, ordealMeshGrp, 12, _V( -0.023136, -0.115212,  0.000008));
-	static MGROUP_TRANSLATE ordealMeshGrp09(0, ordealMeshGrp, 12, _V( -0.009660, -0.117093, -0.000002));
-	static MGROUP_TRANSLATE ordealMeshGrp10(0, ordealMeshGrp, 12, _V( -0.005875, -0.117324,  0.000000));
-	static MGROUP_TRANSLATE ordealMeshGrp11(0, ordealMeshGrp, 12, _V( -0.000333, -0.117486,  0.000000));
-	static MGROUP_TRANSLATE ordealMeshGrp12(0, ordealMeshGrp, 12, _V(  0.000422, -0.117479,  0.000000));
-	static MGROUP_TRANSLATE ordealMeshGrp13(0, ordealMeshGrp, 12, _V( -0.009449, -0.117155,  0.000000));
-	static MGROUP_TRANSLATE ordealMeshGrp14(0, ordealMeshGrp, 12, _V( -0.067244, -0.096030,  0.000000));
-	static MGROUP_TRANSLATE ordealMeshGrp15(0, ordealMeshGrp, 12, _V( -0.115815, -0.021188,  0.000000));
+	static MGROUP_ROTATE ordealMeshGrp01(0, ordealMeshGrp, 12, _V( -0.931150,  0.988850, -0.002250), _V(0.387345, -0.375881,  0.84183), (float)(45.0 * RAD));
+	static MGROUP_ROTATE ordealMeshGrp02(0, ordealMeshGrp, 12, _V( -0.931150,  0.988850, -0.002250), _V(0.746545,  0.663823, -0.04483), (float)(-25.0 * RAD));
+
+	static MGROUP_TRANSLATE ordealMeshGrp03(0, ordealMeshGrp, 12, _V( 0.048105, 0.046687,-0.002054));
+	static MGROUP_TRANSLATE ordealMeshGrp04(0, ordealMeshGrp, 12, _V( 0.045540,-0.070472,-0.002001));
+	static MGROUP_TRANSLATE ordealMeshGrp05(0, ordealMeshGrp, 12, _V(-0.093769,-0.111988, 0.011892));
+	static MGROUP_TRANSLATE ordealMeshGrp06(0, ordealMeshGrp, 12, _V(-0.057720,-0.104968, 0.016579));
+	static MGROUP_TRANSLATE ordealMeshGrp07(0, ordealMeshGrp, 12, _V(-0.045257,-0.111645, 0.015972));
+	static MGROUP_TRANSLATE ordealMeshGrp08(0, ordealMeshGrp, 12, _V(-0.031742,-0.116623, 0.012001));
+	static MGROUP_TRANSLATE ordealMeshGrp09(0, ordealMeshGrp, 12, _V(-0.009214,-0.120099, 0.007878));
+	static MGROUP_TRANSLATE ordealMeshGrp10(0, ordealMeshGrp, 12, _V( 0.002824,-0.119671, 0.006403));
+	static MGROUP_TRANSLATE ordealMeshGrp11(0, ordealMeshGrp, 12, _V( 0.018193,-0.117666, 0.007002));
+	static MGROUP_TRANSLATE ordealMeshGrp12(0, ordealMeshGrp, 12, _V( 0.015888,-0.117059, 0.005107));
+	static MGROUP_TRANSLATE ordealMeshGrp13(0, ordealMeshGrp, 12, _V( 0.016092,-0.117294, 0.000250));
+	static MGROUP_TRANSLATE ordealMeshGrp14(0, ordealMeshGrp, 12, _V(-0.031066,-0.109332, 0.006414));
+	static MGROUP_TRANSLATE ordealMeshGrp15(0, ordealMeshGrp, 12, _V(-0.108063,-0.024326, 0.003564));
 
 	ordealAnim = CreateAnimation(0.0);
-	AddAnimationComponent(ordealAnim, 0.10, 0.30, &ordealMeshGrp01); // Rotation
-	AddAnimationComponent(ordealAnim, 0.10, 0.30, &ordealMeshGrp02); // Rotation
-	AddAnimationComponent(ordealAnim, 0.00, 0.10, &ordealMeshGrp03); // Translation
-	AddAnimationComponent(ordealAnim, 0.10, 0.18, &ordealMeshGrp04); // Translation
-	AddAnimationComponent(ordealAnim, 0.18, 0.23, &ordealMeshGrp05); // Translation
+	AddAnimationComponent(ordealAnim, 0.08, 0.23, &ordealMeshGrp01); // Rotation
+	AddAnimationComponent(ordealAnim, 0.08, 0.31, &ordealMeshGrp02); // Rotation
+
+	AddAnimationComponent(ordealAnim, 0.00, 0.08, &ordealMeshGrp03); // Translation
+	AddAnimationComponent(ordealAnim, 0.08, 0.15, &ordealMeshGrp04); // Translation
+	AddAnimationComponent(ordealAnim, 0.15, 0.23, &ordealMeshGrp05); // Translation
 	AddAnimationComponent(ordealAnim, 0.23, 0.31, &ordealMeshGrp06); // Translation
 	AddAnimationComponent(ordealAnim, 0.31, 0.38, &ordealMeshGrp07); // Translation
 	AddAnimationComponent(ordealAnim, 0.38, 0.46, &ordealMeshGrp08); // Translation
