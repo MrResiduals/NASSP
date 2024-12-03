@@ -83,7 +83,7 @@ double CSMCO2PressTransducer::Voltage()
 	if (!IsPowered())
 		return 0.0;
 
-	double v = pow((GetValue()/1.2374787219), (1/1.9808911771)); //gives a power curve providing 2.50V at 7.6mmHG and 5.0V at 30mmHG
+	double v = 0.8980174868*pow(GetValue(), 0.5048232894); //gives a power curve providing 2.50V at 7.6mmHG and 5.0V at 30mmHG
 
 	if (v < 0.0)
 		return 0.0;
@@ -199,4 +199,53 @@ double CSMPipeFlowTransducer::GetValue()
 	if (pipe) return pipe->flow*LBH;
 
 	return 0.0;
+}
+
+FCH2FlowTransducer::FCH2FlowTransducer(char *i_name, double minIn, double maxIn) :
+	CSMPipeFlowTransducer(i_name, minIn, maxIn)
+{
+
+}
+
+double FCH2FlowTransducer::Voltage()
+{
+	if (!IsPowered())
+		return 0.0;
+
+	double v = -7.96305144131475*pow(GetValue(), 2) + 26.5926102882631*GetValue() - 0.000000000000037; //Scales voltage to match flow and CWS voltage values
+
+	if (v < 0.0)
+		return 0.0;
+
+	double inVolts = SRC ? SRC->Voltage() : 0.0;
+
+	if (v > inVolts)
+		return inVolts;
+
+	return v;
+}
+
+
+FCO2FlowTransducer::FCO2FlowTransducer(char *i_name, double minIn, double maxIn) :
+	CSMPipeFlowTransducer(i_name, minIn, maxIn)
+{
+
+}
+
+double FCO2FlowTransducer::Voltage()
+{
+	if (!IsPowered())
+		return 0.0;
+
+	double v = -0.211647122566632*pow(GetValue(), 2) + 3.46363539610655*GetValue() + 0.000000000000012;
+
+	if (v < 0.0)
+		return 0.0;
+
+	double inVolts = SRC ? SRC->Voltage() : 0.0;
+
+	if (v > inVolts)
+		return inVolts;
+
+	return v;
 }

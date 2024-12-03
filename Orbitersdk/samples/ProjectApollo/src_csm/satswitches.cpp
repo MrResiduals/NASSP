@@ -437,61 +437,107 @@ void SaturnFuelCellMeter::Init(SURFHANDLE surf, SwitchRow &row, Saturn *s, Rotat
 }
 
 
-double SaturnFuelCellH2FlowMeter::QueryValue()
+double SaturnFuelCellH2FlowMeter::QueryValue() //returns scaled voltage for meter
 {
-	//please redo this with FuelCellIndicatorsSwitch chosing which FlowSensor powers the gauge or something less horrible than my if structure
-	double value = 0.0;
+	double XducerV;
+	double MeterV;
 	int state = FuelCellIndicatorsSwitch->GetState();
+
 	if (state == 0) {
-		value = Sat->FCH2FlowSensor1.Voltage();
+		XducerV = Sat->FCH2FlowSensor1.Voltage();
 	}
 	else if (state == 1) {
-		value = Sat->FCH2FlowSensor2.Voltage();
+		XducerV = Sat->FCH2FlowSensor2.Voltage();
 	}
 	else {
-		value = Sat->FCH2FlowSensor3.Voltage();
+		XducerV = Sat->FCH2FlowSensor3.Voltage();
 	}
 
-	return value*0.04;
+	if (XducerV <= 0.0) // 0.0 lb/hr
+	{
+		MeterV = 0.0;
+	}
+
+	else if (XducerV <= 1.051) // 0.040 lb/hr
+	{
+		MeterV = -0.030499699482334*pow(XducerV, 4) + 0.452704244711636*pow(XducerV, 3) - 0.411609259201163*pow(XducerV, 2) + 0.480197442231626*XducerV - 0.000000111566335;
+	}
+
+	else if (XducerV <= 3.810) // 0.150 lb/hr
+	{
+		MeterV = 0.000013343349451*pow(XducerV, 4) + 0.000281791115131*pow(XducerV, 3) + 0.013711415422193*pow(XducerV, 2) + 1.21186864722573*XducerV - 0.840419756553562;
+	}
+
+	else if (XducerV <= 5.0)
+	{
+		MeterV = -0.350205797083618*pow(XducerV, 4) + 6.29887068994609*pow(XducerV, 3) - 42.7703507882545*pow(XducerV, 2) + 130.747806191626*XducerV - 147.960473303941;
+	}
+
+	else
+	{
+		MeterV = 5.0;
+	}
+
+	return MeterV;
 }
 
 void SaturnFuelCellH2FlowMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	if (v < 0.05)
-		oapiBlt(drawSurface, NeedleSurface, 0, (111 - (int)(v / 0.05 * 21.0)), 0, 0, 10, 10, SURF_PREDEF_CK);
-	else if (v < 0.15)
-		oapiBlt(drawSurface, NeedleSurface, 0, (90 - (int)((v - 0.05) / 0.1 * 65.0)), 0, 0, 10, 10, SURF_PREDEF_CK);
-	else
-		oapiBlt(drawSurface, NeedleSurface, 0, (25 - (int)((v - 0.15) / 0.05 * 21.0)), 0, 0, 10, 10, SURF_PREDEF_CK);
+	oapiBlt(drawSurface, NeedleSurface, 0, (109 - (int)(v * 20.6)), 0, 0, 10, 10, SURF_PREDEF_CK);
+
+	//sprintf(oapiDebugString(), "flow %lf xducerv %lf v %lf QV %lf", Sat->FCH2FlowSensor1.GetValue(), Sat->FCH2FlowSensor1.Voltage(), v, QueryValue());
 }
 
 
-double SaturnFuelCellO2FlowMeter::QueryValue()
+double SaturnFuelCellO2FlowMeter::QueryValue() //returns scaled voltage for meter
 {
-	//please redo this with FuelCellIndicatorsSwitch chosing which FlowSensor powers the gauge or something less horrible than my if structure
-	double value = 0.0;
+	double XducerV;
+	double MeterV;
 	int state = FuelCellIndicatorsSwitch->GetState();
+
 	if (state == 0) {
-		value = Sat->FCO2FlowSensor1.Voltage();
+		XducerV = Sat->FCO2FlowSensor1.Voltage();
 	}
 	else if (state == 1) {
-		value = Sat->FCO2FlowSensor2.Voltage();
+		XducerV = Sat->FCO2FlowSensor2.Voltage();
 	}
 	else {
-		value = Sat->FCO2FlowSensor3.Voltage();
+		XducerV = Sat->FCO2FlowSensor3.Voltage();
 	}
 
-	return value/3.125;
+	if (XducerV <= 0.0) // 0.0 lb/hr
+	{
+		MeterV = 0.0;
+	}
+
+	else if (XducerV <= 1.020) // 0.3 lb/hr
+	{
+		MeterV = 0.014098120198469*pow(XducerV, 4) + 0.223221958673093*pow(XducerV, 3) - 0.045838072030173*pow(XducerV, 2) + 0.291344081544595*XducerV - 0.000000000013565;
+	}
+
+	else if (XducerV <= 3.852) // 1.2 lb/hr
+	{
+		MeterV = 0.000064440349774*pow(XducerV, 4) + 0.000520370915327*pow(XducerV, 3) + 0.020695228302543*pow(XducerV, 2) + 1.14397528372564*XducerV - 0.739232564556853;
+	}
+
+	else if (XducerV <= 5.0) // 1.6 lb/hr
+	{
+		MeterV = 0.030566201268812*pow(XducerV, 4) - 0.156004160047441*pow(XducerV, 3) - 2.02427636007929*pow(XducerV, 2) + 17.3575089533921*XducerV - 30.783991552232;
+	}
+
+	else
+	{
+		MeterV = 5.0;
+	}
+
+	return MeterV;
 }
 
 void SaturnFuelCellO2FlowMeter::DoDrawSwitch(double v, SURFHANDLE drawSurface)
 {
-	if (v < 0.4)
-		oapiBlt(drawSurface, NeedleSurface, 53, (111 - (int)(v / 0.4 * 21.0)), 10, 0, 10, 10, SURF_PREDEF_CK);
-	else if (v < 1.2)
-		oapiBlt(drawSurface, NeedleSurface, 53, (90 - (int)((v - 0.4) / 0.8 * 65.0)), 10, 0, 10, 10, SURF_PREDEF_CK);
-	else
-		oapiBlt(drawSurface, NeedleSurface, 53, (25 - (int)((v - 1.2) / 0.4 * 21.0)), 10, 0, 10, 10, SURF_PREDEF_CK);
+	oapiBlt(drawSurface, NeedleSurface, 53, (109 - (int)(v * 20.6)), 10, 0, 10, 10, SURF_PREDEF_CK);
+
+	//sprintf(oapiDebugString(), "flow %lf xducerv %lf v %lf QV %lf", Sat->FCO2FlowSensor1.GetValue(), Sat->FCO2FlowSensor1.Voltage(), v, QueryValue());
 }
 
 

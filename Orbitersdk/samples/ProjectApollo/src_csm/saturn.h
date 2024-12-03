@@ -3691,12 +3691,12 @@ public:
 	CSMTankPressTransducer FCN2PressureSensor1;
 	CSMTankPressTransducer FCN2PressureSensor2;
 	CSMTankPressTransducer FCN2PressureSensor3;
-	CSMPipeFlowTransducer FCO2FlowSensor1;
-	CSMPipeFlowTransducer FCO2FlowSensor2;
-	CSMPipeFlowTransducer FCO2FlowSensor3;
-	CSMPipeFlowTransducer FCH2FlowSensor1;
-	CSMPipeFlowTransducer FCH2FlowSensor2;
-	CSMPipeFlowTransducer FCH2FlowSensor3;
+	FCO2FlowTransducer FCO2FlowSensor1;
+	FCO2FlowTransducer FCO2FlowSensor2;
+	FCO2FlowTransducer FCO2FlowSensor3;
+	FCH2FlowTransducer FCH2FlowSensor1;
+	FCH2FlowTransducer FCH2FlowSensor2;
+	FCH2FlowTransducer FCH2FlowSensor3;
 	TemperatureTransducer SPSFuelLineTempSensor;
 	TemperatureTransducer SPSOxidizerLineTempSensor;
 	TemperatureTransducer SPSFuelFeedTempSensor;

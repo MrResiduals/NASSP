@@ -5580,22 +5580,22 @@ void Saturn::InitSwitches() {
 
 	H2Pressure1Meter.Register(PSH, "H2Pressure1Meter", 0, 350, 10);
 	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 350, 10);
-	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 0, 5.0, 10);  //Scaled meter 0-5V
-	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 0, 5.0, 10);  //Scaled meter 0-5V
-	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5.0, 10);  //Scaled meter 0-5V
-	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5.0, 10);  //Scaled meter 0-5V
-	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5.0, 10);  //Scaled meter 0-5V
-	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5.0, 10);  //Scaled meter 0-5V
+	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
 
 	CSMACVoltMeter.Register(PSH, "ACVoltMeter", 89, 131, 3);
 	CSMDCVoltMeter.Register(PSH, "DCVoltMeter", 19, 46, 3);
 	SystemTestVoltMeter.Register(PSH, "SystemTestMeter", 0.0, 5.0, 3);
 	DCAmpMeter.Register(PSH, "DCAmpMeter", 0, 100, 3);
 
-	FuelCellH2FlowMeter.Register(PSH, "FuelCellH2FlowMeter", 0, 0.2, 2);
-	FuelCellO2FlowMeter.Register(PSH, "FuelCellO2FlowMeter", 0, 1.6, 2);
-	FuelCellTempMeter.Register(PSH, "FuelCellTempMeter", 0, 5, 2);
-	FuelCellCondenserTempMeter.Register(PSH, "FuelCellCondenserTempMeter", 150, 250, 2);
+	FuelCellH2FlowMeter.Register(PSH, "FuelCellH2FlowMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
+	FuelCellO2FlowMeter.Register(PSH, "FuelCellO2FlowMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
+	FuelCellTempMeter.Register(PSH, "FuelCellTempMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
+	FuelCellCondenserTempMeter.Register(PSH, "FuelCellCondenserTempMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
 
 	SuitTempMeter.Register(PSH, "SuitTempMeter", 20, 95, 2);
 	CabinTempMeter.Register(PSH, "CabinTempMeter", 40, 125, 2);
