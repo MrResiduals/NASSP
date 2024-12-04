@@ -36,7 +36,7 @@
 ///
 typedef struct {
 	double TempF;				///< Temperature in fahrenheit.
-	double CondenserTempF;		///< Condensor temperature in fahrenheit.
+	double CondenserTempF;		///< Condenser temperature in fahrenheit.
 	double CoolingTempF;		///< Cooling temperature in fahrenheit.
 	double RadiatorTempInF;		///< Radiator input temperature in fahrenheit.
 	double RadiatorTempOutF;	///< Radiator output temperature in fahrenheit.
