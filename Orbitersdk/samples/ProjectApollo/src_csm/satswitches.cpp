@@ -641,7 +641,7 @@ void SaturnSuitPressMeter::OnPostStep(double SimT, double DeltaT, double MJD) {
 		OurVessel->SetAnimation(anim_switch, (v * 0.0833333333));
 	}
 	else {
-		OurVessel->SetAnimation(anim_switch, ((v * 4.6818181818)) + 23.4090909091);
+		OurVessel->SetAnimation(anim_switch, (v * 0.0454545455) + 0.2272727273);
 	}
 }
 
@@ -666,7 +666,7 @@ void SaturnCabinPressMeter::OnPostStep(double SimT, double DeltaT, double MJD) {
 		OurVessel->SetAnimation(anim_switch, (v * 0.0833333333));
 	}
 	else {
-		OurVessel->SetAnimation(anim_switch, ((v * 4.6818181818)) + 23.4090909091);
+		OurVessel->SetAnimation(anim_switch, (v * 0.0454545455) + 0.2272727273);
 	}
 }
 
