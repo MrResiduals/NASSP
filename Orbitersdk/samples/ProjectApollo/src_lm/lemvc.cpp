@@ -725,6 +725,12 @@ bool LEM::clbkLoadVC (int id)
 	vcFreeCamy = 0;
 	vcFreeCamz = 0;
 
+	//Flashlight
+	DelLightEmitter(flashlight);
+	flashlight = (::SpotLight*)AddSpotLight(flashlightPos, flashlightDirLocal, 3, 0, 0, 3, 0, RAD * 45, flashlightColor, flashlightColor, flashlightColor2);
+	flashlight->SetVisibility(LightEmitter::VIS_COCKPIT);
+	flashlight->Activate(flashlightOn);
+
 	switch (id) {
 	case LMVIEW_CDR:
 		viewpos = LMVIEW_CDR;
@@ -3519,4 +3525,32 @@ void LEM::SetVCLighting(UINT meshidx, int material, int EmissionMode, double sta
 		pCore->MeshMaterial(hMesh, material, EmissionMode, &value, true);
 #endif
 		}
+}
+
+void LEM::MoveFlashlight()
+{
+	if (flashlightOn) { //Only move the light emmitter if the flashlight is on
+		//Huge thanks the Jordan64 for helping get the direction stuff working! :)
+		GetCameraOffset(flashlightPos);
+		oapiCameraGlobalDir(&flashlightDirGlobal);
+		GetGlobalPos(vesselPosGlobal);
+		Global2Local(vesselPosGlobal + flashlightDirGlobal, flashlightDirLocal);
+		normalise(flashlightDirLocal);
+
+		flashlight->SetPosition(flashlightPos);
+		flashlight->SetDirection(flashlightDirLocal);
+	}
+}
+
+void LEM::SetFlashlightOn(bool state)
+{
+	flashlight->Activate(state);
+	flashlightOn = state;
+}
+
+void LEM::ToggleFlashlight()
+{
+	if ((oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
+		SetFlashlightOn(!flashlightOn);
+	}
 }
