@@ -23,6 +23,7 @@
   **************************************************************************/
 
 #include "Esystems.h"
+#include "nasspdefs.h"
 #include <math.h>
 #include <stdio.h>
 
@@ -570,6 +571,18 @@ void FCell::Clogging(double dt)
 	cloggVoltageDrop = (25 * (O2_clogging / O2_max_impurities) + (H2_clogging / H2_max_impurities)) / 26.0;
 
 	cloggVoltageDrop *= cloggVoltageReduction;
+}
+
+double FCell::GetCondTempVoltage() //Returns scaled voltage for SCE/TM
+{
+	double condenserTempF = KelvinToFahrenheit(condenserTemp);
+	return -0.000001384126984*pow(condenserTempF, 3) + 0.000730539682546*pow(condenserTempF, 2) - 0.075160317461531*condenserTempF - 0.24166666659273;
+}
+
+double FCell::GetSkinTempVoltage() //Returns scaled voltage for SCE/TM
+{
+	double skinTempF = KelvinToFahrenheit(Temp);
+	return (0.0106382979*skinTempF) - 0.8510638298;
 }
 
 void FCell::Load(char* line)
