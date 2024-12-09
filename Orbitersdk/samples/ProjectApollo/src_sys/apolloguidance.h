@@ -317,6 +317,9 @@ public:
 	bool GetTrackerAlarm() { return TrackerAlarm; }
 	bool GetGimbalLockAlarm() { return GimbalLockAlarm; }
 
+	// RCS activity to RCS control electronics
+	double GetRCSDutyCycle(int i);
+
 	///
 	/// \brief Interrupts
 	///
@@ -371,6 +374,19 @@ public:
 	void GenericWriteMemory(unsigned int loc, int val);
 
 	int16_t ConvertDecimalToAGCOctal(double x, bool highByte);
+
+	//
+	// Functions to keep track of RCS activity
+	//
+
+	// Reset RCS activity counters (run before AGC timestep)
+	void InitRCSActivity();
+	// To keep track of channel 5 and 6 activity (run within AGC timestep)
+	void MonitorRCSActivity();
+	// Calculates what percentage of a timestep the RCS should be fired (run after AGC timestep)
+	void CalculateRCSDutyCycle();
+	// Run when AGC is powered off
+	void ResetRCSDutyCycle();
 
 	/// Read radar data upon request
 	void RadarRead();
@@ -475,6 +491,16 @@ public:
 	bool ProgAlarm;
 	bool TrackerAlarm;
 	bool GimbalLockAlarm;
+
+	// RCS activity variables
+	int ThrustOnDelayCounter[16];
+	int ThrustOffDelayCounter[16];
+	int AccumulatedThrust[16];
+	int RCSCycleCounter;
+	int ThrustOnDelay;
+	int ThrustOffDelay;
+	double RCSDutyCycle[16];
+	double LastRCSTime;
 };
 
 //

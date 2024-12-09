@@ -41,6 +41,9 @@
 #include "Mission.h"
 #include "LEM.h"
 
+//To convert LGC channels 5+6 consequitely to NASSP LM RCS thruster numbers
+static const int LGCThrusterConversion[16] = {6, 10, 15, 7, 4, 12, 11, 5, 2, 13, 8, 3, 0, 9, 14, 1};
+
 // RATE GYRO ASSEMBLY
 
 LEM_RGA::LEM_RGA()
@@ -176,7 +179,7 @@ ATCA::ATCA(){
 void ATCA::Init(LEM *vessel, h_HeatLoad *hl){
 	lem = vessel;
 	ATCAHeat = hl;
-	int x = 0; while (x < 16) { pgns_jet_request[x] = false; ags_jet_request[x] = false; jet_driver[x] = false; jet_request[x] = 0; jet_last_request[x] = 0; jet_start[x] = 0; jet_stop[x] = 0; x++; }
+	int x = 0; while (x < 16) { ags_jet_request[x] = false; jet_driver[x] = 0.0; jet_request[x] = 0; x++; }
 }
 
 double ATCA::GetPrimPowerVoltage() {
@@ -376,7 +379,7 @@ void ATCA::Timestep(double simt, double simdt) {
 		VECTOR3 V_atterr;
 
 		//Amplifier
-		for (i = 0;i < 3;i++)
+		for (i = 0; i < 3; i++)
 		{
 			V_atterr.data[i] = aea_attitude_error.data[i] * atterrtransformer;
 		}
@@ -465,7 +468,7 @@ void ATCA::Timestep(double simt, double simdt) {
 
 		//INPUT SUMMING AMPLIFIER
 		VECTOR3 V_sum;
-		for (i = 0;i < 3;i++)
+		for (i = 0; i < 3; i++)
 		{
 			V_sum.data[i] = (V_atterr.data[i] - V_attrate.data[i] + V_acarate.data[i])*gain_insumamp;
 			Limiter(V_sum.data[i], 12.0); //Limit to 12V
@@ -507,7 +510,7 @@ void ATCA::Timestep(double simt, double simdt) {
 			Deadband(V_sum.x, widedb_thres);
 		}
 
-		for (i = 0;i < 3;i++)
+		for (i = 0; i < 3; i++)
 		{
 			V_sum.data[i] *= 4.57;
 			Limiter(V_sum.data[i], 12.0);
@@ -517,7 +520,7 @@ void ATCA::Timestep(double simt, double simdt) {
 		Deadband(V_sum.z, narrowdb_thres_y);
 		Deadband(V_sum.y, narrowdb_thres_rp);
 		Deadband(V_sum.x, narrowdb_thres_rp);
-		for (i = 0;i < 3;i++)
+		for (i = 0; i < 3; i++)
 		{
 			V_sum.data[i] *= 2.0;
 		}
@@ -705,7 +708,7 @@ void ATCA::Timestep(double simt, double simdt) {
 
 		//PULSE RATIO (DE)MODULATOR
 
-		for (i = 0;i < 8;i++)
+		for (i = 0; i < 8; i++)
 		{
 			if (abs(SummingAmplifierOutput[i]) > 0.5)
 			{
@@ -746,13 +749,13 @@ void ATCA::Timestep(double simt, double simdt) {
 		pitchGimbalError = 0.0;
 		rollGimbalError = 0.0;
 
-		for (i = 0;i < 8;i++)
+		for (i = 0; i < 8; i++)
 		{
 			PRMPulse[i] = false;
 		}
 	}
 
-	for (i = 0;i < 16;i++)
+	for (i = 0; i < 16; i++)
 	{
 		ags_jet_request[i] = 0;
 	}
@@ -903,18 +906,25 @@ void ATCA::Timestep(double simt, double simdt) {
 
 	int x = 0;
 	// *** JET DRIVER ***
-	for (x = 0;x < 16;x++)
+	for (x = 0; x < 16; x++)
 	{
-		if ((hasPrimPower && pgns_jet_request[x]) || (hasAbortPower && ags_jet_request[x]))
+		if (hasPrimPower)
 		{
-			jet_driver[x] = true;
+			//For the PGNS, get the duty cycle from the AGC class
+			jet_driver[x] = lem->agc.GetRCSDutyCycle(LGCThrusterConversion[x]);
+		}
+		else if (hasAbortPower && ags_jet_request[x])
+		{
+			//For the AGS, raise RCS thrust level by a minimum impulse firing
+			jet_driver[x] = lem->GetRCSThrusterLevel(x);
+			jet_driver[x] += 0.0105 / simdt;
+			jet_driver[x] = min(1.0, jet_driver[x]);
 		}
 		else
 		{
-			jet_driver[x] = false;
+			jet_driver[x] = 0.0;
 		}
 	}
-
 
 	/* THRUSTER TABLE:
 		0	A1U		8	A3U
@@ -932,11 +942,11 @@ void ATCA::Timestep(double simt, double simdt) {
 	// RCS pressurized?
 	// This code should be in a RCS specific class
 
-	for (x = 0;x < 16;x++)
+	for (x = 0; x < 16; x++)
 	{
-		jet_request[x] = false;
+		jet_request[x] = 0.0;
 
-		if (jet_driver[x])
+		if (jet_driver[x] > 0.0)
 		{
 			switch (x) {
 				// SYS A
@@ -945,7 +955,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_A_QUAD1_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_A_QUAD1_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			case 6: // QUAD 2
@@ -953,7 +963,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_A_QUAD2_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_A_QUAD2_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			case 8: // QUAD 3
@@ -961,7 +971,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_A_QUAD3_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_A_QUAD3_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			case 14: // QUAD 4
@@ -969,7 +979,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_A_QUAD4_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_A_QUAD4_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 				// SYS B
@@ -978,7 +988,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_B_QUAD1_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_B_QUAD1_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			case 4: // QUAD 2
@@ -986,7 +996,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_B_QUAD2_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_B_QUAD2_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			case 10: // QUAD 3
@@ -994,7 +1004,7 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_B_QUAD3_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_B_QUAD3_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			case 12: // QUAD 4
@@ -1002,153 +1012,18 @@ void ATCA::Timestep(double simt, double simdt) {
 				if (lem->RCS_B_QUAD4_TCA_CB.Voltage() > 24)
 				{
 					lem->RCS_B_QUAD4_TCA_CB.DrawPower(46);
-					jet_request[x] = true;
+					jet_request[x] = jet_driver[x];
 				}
 				break;
 			}
 		}
 	}
 
-	//char Buffer[128];
-
 	// *** THRUSTER MAINTENANCE ***
 	x = 0;
 	while (x < 16) {
-		double power = 0;
-		// Process jet request list to generate start and stop times.
-		if (jet_request[x] == 1 && jet_last_request[x] == 0) {
-			// New fire request
-			jet_start[x] = simt;
-			jet_stop[x] = 0;
-			//sprintf_s(Buffer, "Start %lf %d", jet_start[x], x);
-			//oapiWriteLog(Buffer);
-		}
-		else if (jet_request[x] == 0 && jet_last_request[x] == 1) {
-			// New stop request
-			jet_stop[x] = simt;
-			//Minimum impulse
-			if (jet_stop[x] < jet_start[x] + 0.013)
-			{
-				jet_stop[x] = jet_start[x] + 0.013;
-			}
-			//sprintf_s(Buffer, "Stop %lf %d", jet_stop[x], x);
-			//oapiWriteLog(Buffer);
-		}
-		jet_last_request[x] = jet_request[x]; // Keep track of changes
-
-		if (jet_start[x] == 0 && jet_stop[x] == 0) { lem->SetRCSJet(x, false); x++; continue; } // Done
-		// sprintf(oapiDebugString(),"Jet %d fire %f stop %f",x,jet_start[x],jet_stop[x]); 
-
-		//Calculate power level. If the function returns true reset everything to zero
-		if (CalculateThrustLevel(simt, jet_start[x], jet_stop[x], simdt, power))
-		{
-			power = 0; jet_start[x] = 0; jet_stop[x] = 0;
-		}
-
-		/*if (power > 0)
-		{
-			sprintf_s(Buffer, "%lf %d %lf %lf", simt, x, power, oapiGetTimeAcceleration());
-			oapiWriteLog(Buffer);
-		}*/
-
-		lem->SetRCSJetLevelPrimary(x, power);
+		lem->SetRCSJetLevelPrimary(x, jet_request[x]);
 		x++;
-	}
-}
-
-bool ATCA::CalculateThrustLevel(double simt, double t_start, double t_stop, double simdt, double &power)
-{
-	//This function calculates the power level from the total impulse of the RCS burn, considering electrical on and off delays
-	//The delays are taken from the MIT hybrid simulator of the LM, 19ms step delay for engine on, 15ms delay for engine off
-	//No thrust rise or decay are simulated anymore
-	if (t_stop == 0)
-	{
-		//Easiest case. No stop commanded yet
-		if (simt - t_start > 0.019)
-		{
-			//Even simpler, full thrust for the entire simdt
-			power = 1.0;
-		}
-		else
-		{
-			//Thruster on happens this timestep
-			power = ImpulseOn(simt - t_start, simdt) / simdt;
-		}
-	}
-	else
-	{
-		//Engine stop has been commanded
-		if (simt - t_stop > 0.015)
-		{
-			//We are past engine firing. Return true to indicate resetting start/stop times
-			power = 0.0;
-			return true;
-		}
-		else
-		{
-			//Engine stop might happen soon
-			if (simt - t_start > 0.019)
-			{
-				//We are past engine start delay, so use ImpulseOff
-				power = ImpulseOff(simt - t_stop, simdt) / simdt;
-			}
-			else
-			{
-				//Here things get more complicated
-				//Calculate time when engine stop delay is over
-				double t_stopa = t_stop + 0.015;
-				//Will this happen in this timestep?
-				if (t_stopa > simt + simdt)
-				{
-					//No, just consider the ImpulseOn function like normal
-					power = ImpulseOn(simt - t_start, simdt) / simdt;
-				}
-				else
-				{
-					//Use ImpulseOn, but with time biased to cut off the engine on time
-					power = ImpulseOn(simt - t_start, t_stopa - simt) / simdt;
-				}
-			}
-		}
-	}
-	return false;
-}
-
-double ATCA::ImpulseOn(double t0, double dt)
-{
-	if (t0 + dt < 0.019)
-	{
-		//No thrust
-		return 0.0;
-	}
-	else if (t0 > 0.019)
-	{
-		//Full thrust for the entire dt
-		return dt;
-	}
-	else
-	{
-		//t0 is before thrust on
-		return dt - (0.019 - t0);
-	}
-}
-
-double ATCA::ImpulseOff(double t0, double dt)
-{
-	if (t0 > 0.015)
-	{
-		//Thrust off
-		return 0.0;
-	}
-	else if (t0 + dt < 0.015)
-	{
-		//Thrust still on
-		return dt;
-	}
-	else
-	{
-		//Thruster off mid step
-		return 0.015 - t0;
 	}
 }
 
@@ -1166,40 +1041,6 @@ void ATCA::SystemTimestep(double simdt)
 		lem->SCS_ATCA_CB.DrawPower(65.0);	//ATCA cb under AGS
 		lem->SCS_ATCA_AGS_CB.DrawPower(2.0);
 		ATCAHeat->GenerateHeat(22.0);		//ATCA & ATCA AGS Heat
-	}
-}
-
-// Process thruster commands from LGC
-void ATCA::ProcessLGC(int ch, int val){		
-	if(!hasPrimPower){ val = 0; } // If not in primary mode, force jets off (so jets will switch off at programmed times)
-	// When in primary, thruster commands are passed from LGC to jets.
-	switch(ch){
-		case 05:
-			LMChannelValue5 ch5;
-			ch5.Value = val;			
-			if(ch5.Bits.B4U != 0){ pgns_jet_request[12] = 1; }else{ pgns_jet_request[12] = 0; }
-			if(ch5.Bits.A4D != 0){ pgns_jet_request[15] = 1; }else{ pgns_jet_request[15] = 0; }
-			if(ch5.Bits.A3U != 0){ pgns_jet_request[8]  = 1; }else{ pgns_jet_request[8]  = 0; }
-			if(ch5.Bits.B3D != 0){ pgns_jet_request[11] = 1; }else{ pgns_jet_request[11] = 0; }
-			if(ch5.Bits.B2U != 0){ pgns_jet_request[4]  = 1; }else{ pgns_jet_request[4]  = 0; }
-			if(ch5.Bits.A2D != 0){ pgns_jet_request[7]  = 1; }else{ pgns_jet_request[7]  = 0; }
-			if(ch5.Bits.A1U != 0){ pgns_jet_request[0]  = 1; }else{ pgns_jet_request[0]  = 0; }
-			if(ch5.Bits.B1D != 0){ pgns_jet_request[3]  = 1; }else{ pgns_jet_request[3]  = 0; }
-			break;
-		case 06:
-			LMChannelValue6 ch6;
-			ch6.Value = val;
-			if(ch6.Bits.B3A != 0){ pgns_jet_request[10] = 1; }else{ pgns_jet_request[10] = 0; }
-			if(ch6.Bits.B4F != 0){ pgns_jet_request[13] = 1; }else{ pgns_jet_request[13] = 0; }
-			if(ch6.Bits.A1F != 0){ pgns_jet_request[1]  = 1; }else{ pgns_jet_request[1]  = 0; }
-			if(ch6.Bits.A2A != 0){ pgns_jet_request[6]  = 1; }else{ pgns_jet_request[6]  = 0; }
-			if(ch6.Bits.B2L != 0){ pgns_jet_request[5]  = 1; }else{ pgns_jet_request[5]  = 0; }
-			if(ch6.Bits.A3R != 0){ pgns_jet_request[9]  = 1; }else{ pgns_jet_request[9]  = 0; }
-			if(ch6.Bits.A4R != 0){ pgns_jet_request[14] = 1; }else{ pgns_jet_request[14] = 0; }
-			if(ch6.Bits.B1L != 0){ pgns_jet_request[2]  = 1; }else{ pgns_jet_request[2]  = 0; }
-			break;
-		default:
-			sprintf(oapiDebugString(),"ATCA::ProcessLGC: Bad channel %o",ch);
 	}
 }
 
