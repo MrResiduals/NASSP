@@ -158,7 +158,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.LOI - 6.0*3600.0 - 25.0*60.0), 24, MST_G_TRANSLUNAR13);
 		break;
 	case MST_G_TRANSLUNAR13: //MCC-4 update to PC+2 update
-		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 5.0*60.0, 25, MST_G_TRANSLUNAR14);
+		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 3.0*60.0, 25, MST_G_TRANSLUNAR14);
 		break;
 	case MST_G_TRANSLUNAR14: //PC+2 update to LOI-1 update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.LOI - 2.0*3600.0 - 50.0*60.0), 26, MST_G_TRANSLUNAR15);
@@ -167,7 +167,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.LOI - 2.0*3600.0 - 5.0*60.0), 30, MST_G_TRANSLUNAR16);
 		break;
 	case MST_G_TRANSLUNAR16: //TEI-1 update to TEI-4 update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 5.0*60.0, 40, MST_G_TRANSLUNAR17);
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 40, MST_G_TRANSLUNAR17);
 		break;
 	case MST_G_TRANSLUNAR17: //TEI-4 update to Rev 1 Map Update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.LOI - 40.0*60.0), 41, MST_G_TRANSLUNAR18);
@@ -191,7 +191,7 @@ void MCC::MissionSequence_G()
 		}
 		break;
 	case MST_G_LUNAR_ORBIT_LOI_DAY_2: //LOI-2 update to TEI-5 update
-		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 5.0*60.0, 31, MST_G_LUNAR_ORBIT_LOI_DAY_3);
+		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 3.0*60.0, 31, MST_G_LUNAR_ORBIT_LOI_DAY_3);
 		break;
 	case MST_G_LUNAR_ORBIT_LOI_DAY_3: //TEI-5 update to A-1 landmark tracking update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, MoonRev >= 3 && MoonRevTime > 50.0*60.0, 42, MST_G_LUNAR_ORBIT_LOI_DAY_4);
