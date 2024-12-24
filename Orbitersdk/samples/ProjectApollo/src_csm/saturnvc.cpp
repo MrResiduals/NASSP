@@ -1091,19 +1091,38 @@ void Saturn::RegisterActiveAreas() {
 	oapiVCRegisterArea(AID_VC_COAS, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_COAS, COASLocation + ofs, 0.05);
 
+	// DSKY_Glareshade
+	const VECTOR3 DSKY_GlareshadeLocation = { -0.293864, 0.616971, 0.33086 };
+	oapiVCRegisterArea(AID_VC_DSKY_Glareshade, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_DSKY_Glareshade, DSKY_GlareshadeLocation + ofs, 0.05);
+
+	// EMSDV_Glareshade
+	const VECTOR3 EMSDV_GlareshadeLocation = { -0.586873, 0.705286, 0.348643 };
+	oapiVCRegisterArea(AID_VC_EMSDV_Glareshade, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_EMSDV_Glareshade, EMSDV_GlareshadeLocation + ofs, 0.05);
+
+	// MissionTimer_Glareshade
+	const VECTOR3 MissionTimer_GlareshadeLocation = { 0.075027, 0.824892, 0.397274 };
+	oapiVCRegisterArea(AID_VC_MissionTimer_Glareshade, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_MissionTimer_Glareshade, MissionTimer_GlareshadeLocation + ofs, 0.05);
+
+	const VECTOR3 AccelerometerCoverLocation = { -0.80165, 0.631025, 0.34615 };
+	oapiVCRegisterArea(AID_VC_AccelerometerCover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_AccelerometerCover, AccelerometerCoverLocation + ofs, 0.05);
+
 	// Altimeter Cover
 	const VECTOR3 AltimeterLocation = { -0.524273, 0.916269 , 0.425239 };
 	oapiVCRegisterArea(AID_VC_Altimeter_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.05);
 
 	// Ordeal Visibility
-	const VECTOR3 OrdealLocation = { -1.12147, 0.990209, -0.166168 };
-	oapiVCRegisterArea(AID_VC_Ordeal_Stowed, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
-	oapiVCSetAreaClickmode_Spherical(AID_VC_Ordeal_Stowed, OrdealLocation + ofs, 0.05);
+	const VECTOR3 OrdealLocation = { -0.965283, 1.01771, -0.143067 };
+	oapiVCRegisterArea(AID_VC_Ordeal_Stowed, PANEL_REDRAW_NEVER, PANEL_MOUSE_RBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Ordeal_Stowed, OrdealLocation + ofs, 0.10);
 
 	// Panel382Cover
 	const VECTOR3 Panel382CoverLocation = { -1.0863, 0.1907, -0.66875 };
-	oapiVCRegisterArea(AID_VC_Panel382_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCRegisterArea(AID_VC_Panel382_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_RBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_Panel382_Cover, Panel382CoverLocation + ofs, 0.05);
 	
 	// Waste Disposal
@@ -1742,6 +1761,42 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 		SetAltimeterCover();
 		return true;
 
+	case AID_VC_DSKY_Glareshade:
+		if (DSKY_GlareshadeStatus) {
+			DSKY_GlareshadeStatus = false;
+		} else {
+			DSKY_GlareshadeStatus = true;
+		}
+		SetDSKY_Glareshade();
+		return true;
+
+	case AID_VC_EMSDV_Glareshade:
+		if (EMSDV_GlareshadeStatus) {
+			EMSDV_GlareshadeStatus = false;
+		} else {
+			EMSDV_GlareshadeStatus = true;
+		}
+		SetEMSDV_Glareshade();
+		return true;
+
+	case AID_VC_AccelerometerCover:
+		if (AccelerometerCoverStatus) {
+			AccelerometerCoverStatus = false;
+		} else {
+			AccelerometerCoverStatus = true;
+		}
+		SetAccelerometerCover();
+		return true;
+
+	case AID_VC_MissionTimer_Glareshade:
+		if (MissionTimer_GlareshadeStatus) {
+			MissionTimer_GlareshadeStatus = false;
+		} else {
+			MissionTimer_GlareshadeStatus = true;
+		}
+		SetMissionTimer_Glareshade();
+		return true;
+
 	case AID_VC_Waste_Disposal:
 		if (wasteDisposalStatus) {
 			wasteDisposalStatus = false;
@@ -1822,7 +1877,7 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 
 		// CMVC Ordeal Lighting Switch
 		SetVCLighting(vcidx, IntegralLights_CMVC_Ordeal, MAT_EMISSION, ordeal.LightingPower(), NUM_ELEMENTS(IntegralLights_CMVC_Ordeal));
-		ORDEALLightingSwitch.DrawSwitchVC(id, event, surf);
+		// ORDEALLightingSwitch.DrawSwitchVC(id, event, surf); // ***Check this line  by JK***
 
 		// Integral Lights Panel 8
 		SetVCLighting(vcidx, IntegralLights_P8, MAT_EMISSION, IntegralRotarySwitch.GetOutput(), NUM_ELEMENTS(IntegralLights_P8));
@@ -2648,10 +2703,13 @@ void Saturn::DefineVCAnimations()
 {
 	MainPanelVC.ClearSwitches();
 
-	/// BEGINN TEST by JORDAN
+	/// BEGINN PATH ANIMATION by JORDAN 
+
+	// PUTING THIS CODE AN THE END OF THE DefineVCAnimations SOLVES SOME SWITCHES FLOATING AROUND
 
 	// ***ATTENTION*** ANIMATION BUG IF I PUT THE CODE FOR PANEL382COVER BEFORE WASTEDISPOSAL
 	// ***SEAMS TO WORK AFTER COMBINING THE ANIMATION OF THE WASTE DISPOSAL
+
 	// Panel382Cover
 	static UINT Panel382Cover[1] = { VC_GRP_Panel382_Cover };
 	static MGROUP_ROTATE panel382CoverMesh(meshidxpanel382Cover, Panel382Cover, 1, _V(-1.0863, 0.2566, -0.66875), _V(0, 0, 1), (float)(120.0 * RAD));
@@ -2672,7 +2730,7 @@ void Saturn::DefineVCAnimations()
 	AddAnimationComponent(wasteDisposalAnim, 0.5, 1, &wasteDisposalKnobAll);
 
 	// Altimeter Cover
-	static UINT altimeterCover[1] = { VC_GRP_Altimeter_Pluger };
+	static UINT altimeterCover[1] = { VC_GRP_Altimeter_Cover };
 
 	static MGROUP_ROTATE    altimeterCoverMesh1(0, altimeterCover, 1, _V(-0.524273, 0.914852, 0.429616), _V(-1, 0, 0), (float)(-60.0 * RAD));
 	static MGROUP_TRANSLATE altimeterCoverMesh2(0, altimeterCover, 1, _V(0,  0.011831, -0.035858));
@@ -2689,6 +2747,154 @@ void Saturn::DefineVCAnimations()
 	AddAnimationComponent(altimeterCoverAnim, 0.8, 0.8, &altimeterCoverMesh5); // Translation
 	AddAnimationComponent(altimeterCoverAnim, 0.8, 1.0, &altimeterCoverMesh6); // Translation
 
+	// DSKY_Glareshade
+	static UINT DSKY_Glareshade[1] = { VC_GRP_DSKY_Glareshade };
+
+	static MGROUP_ROTATE    DSKY_GlareshadeMesh01(0, DSKY_Glareshade, 1, _V( -0.293864,   0.616971,   0.330860), _V(0, -1, 0), (float)(90.0 * RAD));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T01(0, DSKY_Glareshade, 1, _V(  0.000330,   0.014509,  -0.041281));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T02(0, DSKY_Glareshade, 1, _V( -0.004290,   0.002325,  -0.033830));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T03(0, DSKY_Glareshade, 1, _V( -0.007876,  -0.008183,  -0.024899));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T04(0, DSKY_Glareshade, 1, _V( -0.011969,  -0.019472,  -0.016817));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T05(0, DSKY_Glareshade, 1, _V( -0.014668,  -0.027352,  -0.010170));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T06(0, DSKY_Glareshade, 1, _V( -0.027500,  -0.052383,  -0.015800));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T07(0, DSKY_Glareshade, 1, _V( -0.027513,  -0.051734,  -0.017806));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T08(0, DSKY_Glareshade, 1, _V( -0.027528,  -0.051931,  -0.017194));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T09(0, DSKY_Glareshade, 1, _V( -0.027421,  -0.051921,  -0.017394));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T10(0, DSKY_Glareshade, 1, _V( -0.029745,  -0.050789,  -0.016962));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T11(0, DSKY_Glareshade, 1, _V( -0.034046,  -0.048344,  -0.016135));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T12(0, DSKY_Glareshade, 1, _V( -0.038257,  -0.045484,  -0.015195));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T13(0, DSKY_Glareshade, 1, _V( -0.041665,  -0.042739,  -0.014281));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T14(0, DSKY_Glareshade, 1, _V( -0.044595,  -0.040038,  -0.013374));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T15(0, DSKY_Glareshade, 1, _V( -0.047353,  -0.037124,  -0.012396));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T16(0, DSKY_Glareshade, 1, _V( -0.049981,  -0.033934,  -0.011329));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T17(0, DSKY_Glareshade, 1, _V( -0.052318,  -0.030635,  -0.010227));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T18(0, DSKY_Glareshade, 1, _V( -0.054435,  -0.027281,  -0.009106));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T19(0, DSKY_Glareshade, 1, _V( -0.056679,  -0.022721,  -0.007582));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T20(0, DSKY_Glareshade, 1, _V( -0.058945,  -0.016944,  -0.005650));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T21(0, DSKY_Glareshade, 1, _V( -0.060428,  -0.011837,  -0.003943));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T22(0, DSKY_Glareshade, 1, _V( -0.061265,  -0.005602,  -0.001858));
+	static MGROUP_TRANSLATE DSKY_GlareshadeMesh_T23(0, DSKY_Glareshade, 1, _V( -0.133887,   0.000231,   0.000106));
+
+	DSKY_GlareshadeAnim = CreateAnimation(0.0);
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.20, 0.40, &DSKY_GlareshadeMesh01); // Rotation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.00,  0.04, &DSKY_GlareshadeMesh_T01); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.04,  0.09, &DSKY_GlareshadeMesh_T02); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.09,  0.13, &DSKY_GlareshadeMesh_T03); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.13,  0.17, &DSKY_GlareshadeMesh_T04); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.17,  0.22, &DSKY_GlareshadeMesh_T05); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.22,  0.26, &DSKY_GlareshadeMesh_T06); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.26,  0.30, &DSKY_GlareshadeMesh_T07); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.30,  0.35, &DSKY_GlareshadeMesh_T08); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.35,  0.39, &DSKY_GlareshadeMesh_T09); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.39,  0.43, &DSKY_GlareshadeMesh_T10); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.43,  0.48, &DSKY_GlareshadeMesh_T11); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.48,  0.52, &DSKY_GlareshadeMesh_T12); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.52,  0.57, &DSKY_GlareshadeMesh_T13); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.57,  0.61, &DSKY_GlareshadeMesh_T14); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.61,  0.65, &DSKY_GlareshadeMesh_T15); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.65,  0.70, &DSKY_GlareshadeMesh_T16); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.70,  0.74, &DSKY_GlareshadeMesh_T17); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.74,  0.78, &DSKY_GlareshadeMesh_T18); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.78,  0.83, &DSKY_GlareshadeMesh_T19); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.83,  0.87, &DSKY_GlareshadeMesh_T20); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.87,  0.91, &DSKY_GlareshadeMesh_T21); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.91,  0.96, &DSKY_GlareshadeMesh_T22); // Translation
+	AddAnimationComponent(DSKY_GlareshadeAnim, 0.96,  1.00, &DSKY_GlareshadeMesh_T23); // Translation
+
+	// EMSDV_Glareshade
+	static UINT EMSDV_Glareshade[1] = { VC_GRP_EMSDeltaV_Glareshield };
+
+	static MGROUP_ROTATE    EMSDV_GlareshadeMesh_R01(0, EMSDV_Glareshade, 1, _V( -0.586873, 0.705286, 0.348643), _V(0, -1, 0), (float)(90.0 * RAD));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T01(0, EMSDV_Glareshade, 1, _V(  0.000008,   0.015473,  -0.046336));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T02(0, EMSDV_Glareshade, 1, _V(  0.000017,  -0.145613,  -0.048622));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T03(0, EMSDV_Glareshade, 1, _V(  0.003522,  -0.143836,  -0.048027));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T04(0, EMSDV_Glareshade, 1, _V( -0.004380,  -0.143812,  -0.048020));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T05(0, EMSDV_Glareshade, 1, _V( -0.028856,  -0.141099,  -0.047119));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T06(0, EMSDV_Glareshade, 1, _V( -0.063993,  -0.130533,  -0.043596));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T07(0, EMSDV_Glareshade, 1, _V( -0.101536,  -0.106309,  -0.035514));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T08(0, EMSDV_Glareshade, 1, _V( -0.133735,  -0.068902,  -0.023028));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T09(0, EMSDV_Glareshade, 1, _V( -0.148529,  -0.026269,  -0.008795));
+	static MGROUP_TRANSLATE EMSDV_GlareshadeMesh_T10(0, EMSDV_Glareshade, 1, _V( -0.152157,   0.006253,   0.002064));
+
+	EMSDV_GlareshadeAnim = CreateAnimation(0.0);
+
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.20,  0.40, &EMSDV_GlareshadeMesh_R01); // Rotation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.00,  0.10, &EMSDV_GlareshadeMesh_T01); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.10,  0.20, &EMSDV_GlareshadeMesh_T02); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.20,  0.30, &EMSDV_GlareshadeMesh_T03); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.30,  0.40, &EMSDV_GlareshadeMesh_T04); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.40,  0.50, &EMSDV_GlareshadeMesh_T05); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.50,  0.60, &EMSDV_GlareshadeMesh_T06); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.60,  0.70, &EMSDV_GlareshadeMesh_T07); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.70,  0.80, &EMSDV_GlareshadeMesh_T08); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.80,  0.90, &EMSDV_GlareshadeMesh_T09); // Translation
+	AddAnimationComponent(EMSDV_GlareshadeAnim, 0.90,  1.00, &EMSDV_GlareshadeMesh_T10); // Translation
+
+	// AccelerometerCover
+	static UINT AccelerometerCover[1] = { VC_GRP_Accelerometer_Cover };
+
+	static MGROUP_ROTATE    AccelerometerCoverMesh_R01(0, AccelerometerCover, 1, _V(  -0.80165,   0.631025,   0.34615), _V(-1, 0, 0), (float)(-90.0 * RAD));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T01(0, AccelerometerCover, 1, _V(  0.000154,  -0.011916,  -0.022708));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T02(0, AccelerometerCover, 1, _V(  0.000005,  -0.033782,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T03(0, AccelerometerCover, 1, _V(  0.000005,  -0.033781,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T04(0, AccelerometerCover, 1, _V(  0.000005,  -0.033782,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T05(0, AccelerometerCover, 1, _V(  0.000004,  -0.033781,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T06(0, AccelerometerCover, 1, _V(  0.000005,  -0.033782,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T07(0, AccelerometerCover, 1, _V(  0.000005,  -0.033781,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T08(0, AccelerometerCover, 1, _V(  0.000005,  -0.033782,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T09(0, AccelerometerCover, 1, _V(  0.000005,  -0.033781,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T10(0, AccelerometerCover, 1, _V(  0.000005,  -0.033782,  -0.018787));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T11(0, AccelerometerCover, 1, _V(  0.000001,  -0.040238,   0.000550));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T12(0, AccelerometerCover, 1, _V(  0.000002,  -0.027152,   0.013261));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T13(0, AccelerometerCover, 1, _V( -0.000003,  -0.017736,   0.052845));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T14(0, AccelerometerCover, 1, _V( -0.000003,  -0.017736,   0.052845));
+	static MGROUP_TRANSLATE AccelerometerCoverMesh_T15(0, AccelerometerCover, 1, _V( -0.000004,  -0.017737,   0.052845));
+
+	AccelerometerCoverAnim = CreateAnimation(0.0);
+
+	AddAnimationComponent(AccelerometerCoverAnim, 0.2,    0.4, &AccelerometerCoverMesh_R01); // Rotation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.00,  0.07, &AccelerometerCoverMesh_T01); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.07,  0.13, &AccelerometerCoverMesh_T02); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.13,  0.20, &AccelerometerCoverMesh_T03); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.20,  0.27, &AccelerometerCoverMesh_T04); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.27,  0.33, &AccelerometerCoverMesh_T05); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.33,  0.40, &AccelerometerCoverMesh_T06); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.40,  0.47, &AccelerometerCoverMesh_T07); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.47,  0.53, &AccelerometerCoverMesh_T08); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.53,  0.60, &AccelerometerCoverMesh_T09); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.60,  0.67, &AccelerometerCoverMesh_T10); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.67,  0.73, &AccelerometerCoverMesh_T11); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.73,  0.80, &AccelerometerCoverMesh_T12); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.80,  0.87, &AccelerometerCoverMesh_T13); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.87,  0.93, &AccelerometerCoverMesh_T14); // Translation
+	AddAnimationComponent(AccelerometerCoverAnim, 0.93,  1.00, &AccelerometerCoverMesh_T15); // Translation
+
+	// MissionTimer_Glareshade
+	static UINT MissionTimer_Glareshade[1] = { VC_GRP_MissionTimer_Glareshade };
+
+	static MGROUP_ROTATE    MissionTimer_GlareshadeMesh_R01(0, MissionTimer_Glareshade, 1, _V( 0.075027, 0.824892, 0.397274 ), _V(0, -1, 0), (float)(90.0 * RAD));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T01(0, MissionTimer_Glareshade, 1, _V( -0.005346,   0.021032,  -0.069290));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T02(0, MissionTimer_Glareshade, 1, _V( -0.083607,  -0.204529,  -0.090774));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T03(0, MissionTimer_Glareshade, 1, _V( -0.127086,  -0.194370,  -0.052375));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T04(0, MissionTimer_Glareshade, 1, _V( -0.160604,  -0.172746,  -0.037124));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T05(0, MissionTimer_Glareshade, 1, _V( -0.196848,  -0.131835,  -0.026713));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T06(0, MissionTimer_Glareshade, 1, _V( -0.222829,  -0.082468,  -0.020999));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T07(0, MissionTimer_Glareshade, 1, _V( -0.233449,  -0.043617,  -0.022120));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T08(0, MissionTimer_Glareshade, 1, _V( -0.235964,  -0.022583,  -0.026681));
+	static MGROUP_TRANSLATE MissionTimer_GlareshadeMesh_T09(0, MissionTimer_Glareshade, 1, _V( -0.237175,  -0.001963,  -0.025312));
+
+	MissionTimer_GlareshadeAnim = CreateAnimation(0.0);
+
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.20,  0.40, &MissionTimer_GlareshadeMesh_R01); // Rotation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.00,  0.11, &MissionTimer_GlareshadeMesh_T01); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.11,  0.22, &MissionTimer_GlareshadeMesh_T02); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.22,  0.33, &MissionTimer_GlareshadeMesh_T03); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.33,  0.44, &MissionTimer_GlareshadeMesh_T04); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.44,  0.56, &MissionTimer_GlareshadeMesh_T05); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.56,  0.67, &MissionTimer_GlareshadeMesh_T06); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.67,  0.78, &MissionTimer_GlareshadeMesh_T07); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.78,  0.89, &MissionTimer_GlareshadeMesh_T08); // Translation
+	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.89,  1.00, &MissionTimer_GlareshadeMesh_T09); // Translation
 
 	// Ordeal Animation
 	static UINT ordealMeshGrp[12] = { 
@@ -3708,7 +3914,7 @@ void Saturn::DefineVCAnimations()
 
 	MainPanelVC.AddSwitch(&HighGainAntennaYawMeter);
 	HighGainAntennaYawMeter.SetReference(NEEDLE_POS, P1_3_ROT_AXIS);
-	HighGainAntennaYawMeter.SetRotationRange(RAD * 255);
+	HighGainAntennaYawMeter.SetRotationRange(RAD * 235);
 	HighGainAntennaYawMeter.DefineMeshGroup(VC_GRP_Needle_P2_32);
 
 	MainPanelVC.AddSwitch(&CabinTempAutoControlSwitch, AID_VC_TW_P2_01);

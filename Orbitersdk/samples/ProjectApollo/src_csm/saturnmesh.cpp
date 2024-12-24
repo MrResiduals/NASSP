@@ -1364,6 +1364,38 @@ void Saturn::SetAltimeterCover() {
 	}
 }
 
+void Saturn::SetDSKY_Glareshade() {
+	if (DSKY_GlareshadeStatus) {
+		DSKY_GlareshadeState.action = AnimState::OPENING;
+	} else {
+		DSKY_GlareshadeState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetEMSDV_Glareshade() {
+	if (EMSDV_GlareshadeStatus) {
+		EMSDV_GlareshadeState.action = AnimState::OPENING;
+	} else {
+		EMSDV_GlareshadeState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetAccelerometerCover() {
+	if (AccelerometerCoverStatus) {
+		AccelerometerCoverState.action = AnimState::OPENING;
+	} else {
+		AccelerometerCoverState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetMissionTimer_Glareshade() {
+	if (MissionTimer_GlareshadeStatus) {
+		MissionTimer_GlareshadeState.action = AnimState::OPENING;
+	} else {
+		MissionTimer_GlareshadeState.action = AnimState::CLOSING;
+	}
+}
+
 void Saturn::SetWasteDisposal() {
 	if (wasteDisposalStatus) {
 		wasteDisposalState.action = AnimState::OPENING;

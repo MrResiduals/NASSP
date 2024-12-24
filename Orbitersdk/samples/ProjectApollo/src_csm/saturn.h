@@ -1218,9 +1218,13 @@ public:
 	void SetAltimeterCover();
 	void SetOrdealMesh();
 
-	/// Waste Disposal
+	/// Waste Disposal and others
+	void SetDSKY_Glareshade();
+	void SetEMSDV_Glareshade();
+	void SetAccelerometerCover();
 	void SetWasteDisposal();
 	void SetPanel382Cover();
+	void SetMissionTimer_Glareshade();
 
 	///
 	/// \brief Set VC seats mesh
@@ -1292,6 +1296,7 @@ public:
 
 	void ClearMeshes();
 	void SetAnimations(double);
+	void DoMeshAnimation(AnimState &, UINT &, double, double);
 
 	//
 	// Flashlight for VC
@@ -1615,6 +1620,10 @@ protected:
 
 	int altimeterCovered;
 	int ordealStowed;
+	int DSKY_GlareshadeStowed;
+	int EMSDV_GlareshadeStowed;
+	int AccelerometerCoverStowed;
+	int MissionTimer_GlareshadeStowed;
 
 /// BEGINN TEST by JORDAN
 
@@ -1647,6 +1656,33 @@ protected:
 	UINT ordealAnim;
 	AnimState ordealState;
 
+/// DSKY_Glareshade
+	int DSKY_GlareshadeStatus;
+	double DSKY_GlareshadeProc;
+	int meshidxDSKY_Glareshade;
+	UINT DSKY_GlareshadeAnim;
+	AnimState DSKY_GlareshadeState;
+
+/// EMSDV_Glareshade
+	int EMSDV_GlareshadeStatus;
+	double EMSDV_GlareshadeProc;
+	int meshidxEMSDV_Glareshade;
+	UINT EMSDV_GlareshadeAnim;
+	AnimState EMSDV_GlareshadeState;
+
+/// AccelerometerCover
+	int AccelerometerCoverStatus;
+	double AccelerometerCoverProc;
+	int meshidxAccelerometerCover;
+	UINT AccelerometerCoverAnim;
+	AnimState AccelerometerCoverState;
+
+/// MissionTimer_Glareshade
+	int MissionTimer_GlareshadeStatus;
+	double MissionTimer_GlareshadeProc;
+	int meshidxMissionTimer_Glareshade;
+	UINT MissionTimer_GlareshadeAnim;
+	AnimState MissionTimer_GlareshadeState;
 
 /// END TEST by JORDAN
 

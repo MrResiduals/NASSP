@@ -1550,11 +1550,41 @@ void Saturn::Undocking(int port)
 	UndockConnectors(port);
 }
 
+void Saturn::DoMeshAnimation(AnimState &state, UINT &anim, double speed, double simdt)
+{
+	if (state.action == AnimState::CLOSING || state.action == AnimState::OPENING) {
+		double dp = simdt / speed;
+		if (state.action == AnimState::CLOSING) {
+			if (state.pos > 0.0)
+				state.pos = max(0.0, state.pos - dp);
+			else
+				state.action = AnimState::CLOSED;
+		}
+		else { // opening
+			if (state.pos < 1.0)
+				state.pos = min(1.0, state.pos + dp);
+			else
+				state.action = AnimState::OPEN;
+		}
+		SetAnimation(anim, state.pos);
+	}
+}
+
 void Saturn::SetAnimations(double simdt)
 {
 	// By Jordan
 	// ANIMATED MESHES
 
+	DoMeshAnimation(panel382CoverState, panel382CoverAnim, 0.5, simdt);
+	DoMeshAnimation(altimeterCoverState, altimeterCoverAnim, 2.0, simdt);
+	DoMeshAnimation(wasteDisposalState, wasteDisposalAnim, 1.0, simdt);
+	DoMeshAnimation(ordealState, ordealAnim, 3.0, simdt);
+	DoMeshAnimation(DSKY_GlareshadeState, DSKY_GlareshadeAnim, 2.0, simdt);
+	DoMeshAnimation(EMSDV_GlareshadeState, EMSDV_GlareshadeAnim, 2.0, simdt);
+	DoMeshAnimation(AccelerometerCoverState, AccelerometerCoverAnim, 2.0, simdt);
+	DoMeshAnimation(MissionTimer_GlareshadeState, MissionTimer_GlareshadeAnim, 2.5, simdt);
+
+/*
 	if (panel382CoverState.action == AnimState::CLOSING || panel382CoverState.action == AnimState::OPENING) {
 		double speed = 0.5; // Anim length in Seconds
 		double dp = simdt / speed;
@@ -1623,6 +1653,24 @@ void Saturn::SetAnimations(double simdt)
 		}
 		SetAnimation (ordealAnim, ordealState.pos);
 	}
+
+	if (DSKY_GlareshadeState.action == AnimState::CLOSING || DSKY_GlareshadeState.action == AnimState::OPENING) {
+		double speed = 3.0; // Anim length in Seconds
+		double dp = simdt / speed;
+		if (DSKY_GlareshadeState.action == AnimState::CLOSING) {
+			if (DSKY_GlareshadeState.pos > 0.0)
+				DSKY_GlareshadeState.pos = max (0.0, DSKY_GlareshadeState.pos-dp);
+			else
+				DSKY_GlareshadeState.action = AnimState::CLOSED;
+		} else { // Stowing
+			if (DSKY_GlareshadeState.pos < 1.0)
+				DSKY_GlareshadeState.pos = min (1.0, DSKY_GlareshadeState.pos+dp);
+			else
+				DSKY_GlareshadeState.action = AnimState::OPEN; //Stowed
+		}
+		SetAnimation (DSKY_GlareshadeAnim, DSKY_GlareshadeState.pos);
+	}
+*/
 	// By Jordan End
 }
 
@@ -1913,6 +1961,10 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	}
 	oapiWriteScenario_int (scn, "COASENABLED", coasEnabled);
 	oapiWriteScenario_int (scn, "ALTIMETERCOVERED", altimeterCovered);
+	oapiWriteScenario_int (scn, "DSKY_GLARESHADESTOWED", DSKY_GlareshadeStowed);
+	oapiWriteScenario_int (scn, "EMSDV_GLARESHADESTOWED", DSKY_GlareshadeStowed);
+	oapiWriteScenario_int (scn, "ACCELEROMETERCOVERSTOWED", DSKY_GlareshadeStowed);
+	oapiWriteScenario_int (scn, "MISSIONTIMER_GLARESHADESTOWED", DSKY_GlareshadeStowed);
 	oapiWriteScenario_int (scn, "ORDEALSTOWED", ordealStowed);
 	oapiWriteScenario_int (scn, "ORDEALENABLED", ordealEnabled);
 	oapiWriteScenario_int (scn, "OPTICSDSKYENABLED", opticsDskyEnabled);
@@ -2636,6 +2688,32 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 //			SetAnimation(altimeterCoverAnim, altimeterCoverState.pos);
 		}
 	}
+	else if (!strnicmp (line, "DSKY_GLARESHADESTOWED", 21)) {
+		sscanf (line + 21, "%i", &DSKY_GlareshadeStowed);
+		if (DSKY_GlareshadeStowed) {
+			DSKY_GlareshadeState.pos = 1.0;
+		}
+	}
+	else if (!strnicmp (line, "EMSDV_GLARESHADESTOWED", 22)) {
+		sscanf (line + 22, "%i", &EMSDV_GlareshadeStowed);
+		if (EMSDV_GlareshadeStowed) {
+			EMSDV_GlareshadeState.pos = 1.0;
+		}
+	}
+	else if (!strnicmp (line, "ACCELEROMETERCOVERSTOWED", 24)) {
+		sscanf (line + 24, "%i", &AccelerometerCoverStowed);
+		if (AccelerometerCoverStowed) {
+			AccelerometerCoverState.pos = 1.0;
+		}
+	}
+
+	else if (!strnicmp (line, "MISSIONTIMER_GLARESHADESTOWED", 29)) {
+		sscanf (line + 29, "%i", &MissionTimer_GlareshadeStowed);
+		if (MissionTimer_GlareshadeStowed) {
+			MissionTimer_GlareshadeState.pos = 1.0;
+		}
+	}
+
 	else if (!strnicmp (line, "ORDEALSTOWED", 12)) {
 		sscanf (line + 12, "%i", &ordealStowed);
 		if (ordealStowed) {
