@@ -965,6 +965,10 @@ void Saturn::clbkVisualCreated(VISHANDLE vis, int refcount) {
 //		seatsunfoldedmesh = GetDevMesh(vis, seatsunfoldedidx);
 //		seatsfoldedmesh = GetDevMesh(vis, seatsfoldedidx);
 		SetAltimeterCover();
+		SetDSKY_Glareshade();
+		SetEMSDV_Glareshade();
+		SetAccelerometerCover();
+		SetMissionTimer_Glareshade();
 		SetOrdealMesh();
 	}
 }

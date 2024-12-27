@@ -1961,10 +1961,10 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	}
 	oapiWriteScenario_int (scn, "COASENABLED", coasEnabled);
 	oapiWriteScenario_int (scn, "ALTIMETERCOVERED", altimeterCovered);
-	oapiWriteScenario_int (scn, "DSKY_GLARESHADESTOWED", DSKY_GlareshadeStowed);
-	oapiWriteScenario_int (scn, "EMSDV_GLARESHADESTOWED", DSKY_GlareshadeStowed);
-	oapiWriteScenario_int (scn, "ACCELEROMETERCOVERSTOWED", DSKY_GlareshadeStowed);
-	oapiWriteScenario_int (scn, "MISSIONTIMER_GLARESHADESTOWED", DSKY_GlareshadeStowed);
+	oapiWriteScenario_int (scn, "DSKY_GLARESHADESTOWED", DSKY_GlareshadeStatus);
+	oapiWriteScenario_int (scn, "EMSDV_GLARESHADESTOWED", EMSDV_GlareshadeStatus);
+	oapiWriteScenario_int (scn, "ACCELEROMETERCOVERSTOWED", AccelerometerCoverStatus);
+	oapiWriteScenario_int (scn, "MISSIONTIMER_GLARESHADESTOWED", MissionTimer_GlareshadeStatus);
 	oapiWriteScenario_int (scn, "ORDEALSTOWED", ordealStowed);
 	oapiWriteScenario_int (scn, "ORDEALENABLED", ordealEnabled);
 	oapiWriteScenario_int (scn, "OPTICSDSKYENABLED", opticsDskyEnabled);
@@ -2689,27 +2689,27 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 		}
 	}
 	else if (!strnicmp (line, "DSKY_GLARESHADESTOWED", 21)) {
-		sscanf (line + 21, "%i", &DSKY_GlareshadeStowed);
-		if (DSKY_GlareshadeStowed) {
+		sscanf (line + 21, "%i", &DSKY_GlareshadeStatus);
+		if (DSKY_GlareshadeStatus) {
 			DSKY_GlareshadeState.pos = 1.0;
 		}
 	}
 	else if (!strnicmp (line, "EMSDV_GLARESHADESTOWED", 22)) {
-		sscanf (line + 22, "%i", &EMSDV_GlareshadeStowed);
-		if (EMSDV_GlareshadeStowed) {
+		sscanf (line + 22, "%i", &EMSDV_GlareshadeStatus);
+		if (EMSDV_GlareshadeStatus) {
 			EMSDV_GlareshadeState.pos = 1.0;
 		}
 	}
 	else if (!strnicmp (line, "ACCELEROMETERCOVERSTOWED", 24)) {
-		sscanf (line + 24, "%i", &AccelerometerCoverStowed);
-		if (AccelerometerCoverStowed) {
+		sscanf (line + 24, "%i", &AccelerometerCoverStatus);
+		if (AccelerometerCoverStatus) {
 			AccelerometerCoverState.pos = 1.0;
 		}
 	}
 
 	else if (!strnicmp (line, "MISSIONTIMER_GLARESHADESTOWED", 29)) {
-		sscanf (line + 29, "%i", &MissionTimer_GlareshadeStowed);
-		if (MissionTimer_GlareshadeStowed) {
+		sscanf (line + 29, "%i", &MissionTimer_GlareshadeStatus);
+		if (MissionTimer_GlareshadeStatus) {
 			MissionTimer_GlareshadeState.pos = 1.0;
 		}
 	}
