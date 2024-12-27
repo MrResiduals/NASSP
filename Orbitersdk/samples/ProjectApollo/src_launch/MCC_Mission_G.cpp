@@ -197,7 +197,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, MoonRev >= 3 && MoonRevTime > 50.0*60.0, 42, MST_G_LUNAR_ORBIT_LOI_DAY_4);
 		break;
 	case MST_G_LUNAR_ORBIT_LOI_DAY_4: //A-1 landmark tracking update to TEI-11 update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, MoonRev >= 4 && MoonRevTime > 1.0*3600.0 + 20.0*60.0, 61, MST_G_LUNAR_ORBIT_LOI_DAY_5);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, MoonRev >= 4 && MoonRevTime > 1.0*3600.0, 61, MST_G_LUNAR_ORBIT_LOI_DAY_5);
 		break;
 	case MST_G_LUNAR_ORBIT_LOI_DAY_5: //TEI-11 update to state vector update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 43, MST_G_LUNAR_ORBIT_LOI_DAY_6);
