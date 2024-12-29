@@ -1875,6 +1875,10 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 		double floodRotaryValue = FloodRotarySwitch.GetOutput();
 		floodRotaryValue = 0.0;
 
+/// Hardcode Materials with no Texture
+		SetVCLighting(vcidx,   VC_MAT_FDAI_errorneedle, MAT_LIGHT, floodRotaryValue, 1);
+		SetVCLighting(vcidx,   VC_MAT_FDAI_Cue, MAT_LIGHT, floodRotaryValue, 1);
+
 		// Flood Lights Panel 8
 		SetVCLighting(vcidx, FloodLights_P8, MAT_LIGHT, floodRotaryValue, NUM_ELEMENTS(FloodLights_P8));
 		floodLight_P8->SetIntensity(FloodRotarySwitch.GetOutput()*1.5);

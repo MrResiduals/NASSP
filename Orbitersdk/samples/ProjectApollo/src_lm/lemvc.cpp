@@ -1613,6 +1613,10 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 		double floodRotaryValue = FloodLights.GetCDRRotaryVoltage() / 28.0;
 		floodRotaryValue = 0.0;
 
+		
+		/// Hardcode Materials with no Texture
+		SetVCLighting(vcidx,   VC_MAT_FDAI_errorneedle, MAT_LIGHT, floodRotaryValue, 1);
+
 		// MAT_LIGHT changes the Brightness of the Material
 		// MAT_EMISSION changes the Brightness of the Material controlled by its _emis Texture
 		SetVCLighting(vcidx, FloodLights_LMVC,    MAT_LIGHT, floodRotaryValue, NUM_ELEMENTS(FloodLights_LMVC));
@@ -3396,6 +3400,10 @@ void LEM::SetCompLight(int m, bool state) {
 
 	if (state == true)
 	{   // ON
+		mat->diffuse.r = 1;
+		mat->diffuse.g = 0.878f;
+		mat->diffuse.b = 0.506f;
+		mat->diffuse.a = 1;
 		mat->emissive.r = 1;
 		mat->emissive.g = 0.878f;
 		mat->emissive.b = 0.506f;
@@ -3403,10 +3411,15 @@ void LEM::SetCompLight(int m, bool state) {
 	}
 	else
 	{   // OFF
-		mat->emissive.r = 0.125f;
-		mat->emissive.g = 0.11f;
-		mat->emissive.b = 0.064f;
+		mat->diffuse.r = 0.518f;
+		mat->diffuse.g = 0.510f;
+		mat->diffuse.b = 0.518f;
+		mat->diffuse.a = 1;
+		mat->emissive.r = 0.0;
+		mat->emissive.g = 0.0;
+		mat->emissive.b = 0.0;
 		mat->emissive.a = 1;
+
 	}
 
 	oapiSetMaterial(vcmesh, m, mat);
