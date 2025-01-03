@@ -1404,11 +1404,23 @@ void Saturn::SetWasteDisposal() {
 	}
 }
 
+void Saturn::SetSextant_Eyepiece() {
+	if (Sextant_EyepieceStatus) {
+		Sextant_EyepieceState.action = AnimState::OPENING;
+	} else {
+		Sextant_EyepieceState.action = AnimState::CLOSING;
+	}
+}
+
 void Saturn::SetPanel382Cover() {
 	if (panel382CoverStatus) {
 		panel382CoverState.action = AnimState::OPENING;
+		Panel382Cover.SetState(1);
+		//Sat->panel382Enabled = 1;
 	} else {
 		panel382CoverState.action = AnimState::CLOSING;
+		Panel382Cover.SetState(0);
+		//Sat->panel382Enabled = 0;
 	}
 }
 

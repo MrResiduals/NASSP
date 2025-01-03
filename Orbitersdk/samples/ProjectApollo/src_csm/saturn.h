@@ -1225,6 +1225,7 @@ public:
 	void SetWasteDisposal();
 	void SetPanel382Cover();
 	void SetMissionTimer_Glareshade();
+	void SetSextant_Eyepiece();
 
 	///
 	/// \brief Set VC seats mesh
@@ -1618,13 +1619,6 @@ protected:
 	int hatchPanel600EnabledRight;
 	int panel382Enabled;
 
-	int altimeterCovered;
-	int ordealStowed;
-	int DSKY_GlareshadeStowed;
-	int EMSDV_GlareshadeStowed;
-	int AccelerometerCoverStowed;
-	int MissionTimer_GlareshadeStowed;
-
 /// BEGINN TEST by JORDAN
 
 /// Waste Disposal
@@ -1643,6 +1637,7 @@ protected:
 	AnimState panel382CoverState;
 
 /// Altimeter Cover
+	int altimeterCovered;
 	int altimeterCoverStatus;
 	double altimeterCoverProc;
 	int meshidxaltimeterCover;
@@ -1650,6 +1645,7 @@ protected:
 	AnimState altimeterCoverState;
 
 /// Ordeal
+	int ordealStowed;
 	int ordealStatus;
 	double ordealProc;
 	int meshidxOrdeal;
@@ -1657,6 +1653,7 @@ protected:
 	AnimState ordealState;
 
 /// DSKY_Glareshade
+	int DSKY_GlareshadeStowed;
 	int DSKY_GlareshadeStatus;
 	double DSKY_GlareshadeProc;
 	int meshidxDSKY_Glareshade;
@@ -1664,6 +1661,7 @@ protected:
 	AnimState DSKY_GlareshadeState;
 
 /// EMSDV_Glareshade
+	int EMSDV_GlareshadeStowed;
 	int EMSDV_GlareshadeStatus;
 	double EMSDV_GlareshadeProc;
 	int meshidxEMSDV_Glareshade;
@@ -1671,6 +1669,7 @@ protected:
 	AnimState EMSDV_GlareshadeState;
 
 /// AccelerometerCover
+	int AccelerometerCoverStowed;
 	int AccelerometerCoverStatus;
 	double AccelerometerCoverProc;
 	int meshidxAccelerometerCover;
@@ -1678,11 +1677,20 @@ protected:
 	AnimState AccelerometerCoverState;
 
 /// MissionTimer_Glareshade
+	int MissionTimer_GlareshadeStowed;
 	int MissionTimer_GlareshadeStatus;
 	double MissionTimer_GlareshadeProc;
 	int meshidxMissionTimer_Glareshade;
 	UINT MissionTimer_GlareshadeAnim;
 	AnimState MissionTimer_GlareshadeState;
+
+/// Sextant_Eyepiece
+	int Sextant_EyepieceStowed;
+	int Sextant_EyepieceStatus;
+	double Sextant_EyepieceProc;
+	int meshidxSextant_Eyepiece;
+	UINT Sextant_EyepieceAnim;
+	AnimState Sextant_EyepieceState;
 
 /// END TEST by JORDAN
 

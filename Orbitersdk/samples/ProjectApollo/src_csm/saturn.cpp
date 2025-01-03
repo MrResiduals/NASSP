@@ -1583,6 +1583,8 @@ void Saturn::SetAnimations(double simdt)
 	DoMeshAnimation(EMSDV_GlareshadeState, EMSDV_GlareshadeAnim, 2.0, simdt);
 	DoMeshAnimation(AccelerometerCoverState, AccelerometerCoverAnim, 2.0, simdt);
 	DoMeshAnimation(MissionTimer_GlareshadeState, MissionTimer_GlareshadeAnim, 2.5, simdt);
+	DoMeshAnimation(Sextant_EyepieceState, Sextant_EyepieceAnim, 2.0, simdt);
+
 
 /*
 	if (panel382CoverState.action == AnimState::CLOSING || panel382CoverState.action == AnimState::OPENING) {
@@ -1970,6 +1972,7 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	oapiWriteScenario_int (scn, "OPTICSDSKYENABLED", opticsDskyEnabled);
 	oapiWriteScenario_int (scn, "HATCHPANEL600ENABLED", hatchPanel600EnabledLeft);
 	oapiWriteScenario_int (scn, "PANEL382ENABLED", panel382Enabled);
+	oapiWriteScenario_int (scn, "SEXTANT_EYEPIECESTATUS", Sextant_EyepieceStatus);
 	papiWriteScenario_bool(scn, "FOVFIXED", FovFixed);
 	papiWriteScenario_double(scn, "FOVSAVE", FovSave);
 
@@ -2711,6 +2714,13 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 		sscanf (line + 29, "%i", &MissionTimer_GlareshadeStatus);
 		if (MissionTimer_GlareshadeStatus) {
 			MissionTimer_GlareshadeState.pos = 1.0;
+		}
+	}
+
+	else if (!strnicmp (line, "SEXTANT_EYEPIECESTATUS", 22)) {
+		sscanf (line + 22, "%i", &Sextant_EyepieceStatus);
+		if (Sextant_EyepieceStatus) {
+			Sextant_EyepieceState.pos = 1.0;
 		}
 	}
 

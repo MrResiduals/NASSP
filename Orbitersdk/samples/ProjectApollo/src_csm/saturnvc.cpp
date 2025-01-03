@@ -970,6 +970,7 @@ void Saturn::clbkVisualCreated(VISHANDLE vis, int refcount) {
 		SetAccelerometerCover();
 		SetMissionTimer_Glareshade();
 		SetOrdealMesh();
+		SetSextant_Eyepiece();
 	}
 }
 
@@ -1109,6 +1110,11 @@ void Saturn::RegisterActiveAreas() {
 	const VECTOR3 MissionTimer_GlareshadeLocation = { 0.075027, 0.824892, 0.397274 };
 	oapiVCRegisterArea(AID_VC_MissionTimer_Glareshade, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_MissionTimer_Glareshade, MissionTimer_GlareshadeLocation + ofs, 0.05);
+
+	// Sextant_Eyepiece
+	const VECTOR3 Sextant_EyepieceLocation = { -0.140321, -0.591028, 0.268827 };
+	oapiVCRegisterArea(AID_VC_Sextant_Eyepiece, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Sextant_Eyepiece, Sextant_EyepieceLocation + ofs, 0.05);
 
 	const VECTOR3 AccelerometerCoverLocation = { -0.80165, 0.631025, 0.34615 };
 	oapiVCRegisterArea(AID_VC_AccelerometerCover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
@@ -1792,6 +1798,15 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 		SetAccelerometerCover();
 		return true;
 
+	case AID_VC_Sextant_Eyepiece:
+		if (Sextant_EyepieceStatus) {
+			Sextant_EyepieceStatus = false;
+		} else {
+			Sextant_EyepieceStatus = true;
+		}
+		SetSextant_Eyepiece();
+		return true;
+
 	case AID_VC_MissionTimer_Glareshade:
 		if (MissionTimer_GlareshadeStatus) {
 			MissionTimer_GlareshadeStatus = false;
@@ -1889,7 +1904,7 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 
 		// Integral Lights Panel 8
 		SetVCLighting(vcidx, IntegralLights_P8, MAT_EMISSION, IntegralRotarySwitch.GetOutput(), NUM_ELEMENTS(IntegralLights_P8));
-		SetVCLighting(vcidx, IntergralLights_P8_NTex, MAT_LIGHT, (IntegralRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, NUM_ELEMENTS(IntergralLights_P8_NTex));
+		SetVCLighting(vcidx, IntergralLights_P8_NTex, MAT_LIGHT, IntegralRotarySwitch.GetOutput() + floodRotaryValue, NUM_ELEMENTS(IntergralLights_P8_NTex));
 
 		// External meshes
 		SetVCLighting(seatsunfoldedidx, CMVCSeatsUnFolded, MAT_LIGHT, floodRotaryValue, NUM_ELEMENTS(CMVCSeatsUnFolded));
@@ -1898,7 +1913,7 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 
 		// Numerics Lights Panel 8
 //      SetVCLighting(vcidx,NumericLights_P8, MAT_LIGHT,NumericRotarySwitch.GetOutput(), NUM_ELEMENTS(NumericLights_P8));
-		SetVCLighting(vcidx, NumericLights_P8_NTex, MAT_LIGHT, (NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, NUM_ELEMENTS(NumericLights_P8_NTex));
+		SetVCLighting(vcidx, NumericLights_P8_NTex, MAT_LIGHT, NumericRotarySwitch.GetOutput() + floodRotaryValue, NUM_ELEMENTS(NumericLights_P8_NTex));
 
 		// Integral Lights Panel 5
 		SetVCLighting(vcidx, IntegralLights_P5, MAT_EMISSION, RightIntegralRotarySwitch.GetOutput(), NUM_ELEMENTS(IntegralLights_P5));
@@ -1917,7 +1932,7 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 		floodLight_P100->SetIntensity(Panel100FloodRotarySwitch.GetOutput()*1.5);
 
 		// Numerics Lights Panel 100
-		SetVCLighting(vcidx, NumericLights_P100, MAT_LIGHT, (Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, NUM_ELEMENTS(NumericLights_P100));
+		SetVCLighting(vcidx, NumericLights_P100, MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, NUM_ELEMENTS(NumericLights_P100));
 
 		// DSKY and Caution & Warning Lights
 		std::vector<DWORD> DSKY_Lights;
@@ -1988,23 +2003,23 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 		 }
 
 		SetVCLighting(vcidx, &CW_Lights[0], MAT_LIGHT, 1, CW_Lights.size()); 	//Caution & Warning Lights
-		SetVCLighting(vcidx, &DSKY_Lights[0], MAT_LIGHT, (NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, DSKY_Lights.size());
-		SetVCLighting(vcidx, &DSKY_LEB_Lights[0], MAT_LIGHT, (Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, DSKY_LEB_Lights.size());
+		SetVCLighting(vcidx, &DSKY_Lights[0], MAT_LIGHT, NumericRotarySwitch.GetOutput() + floodRotaryValue, DSKY_Lights.size());
+		SetVCLighting(vcidx, &DSKY_LEB_Lights[0], MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, DSKY_LEB_Lights.size());
 
 /*
 		// LEB Conditional Lamps
 		if (Panel100NumericRotarySwitch.GetOutput()) {
 			if (cws.IsPowered() && cws.GetGNLampState() != 0) {
 				if (cws.GetGNLampState() == 2 || cws.GetGNPGNSAlarm()) {
-					SetVCLighting(vcidx, VC_MAT_LEB_ConditionLamp_PGNS, MAT_LIGHT, (Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, 1);
+					SetVCLighting(vcidx, VC_MAT_LEB_ConditionLamp_PGNS, MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, 1);
 				}
 
 				if (cws.GetGNLampState() == 2 || LightStates[CSM_CWS_CMC_LIGHT + 30 - CWS_LIGHTS_PER_PANEL]) {
-					SetVCLighting(vcidx, VC_MAT_LEB_ConditionLamp_CMC, MAT_LIGHT, (Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, 1);
+					SetVCLighting(vcidx, VC_MAT_LEB_ConditionLamp_CMC, MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, 1);
 				}
 
 				if (cws.GetGNLampState() == 2 || LightStates[CSM_CWS_ISS_LIGHT + 30 - CWS_LIGHTS_PER_PANEL]) {
-					SetVCLighting(vcidx, VC_MAT_LEB_ConditionLamp_ISS, MAT_LIGHT, (Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue) / 2.0, 1);
+					SetVCLighting(vcidx, VC_MAT_LEB_ConditionLamp_ISS, MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, 1);
 				}
 			}
 		}
@@ -2903,6 +2918,45 @@ void Saturn::DefineVCAnimations()
 	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.67,  0.78, &MissionTimer_GlareshadeMesh_T07); // Translation
 	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.78,  0.89, &MissionTimer_GlareshadeMesh_T08); // Translation
 	AddAnimationComponent(MissionTimer_GlareshadeAnim, 0.89,  1.00, &MissionTimer_GlareshadeMesh_T09); // Translation
+
+	// Sextant_Eyepiece
+	static UINT Sextant_Eyepiece[1] = { VC_GRP_Group_10_02_Sextant_Eyepiece };
+
+	static MGROUP_ROTATE    Sextant_EyepieceMesh_R01(0, Sextant_Eyepiece, 1, _V( -0.140321,  -0.591028,   0.268827), _V(-0.000241, 0.933295, -0.35911), (float)(-20.0 * RAD));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T01(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T02(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T03(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T04(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.035943,   0.014889));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T05(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.014888,   0.035942));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T06(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045752));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T07(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T08(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T09(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T10(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.014888,   0.035943));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T11(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.035943,   0.014888));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T12(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T13(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T14(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T15(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+
+	Sextant_EyepieceAnim = CreateAnimation(0.0);
+
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.0,   0.10, &Sextant_EyepieceMesh_R01); // Rotation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.00,  0.07, &Sextant_EyepieceMesh_T01); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.07,  0.13, &Sextant_EyepieceMesh_T02); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.13,  0.20, &Sextant_EyepieceMesh_T03); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.20,  0.27, &Sextant_EyepieceMesh_T04); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.27,  0.33, &Sextant_EyepieceMesh_T05); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.33,  0.40, &Sextant_EyepieceMesh_T06); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.40,  0.47, &Sextant_EyepieceMesh_T07); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.47,  0.53, &Sextant_EyepieceMesh_T08); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.53,  0.60, &Sextant_EyepieceMesh_T09); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.60,  0.67, &Sextant_EyepieceMesh_T10); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.67,  0.73, &Sextant_EyepieceMesh_T11); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.73,  0.80, &Sextant_EyepieceMesh_T12); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.80,  0.87, &Sextant_EyepieceMesh_T13); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.87,  0.93, &Sextant_EyepieceMesh_T14); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.93,  1.00, &Sextant_EyepieceMesh_T15); // Translation
 
 	// Ordeal Animation
 	static UINT ordealMeshGrp[12] = { 

@@ -1622,15 +1622,15 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 		SetVCLighting(vcidx, FloodLights_LMVC,    MAT_LIGHT, floodRotaryValue, NUM_ELEMENTS(FloodLights_LMVC));
 		floodLight_Left->SetIntensity(FloodLights.GetCDRRotaryVoltage() / 28.0);
 		floodLight_Right->SetIntensity(FloodLights.GetLMPRotaryVoltage() / 28.0);
-		SetVCLighting(vcidx, IntegralLights_LMVC, MAT_EMISSION, ((lca.GetIntegralVoltage() / 75.0) + floodRotaryValue) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
-		SetVCLighting(vcidx, IntegralLights_LMVC_NoTex, MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + floodRotaryValue) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
-		SetVCLighting(vcidx, NumericLights_LMVC,  MAT_LIGHT, ((lca.GetNumericVoltage() / 110.0) + floodRotaryValue )/2, NUM_ELEMENTS(NumericLights_LMVC));
+		SetVCLighting(vcidx, IntegralLights_LMVC, MAT_EMISSION, (lca.GetIntegralVoltage() / 75.0) + floodRotaryValue, NUM_ELEMENTS(IntegralLights_LMVC));
+		SetVCLighting(vcidx, IntegralLights_LMVC_NoTex, MAT_LIGHT, (lca.GetIntegralVoltage() / 75.0) + floodRotaryValue, NUM_ELEMENTS(IntegralLights_LMVC));
+		SetVCLighting(vcidx, NumericLights_LMVC,  MAT_LIGHT, (lca.GetNumericVoltage() / 115.0) + floodRotaryValue, NUM_ELEMENTS(NumericLights_LMVC));
 
 		if (CWEA.GetMasterAlarm()) {
 			SetVCLighting(vcidx, MasterAlarm_NoTex,  MAT_LIGHT, 1, NUM_ELEMENTS(MasterAlarm_NoTex));
 		}
 
-		SetVCLighting(vcidx, &DSKY_CW_Lights[0],  MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + floodRotaryValue)/2.0, DSKY_CW_Lights.size());
+		SetVCLighting(vcidx, &DSKY_CW_Lights[0],  MAT_LIGHT, (lca.GetIntegralVoltage() / 75.0) + floodRotaryValue, DSKY_CW_Lights.size());
 
 		//External Meshes ***If Second parameter is 0 then the mesh contains only one Material***
 		SetVCLighting(xpointershadesidx, 0, MAT_LIGHT, floodRotaryValue, 1); //FloodLights_XPointer_Shades
@@ -1642,16 +1642,16 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 
         //Tapemeter Lights
         if (AltRngMonSwitch.GetState() == TOGGLESWITCH_DOWN) {
-            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_AltAltRate, MAT_EMISSION, (lca.GetNumericVoltage() / 110.0), 1);
+            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_AltAltRate, MAT_EMISSION, (lca.GetNumericVoltage() / 115.0), 1);
             SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_RangeRangeRate, MAT_EMISSION, 0.25, 1);
         }
         else {
-            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_RangeRangeRate, MAT_EMISSION, (lca.GetNumericVoltage() / 110.0), 1);
+            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_RangeRangeRate, MAT_EMISSION, (lca.GetNumericVoltage() / 115.0), 1);
             SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_AltAltRate, MAT_EMISSION, 0.25, 1);
         }
 
         if (TempPressMonRotary.GetState() == 0) {
-            SetVCLighting(vcidx, VC_MAT_RCS_HE_PRESS_x10, MAT_EMISSION, (lca.GetNumericVoltage() / 110.0), 1);
+            SetVCLighting(vcidx, VC_MAT_RCS_HE_PRESS_x10, MAT_EMISSION, (lca.GetNumericVoltage() / 115.0), 1);
         }
         else {
             SetVCLighting(vcidx, VC_MAT_RCS_HE_PRESS_x10, MAT_EMISSION, 0.25, 1);
@@ -3398,29 +3398,29 @@ void LEM::SetCompLight(int m, bool state) {
 
 	MATERIAL *mat = oapiMeshMaterial(hLMVC, m);
 
-	if (state == true)
-	{   // ON
-		mat->diffuse.r = 1;
-		mat->diffuse.g = 0.878f;
-		mat->diffuse.b = 0.506f;
-		mat->diffuse.a = 1;
-		mat->emissive.r = 1;
-		mat->emissive.g = 0.878f;
-		mat->emissive.b = 0.506f;
-		mat->emissive.a = 1;
-	}
-	else
-	{   // OFF
-		mat->diffuse.r = 0.518f;
-		mat->diffuse.g = 0.510f;
-		mat->diffuse.b = 0.518f;
-		mat->diffuse.a = 1;
-		mat->emissive.r = 0.0;
-		mat->emissive.g = 0.0;
-		mat->emissive.b = 0.0;
-		mat->emissive.a = 1;
+    if (state == true)
+    {   // ON
+        mat->diffuse.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->diffuse.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->diffuse.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->diffuse.a = 1.0f;
+        mat->emissive.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->emissive.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->emissive.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->emissive.a = 1.0f;
+    }
+    else
+    {   // OFF
+        mat->diffuse.r = 0;
+        mat->diffuse.g = 0;
+        mat->diffuse.b = 0;
+        mat->diffuse.a = 0;
+        mat->emissive.r = 0;
+        mat->emissive.g = 0;
+        mat->emissive.b = 0;
+        mat->emissive.a = 0;
 
-	}
+    }
 
 	oapiSetMaterial(vcmesh, m, mat);
 }
