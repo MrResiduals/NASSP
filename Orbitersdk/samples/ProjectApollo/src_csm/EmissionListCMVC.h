@@ -57,6 +57,7 @@ DWORD FloodLights_P8[] = {
 //	VC_MAT_AttitudeSetNumbers,
 	VC_MAT_Altimeter_Cover,
 	VC_MAT_Sextant_Eyepiece,
+	VC_MAT_Telescope_Eyepiece,
 //	VC_MAT_CM_Switches,
 	VC_MAT_Accelerometer_Cover,
 	VC_MAT_DSKY_Glareshade,

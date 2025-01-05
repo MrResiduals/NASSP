@@ -971,6 +971,7 @@ void Saturn::clbkVisualCreated(VISHANDLE vis, int refcount) {
 		SetMissionTimer_Glareshade();
 		SetOrdealMesh();
 		SetSextant_Eyepiece();
+		SetTelescope_Eyepiece();
 	}
 }
 
@@ -1116,6 +1117,12 @@ void Saturn::RegisterActiveAreas() {
 	oapiVCRegisterArea(AID_VC_Sextant_Eyepiece, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_Sextant_Eyepiece, Sextant_EyepieceLocation + ofs, 0.05);
 
+	// Telescope_Eyepiece
+	const VECTOR3 Telescope_EyepieceLocation = { 0.087357, -0.595404, 0.257364 };
+	oapiVCRegisterArea(AID_VC_Telescope_Eyepiece, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Telescope_Eyepiece, Telescope_EyepieceLocation + ofs, 0.05);
+
+	// AccelerometerCover
 	const VECTOR3 AccelerometerCoverLocation = { -0.80165, 0.631025, 0.34615 };
 	oapiVCRegisterArea(AID_VC_AccelerometerCover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_AccelerometerCover, AccelerometerCoverLocation + ofs, 0.05);
@@ -1805,6 +1812,15 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 			Sextant_EyepieceStatus = true;
 		}
 		SetSextant_Eyepiece();
+		return true;
+
+	case AID_VC_Telescope_Eyepiece:
+		if (Telescope_EyepieceStatus) {
+			Telescope_EyepieceStatus = false;
+		} else {
+			Telescope_EyepieceStatus = true;
+		}
+		SetTelescope_Eyepiece();
 		return true;
 
 	case AID_VC_MissionTimer_Glareshade:
@@ -2922,41 +2938,83 @@ void Saturn::DefineVCAnimations()
 	// Sextant_Eyepiece
 	static UINT Sextant_Eyepiece[1] = { VC_GRP_Group_10_02_Sextant_Eyepiece };
 
-	static MGROUP_ROTATE    Sextant_EyepieceMesh_R01(0, Sextant_Eyepiece, 1, _V( -0.140321,  -0.591028,   0.268827), _V(-0.000241, 0.933295, -0.35911), (float)(-20.0 * RAD));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T01(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,  -0.000000));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T02(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T03(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T04(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.035943,   0.014889));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T05(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.014888,   0.035942));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T06(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045752));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T07(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T08(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T09(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T10(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.014888,   0.035943));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T11(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.035943,   0.014888));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T12(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T13(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
-	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T14(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_ROTATE    Sextant_EyepieceMesh_R01(0, Sextant_Eyepiece, 1, _V( -0.140321,  -0.591028,   0.268827), _V(-0.000241, 0.933295, -0.35911), (float)(-45.0 * RAD));
+	static MGROUP_ROTATE    Sextant_EyepieceMesh_R02(0, Sextant_Eyepiece, 1, _V( -0.140321,  -0.591028,   0.268827), _V(-0.000241, 0.933295, -0.35911), (float)(45.0 * RAD));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T05(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T06(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T07(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.035943,   0.014889));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T08(0, Sextant_Eyepiece, 1, _V( -0.000000,   0.014888,   0.035942));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T09(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045752));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T10(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T11(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T12(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T13(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.014888,   0.035943));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T14(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.035943,   0.014888));
 	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T15(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T16(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T17(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Sextant_EyepieceMesh_T18(0, Sextant_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
 
 	Sextant_EyepieceAnim = CreateAnimation(0.0);
 
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.0,   0.10, &Sextant_EyepieceMesh_R01); // Rotation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.00,  0.07, &Sextant_EyepieceMesh_T01); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.07,  0.13, &Sextant_EyepieceMesh_T02); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.13,  0.20, &Sextant_EyepieceMesh_T03); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.20,  0.27, &Sextant_EyepieceMesh_T04); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.27,  0.33, &Sextant_EyepieceMesh_T05); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.33,  0.40, &Sextant_EyepieceMesh_T06); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.40,  0.47, &Sextant_EyepieceMesh_T07); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.47,  0.53, &Sextant_EyepieceMesh_T08); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.53,  0.60, &Sextant_EyepieceMesh_T09); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.60,  0.67, &Sextant_EyepieceMesh_T10); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.67,  0.73, &Sextant_EyepieceMesh_T11); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.73,  0.80, &Sextant_EyepieceMesh_T12); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.80,  0.87, &Sextant_EyepieceMesh_T13); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.87,  0.93, &Sextant_EyepieceMesh_T14); // Translation
-	AddAnimationComponent(Sextant_EyepieceAnim, 0.93,  1.00, &Sextant_EyepieceMesh_T15); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.0,   0.15, &Sextant_EyepieceMesh_R01); // Rotation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.5,   0.65, &Sextant_EyepieceMesh_R02); // Rotation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.22,  0.28, &Sextant_EyepieceMesh_T05); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.28,  0.33, &Sextant_EyepieceMesh_T06); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.33,  0.39, &Sextant_EyepieceMesh_T07); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.39,  0.44, &Sextant_EyepieceMesh_T08); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.44,  0.50, &Sextant_EyepieceMesh_T09); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.50,  0.56, &Sextant_EyepieceMesh_T10); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.56,  0.61, &Sextant_EyepieceMesh_T11); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.61,  0.67, &Sextant_EyepieceMesh_T12); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.67,  0.72, &Sextant_EyepieceMesh_T13); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.72,  0.78, &Sextant_EyepieceMesh_T14); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.78,  0.83, &Sextant_EyepieceMesh_T15); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.83,  0.89, &Sextant_EyepieceMesh_T16); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.89,  0.94, &Sextant_EyepieceMesh_T17); // Translation
+	AddAnimationComponent(Sextant_EyepieceAnim, 0.94,  1.00, &Sextant_EyepieceMesh_T18); // Translation
+
+	// Telescope_Eyepiece
+	static UINT Telescope_Eyepiece[1] = { VC_GRP_Group_10_02_Optics_Teleskop };
+
+	static MGROUP_ROTATE    Telescope_EyepieceMesh_R01(0, Telescope_Eyepiece, 1, _V( 0.087357,  -0.595404,  0.257364 ),  _V(-0.000241, 0.933295, -0.35911), (float)(45.0 * RAD));
+	static MGROUP_ROTATE    Telescope_EyepieceMesh_R02(0, Telescope_Eyepiece, 1, _V( 0.087357,  -0.595404,  0.257364 ),  _V(-0.000241, 0.933295, -0.35911), (float)(-45.0 * RAD));
+
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T05(0, Telescope_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T06(0, Telescope_Eyepiece, 1, _V( -0.000000,   0.033431,  -0.000000));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T07(0, Telescope_Eyepiece, 1, _V( -0.000000,   0.035943,   0.014889));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T08(0, Telescope_Eyepiece, 1, _V( -0.000000,   0.014888,   0.035942));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T09(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045752));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T10(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T11(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T12(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.000000,   0.045751));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T13(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.014888,   0.035943));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T14(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.035943,   0.014888));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T15(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T16(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T17(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+	static MGROUP_TRANSLATE Telescope_EyepieceMesh_T18(0, Telescope_Eyepiece, 1, _V( -0.000000,  -0.056562,  -0.000000));
+
+	Telescope_EyepieceAnim = CreateAnimation(0.0);
+
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.0,   0.15, &Telescope_EyepieceMesh_R01); // Rotation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.5,   0.65, &Telescope_EyepieceMesh_R02); // Rotation
+
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.22,  0.28, &Telescope_EyepieceMesh_T05); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.28,  0.33, &Telescope_EyepieceMesh_T06); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.33,  0.39, &Telescope_EyepieceMesh_T07); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.39,  0.44, &Telescope_EyepieceMesh_T08); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.44,  0.50, &Telescope_EyepieceMesh_T09); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.50,  0.56, &Telescope_EyepieceMesh_T10); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.56,  0.61, &Telescope_EyepieceMesh_T11); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.61,  0.67, &Telescope_EyepieceMesh_T12); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.67,  0.72, &Telescope_EyepieceMesh_T13); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.72,  0.78, &Telescope_EyepieceMesh_T14); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.78,  0.83, &Telescope_EyepieceMesh_T15); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.83,  0.89, &Telescope_EyepieceMesh_T16); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.89,  0.94, &Telescope_EyepieceMesh_T17); // Translation
+	AddAnimationComponent(Telescope_EyepieceAnim, 0.94,  1.00, &Telescope_EyepieceMesh_T18); // Translation
+
 
 	// Ordeal Animation
 	static UINT ordealMeshGrp[12] = { 

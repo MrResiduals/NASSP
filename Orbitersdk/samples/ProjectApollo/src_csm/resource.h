@@ -911,6 +911,7 @@
 #define AID_VC_AccelerometerCover		3219
 #define AID_VC_MissionTimer_Glareshade	3220
 #define AID_VC_Sextant_Eyepiece			3221
+#define AID_VC_Telescope_Eyepiece		3222
 
 // VC Active Areas (Panel 2)
 #define AID_VC_PANEL_2			((id >= 4800) && (id <= 4999))

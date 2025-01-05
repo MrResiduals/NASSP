@@ -1412,6 +1412,13 @@ void Saturn::SetSextant_Eyepiece() {
 	}
 }
 
+void Saturn::SetTelescope_Eyepiece() {
+	if (Telescope_EyepieceStatus) {
+		Telescope_EyepieceState.action = AnimState::OPENING;
+	} else {
+		Telescope_EyepieceState.action = AnimState::CLOSING;
+	}
+}
 void Saturn::SetPanel382Cover() {
 	if (panel382CoverStatus) {
 		panel382CoverState.action = AnimState::OPENING;

@@ -1226,6 +1226,7 @@ public:
 	void SetPanel382Cover();
 	void SetMissionTimer_Glareshade();
 	void SetSextant_Eyepiece();
+	void SetTelescope_Eyepiece();
 
 	///
 	/// \brief Set VC seats mesh
@@ -1691,6 +1692,14 @@ protected:
 	int meshidxSextant_Eyepiece;
 	UINT Sextant_EyepieceAnim;
 	AnimState Sextant_EyepieceState;
+
+/// Telescope_Eyepiece
+	int Telescope_EyepieceStowed;
+	int Telescope_EyepieceStatus;
+	double Telescope_EyepieceProc;
+	int meshidxTelescope_Eyepiece;
+	UINT Telescope_EyepieceAnim;
+	AnimState Telescope_EyepieceState;
 
 /// END TEST by JORDAN
 
