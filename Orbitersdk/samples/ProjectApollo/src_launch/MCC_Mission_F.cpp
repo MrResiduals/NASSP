@@ -148,7 +148,7 @@ void MCC::MissionSequence_F()
 		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TLI + 7.0*3600.0 + 10.0*60.0), 10, MST_F_TRANSLUNAR_NO_MCC1_2);
 		break;
 	case MST_F_TRANSLUNAR_NO_MCC1_2: //SV update to Block Data 2 (MCC-1 was scrubbed)
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TLI + 9.0*3600.0 + 30.0*60.0), 100, MST_F_TRANSLUNAR11);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TLI + 9.0*3600.0 + 30.0*60.0), 103, MST_F_TRANSLUNAR11);
 		break;
 	case MST_F_TRANSLUNAR10: //PTC REFSMMAT to Block Data 2
 		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TLI + 9.0*3600.0 + 35.0*60.0), 10, MST_F_TRANSLUNAR11);
@@ -163,7 +163,7 @@ void MCC::MissionSequence_F()
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.TLI + 42.0*3600.0), 14, MST_F_TRANSLUNAR14);
 		break;
 	case MST_F_TRANSLUNAR14: //State Vector update to MCC-3 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.LOI - 23.0*3600.0 - 30.0*60.0), 100, MST_F_TRANSLUNAR15);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.LOI - 23.0*3600.0 - 30.0*60.0), 103, MST_F_TRANSLUNAR15);
 		break;
 	case MST_F_TRANSLUNAR15: //MCC-3 update to MCC-4 update
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.LOI - 6.0*3600.0 - 30.0*60.0), 15, MST_F_TRANSLUNAR16);
@@ -214,20 +214,20 @@ void MCC::MissionSequence_F()
 	case MST_F_LUNAR_ORBIT_LOI_DAY_7: //Rev 4 map update to state vector update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 4 && MoonRevTime > 3600.0, 43, MST_F_LUNAR_ORBIT_LOI_DAY_8);
 		break;
-	case MST_F_LUNAR_ORBIT_LOI_DAY_8: //State vector update to state vector update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 5 && MoonRevTime > 30.0*60.0, 100, MST_F_LUNAR_ORBIT_LOI_DAY_9);
+	case MST_F_LUNAR_ORBIT_LOI_DAY_8: //State vector update to TEI-10 update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 5 && MoonRevTime > 30.0*60.0, 103, MST_F_LUNAR_ORBIT_LOI_DAY_9);
 		break;
-	case MST_F_LUNAR_ORBIT_LOI_DAY_9: //State vector update to TEI-10 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_LOI_DAY_10);
+	case MST_F_LUNAR_ORBIT_LOI_DAY_9: //TEI-10 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 33, MST_F_LUNAR_ORBIT_LOI_DAY_10);
 		break;
-	case MST_F_LUNAR_ORBIT_LOI_DAY_10: //TEI-10 update to LLS-2 update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, MoonRev >= 10 && MoonRevTime > 30.0*60.0, 33, MST_F_LUNAR_ORBIT_DOI_DAY_1);
+	case MST_F_LUNAR_ORBIT_LOI_DAY_10: //State vector update to LLS-2 track PAD
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 10 && MoonRevTime > 30.0*60.0, 103, MST_F_LUNAR_ORBIT_DOI_DAY_1);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_1: //LLS-2 update to LLS-2 track PAD
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 60, MST_F_LUNAR_ORBIT_DOI_DAY_2);
+	case MST_F_LUNAR_ORBIT_DOI_DAY_1: //LLS-2 track PAD to LLS-2 update
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, true, 52, MST_F_LUNAR_ORBIT_DOI_DAY_2);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_2: //LLS-2 track PAD to rev 11 map update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 3.0*60.0, 52, MST_F_LUNAR_ORBIT_DOI_DAY_3);
+	case MST_F_LUNAR_ORBIT_DOI_DAY_2: //LLS-2 update to rev 11 map update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 60, MST_F_LUNAR_ORBIT_DOI_DAY_3);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_3: //Rev 11 map update to CSM DAP update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 10 && MoonRevTime > 3600.0, 44, MST_F_LUNAR_ORBIT_DOI_DAY_4);
@@ -236,7 +236,7 @@ void MCC::MissionSequence_F()
 		UpdateMacro(UTP_PADONLY, PT_AP10DAPDATA, MoonRev >= 11 && MoonRevTime > 30.0*60.0, 61, MST_F_LUNAR_ORBIT_DOI_DAY_5);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_5: //LM DAP Load PAD to LM IMU gyro torquing angle update
-		UpdateMacro(UTP_PADONLY, PT_AP10DAPDATA, MoonRev >= 11 && MoonRevTime > 50.0*60.0, 62, MST_F_LUNAR_ORBIT_DOI_DAY_8);
+		UpdateMacro(UTP_PADONLY, PT_AP10DAPDATA, MoonRev >= 11 && MoonRevTime > 55.0*60.0, 62, MST_F_LUNAR_ORBIT_DOI_DAY_8);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_8: //LM IMU gyro torquing angle update to LGC activation update
 		UpdateMacro(UTP_PADONLY, PT_TORQANG, MoonRev >= 11 && MoonRevTime > 60.0*60.0, 63, MST_F_LUNAR_ORBIT_DOI_DAY_9);
@@ -248,22 +248,22 @@ void MCC::MissionSequence_F()
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, MoonRev >= 11 && MoonRevTime > 70.0*60.0, 70, MST_F_LUNAR_ORBIT_DOI_DAY_11);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_11: //AGS K Factor update to DOI update
-		UpdateMacro(UTP_PADONLY, PT_AP11AGSACT, MoonRev >= 12 && MoonRevTime > 30.0*60.0, 65, MST_F_LUNAR_ORBIT_DOI_DAY_12);
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, MoonRev >= 12 && MoonRevTime > 30.0*60.0, 65, MST_F_LUNAR_ORBIT_DOI_DAY_12);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_12: //DOI update to Phasing update
-		UpdateMacro(UTP_PADWITHLGCUPLINK, PT_AP11LMMNV, SubStateTime > 3.0*60.0, 71, MST_F_LUNAR_ORBIT_DOI_DAY_13);
+		UpdateMacro(UTP_PADWITHLGCUPLINK, PT_AP11LMMNV, SubStateTime > 2.0*60.0, 71, MST_F_LUNAR_ORBIT_DOI_DAY_13);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_13: //Phasing update to PDI Abort update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMMNV, SubStateTime > 3.0*60.0, 72, MST_F_LUNAR_ORBIT_DOI_DAY_14);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMMNV, SubStateTime > 2.0*60.0, 72, MST_F_LUNAR_ORBIT_DOI_DAY_14);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_14: //PDI Abort update to LGC CSM state vector update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMMNV, MoonRev >= 12 && MoonRevTime > 50.0*60.0, 74, MST_F_LUNAR_ORBIT_DOI_DAY_15);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMMNV, (MoonRev >= 12 && MoonRevTime > 50.0*60.0) && rtcc->GETEval2(rtcc->calcParams.SEP + 60.0), 74, MST_F_LUNAR_ORBIT_DOI_DAY_15);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_15: //LGC CSM state vector update to CMC CSM+LM state vector update
 		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, MoonRev >= 12 && MoonRevTime > 1.0*3600.0 + 10.0*60.0, 100, MST_F_LUNAR_ORBIT_DOI_DAY_16);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_16: //CMC CSM+LM state vector update to final phasing update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 13 && MoonRevTime > 40.0*60.0, 101, MST_F_LUNAR_ORBIT_DOI_DAY_17);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 13 && MoonRevTime > 50.0*60.0, 101, MST_F_LUNAR_ORBIT_DOI_DAY_17);
 		break;
 	case MST_F_LUNAR_ORBIT_DOI_DAY_17: //Final phasing update to CSM backup insertion update
 		UpdateMacro(UTP_PADONLY, PT_AP11LMMNV, MoonRev >= 13 && MoonRevTime > 1.0*3600.0 + 20.0*60.0, 73, MST_F_LUNAR_ORBIT_DOI_DAY_18);
@@ -283,20 +283,26 @@ void MCC::MissionSequence_F()
 	case MST_F_LUNAR_ORBIT_DOI_DAY_22: //CMC LM state vector update to CSI update
 		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 1.0*60.0, 102, MST_F_LUNAR_ORBIT_DOI_DAY_23);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_23: //CSI update to APS depletion PAD update
-		UpdateMacro(UTP_PADONLY, PT_AP10CSI, MoonRev >= 16 && MoonRevTime > 40.0*60.0 && cm->DockingStatus(0), 79, MST_F_LUNAR_ORBIT_DOI_DAY_24);
+	case MST_F_LUNAR_ORBIT_DOI_DAY_23: //CSI update to LM weight update
+		UpdateMacro(UTP_PADONLY, PT_AP10CSI, MoonRev >= 16 && MoonRevTime > 35.0*60.0 && cm->DockingStatus(0), 79, MST_F_LUNAR_ORBIT_DOI_DAY_24);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_24: //APS depletion PAD update to TEI-22 update
-		UpdateMacro(UTP_PADWITHLGCUPLINK, PT_AP11LMMNV, MoonRev >= 16 && MoonRevTime > 1.0*3600.0 + 15.0*60.0, 80, MST_F_LUNAR_ORBIT_DOI_DAY_25);
+	case MST_F_LUNAR_ORBIT_DOI_DAY_24: //LM weight update to APS depletion PAD update
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, SubStateTime > 3.0*60.0, 80, MST_F_LUNAR_ORBIT_DOI_DAY_25);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_25: //TEI-22 update to state vector update
+	case MST_F_LUNAR_ORBIT_DOI_DAY_25: //APS depletion PAD update to TEI-22 update
+		UpdateMacro(UTP_PADWITHLGCUPLINK, PT_AP11LMMNV, MoonRev >= 16 && MoonRevTime > 1.0*3600.0 + 15.0*60.0, 81, MST_F_LUNAR_ORBIT_DOI_DAY_26);
+		break;
+	case MST_F_LUNAR_ORBIT_DOI_DAY_26: //TEI-22 update to rev 22 map update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, MoonRev >= 17 && MoonRevTime > 1.0*3600.0 + 15.0*60.0, 34, MST_F_LUNAR_ORBIT_DOI_DAY_27);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_27: //State vector update to rev 22 map update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_DOI_DAY_28);
+	case MST_F_LUNAR_ORBIT_DOI_DAY_27: //Rev 22 map update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, true, 45, MST_F_LUNAR_ORBIT_DOI_DAY_28);
 		break;
-	case MST_F_LUNAR_ORBIT_DOI_DAY_28: //Rev 22 map update to rev 23 map update
-		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 22 && MoonRevTime > 55.0*60.0, 45, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_1);
+	case MST_F_LUNAR_ORBIT_DOI_DAY_28: //State vector update to LLS2 photo PAD
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_DOI_DAY_29);
+		break;
+	case MST_F_LUNAR_ORBIT_DOI_DAY_29: //LLS2 photo PAD to rev 23 map update
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, MoonRev >= 22 && MoonRevTime > 55.0*60.0, 200, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_1);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_1: //Rev 23 map update to TEI-23 update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, SubStateTime > 3.0*60.0, 46, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_2);
@@ -304,71 +310,77 @@ void MCC::MissionSequence_F()
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_2: //TEI-23 update to state vector update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 35, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_3);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_3: //State vector update to state vector update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 23 && MoonRevTime > 1.0*3600.0, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_5);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_3: //State vector update to strip photo update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 22 && MoonRevTime > 90*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_4);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_5: //State vector update to landmark tracking update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_6);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_4: //Strip photo update to landmark tracking update
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, MoonRev >= 23 && MoonRevTime > 1.0*3600.0, 201, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_5);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_6: //Landmark tracking rev 24 update to TEI-24 update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 5.0*60.0, 53, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_7);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_5: //Landmark tracking rev 24 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, true, 53, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_6);
+		break;
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_6: //State vector update to TEI-24 update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_7);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_7: //TEI-24 update to rev 24 map update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 36, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_8);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_8: //Rev 24 map update to state vector update
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_8: //Rev 24 map update to TEI-25 update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 24 && MoonRevTime > 1.0*3600.0 + 5.0*60.0, 47, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_9);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_9: //State vector update to TEI-25 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_10);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_9: //TEI-25 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 37, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_10);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_10: //TEI-25 update to landmark tracking rev 25 update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 37, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_11);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_10: //State vector update to landmark tracking rev 25 update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_11);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_11: //Landmark tracking rev 25 update to rev 25 map update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 5.0*60.0, 54, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_12);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 3.0*60.0, 54, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_12);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_12: //Rev 25 map update to state vector update
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_12: //Rev 25 map update to TEI-26 update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 25 && MoonRevTime > 1.0*3600.0 + 5.0*60.0, 48, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_13);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_13: //State vector update to TEI-26 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_14);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_13: //TEI-26 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 38, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_14);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_14: //TEI-26 update to landmark tracking rev 26 update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 38, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_15);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_14: //State vector update to landmark tracking rev 26 update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_15);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_15: //Landmark tracking rev 26 update to rev 26 map update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 5.0*60.0, 55, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_16);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 3.0*60.0, 55, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_16);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_16: //Rev 26 map update to state vector update
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_16: //Rev 26 map update to TEI-27 update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 26 && MoonRevTime > 1.0*3600.0 + 5.0*60.0, 49, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_17);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_17: //State vector update to TEI-27 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_18);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_17: //TEI-27 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 39, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_18);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_18: //TEI-27 update to landmark tracking rev 27 update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 39, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_19);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_18: //State vector update to landmark tracking rev 27 update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_19);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_19: //Landmark tracking rev 27 update to rev 27 map update
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 5.0*60.0, 56, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_20);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 3.0*60.0, 56, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_20);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_20: //Rev 27 map update to TEI-29 update
-		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 27 && MoonRevTime > 40.0*60.0, 140, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_21);
+		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 27 && MoonRevTime > 1.0*3600.0 + 5.0*60.0, 140, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_21);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_21: //TEI-29 update to rev 29 map update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 130, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_22);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_21: //TEI-29 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 130, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_22);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_22: //Rev 29 map update to state vector update
-		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 27 && MoonRevTime > 1.0*3600.0 + 5.0*60.0, 141, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_24);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_22: //State vector update to rev 29 map update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_23);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_24: //State vector update to state vector update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 29 && MoonRevTime > 1.0*3600.0 + 10.0*60.0, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_25);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_23: //Rev 29 map update to LLS3 photo update
+		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, SubStateTime > 3.0*60.0, 141, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_24);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_25: //State vector update to TEI-30 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, true, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_26);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_24: //LLS3 photo update to TEI-30 update
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, MoonRev >= 29 && MoonRevTime > 1.0*3600.0 + 10.0*60.0, 202, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_25);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_26: //TEI-30 update to landmark tracking rev 30 update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 131, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_27);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_25: //TEI-30 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 131, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_26);
+		break;
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_26: //State vector update to landmark tracking rev 30 update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_27);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_27: //Landmark tracking rev 30 update to rev 30 map update
 		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, SubStateTime > 3.0*60.0, 57, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_28);
@@ -376,14 +388,17 @@ void MCC::MissionSequence_F()
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_28: //Rev 30 map update to preliminary TEI-31 update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, MoonRev >= 30 && MoonRevTime > 1.0*3600.0 + 15.0*60.0, 142, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_29);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_29: //Preliminary TEI-31 update to rev 31 map update
-		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 132, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_30);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_29: //Preliminary TEI-31 update to state vector update
+		UpdateMacro(UTP_PADONLY, PT_AP11MNV, true, 132, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_30);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_30: //Rev 31 map update to state vector update
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_30: //State vector update to rev 31 map update
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 3.0*60.0, 103, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_31);
+		break;
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_31: //Rev 31 map update to strip photo update
 		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, SubStateTime > 3.0*60.0, 143, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_32);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_32: //State vector update to final TEI-31 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, MoonRev >= 31 && MoonRevTime > 35.0*60.0, 100, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_33);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_32: //Strip photo update to final TEI-31 update
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, MoonRev >= 31 && MoonRevTime > 35.0*60.0, 203, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_33);
 		break;
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_33: //Final TEI-31 update to TEI-32 update
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 3.0*60.0, 133, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_34);
@@ -391,8 +406,11 @@ void MCC::MissionSequence_F()
 	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_34: //TEI-32 update to TEI map update
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, SubStateTime > 3.0*60.0, 134, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_35);
 		break;
-	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_35: //TEI map update to TEI
-		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, rtcc->GETEval2(rtcc->calcParams.TEI), 144, MST_F_TRANSEARTH_1);
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_35: //TEI map update to TV update
+		UpdateMacro(UTP_PADONLY, PT_AP10MAPUPDATE, rtcc->GETEval2(rtcc->calcParams.TEI - 55.0*60.0), 144, MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_36);
+		break;
+	case MST_F_LUNAR_ORBIT_LMK_TRACK_DAY_36: //TV update to TEI
+		UpdateMacro(UTP_PADONLY, PT_GENERIC, rtcc->GETEval2(rtcc->calcParams.TEI), 204, MST_F_TRANSEARTH_1);
 		break;
 	case MST_F_TRANSEARTH_1: //TEI to PTC REFSMMAT
 		if (rtcc->GETEval2(rtcc->calcParams.TEI) && MissionPhase == MMST_LUNAR_ORBIT)
@@ -409,10 +427,10 @@ void MCC::MissionSequence_F()
 		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TEI + 2.0*3600.0 + 40.0*60.0), 10, MST_F_TRANSEARTH_3);
 		break;
 	case MST_F_TRANSEARTH_3: //State vector update to state vector update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TEI + 10.0*3600.0 + 15.0*60.0), 100, MST_F_TRANSEARTH_4);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TEI + 10.0*3600.0 + 15.0*60.0), 103, MST_F_TRANSEARTH_4);
 		break;
 	case MST_F_TRANSEARTH_4: //State vector update to MCC-5 update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TEI + 14.0*3600.0 + 10.0*60.0), 100, MST_F_TRANSEARTH_5);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, rtcc->GETEval2(rtcc->calcParams.TEI + 14.0*3600.0 + 10.0*60.0), 103, MST_F_TRANSEARTH_5);
 		break;
 	case MST_F_TRANSEARTH_5: //MCC-5 update to preliminary MCC-6 update
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, rtcc->GETEval2(rtcc->calcParams.TEI + 27.0*3600.0 + 20.0*60.0), 90, MST_F_TRANSEARTH_6);
@@ -424,7 +442,7 @@ void MCC::MissionSequence_F()
 		UpdateMacro(UTP_PADONLY, PT_AP11ENT, rtcc->GETEval2(rtcc->calcParams.EI - 16.0*3600.0 - 45.0*60.0), 96, MST_F_TRANSEARTH_8);
 		break;
 	case MST_F_TRANSEARTH_8: //MCC-6 update to Entry PAD update
-		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 5.0*60.0, 92, MST_F_TRANSEARTH_9);
+		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 3.0*60.0, 92, MST_F_TRANSEARTH_9);
 		break;
 	case MST_F_TRANSEARTH_9: //Entry PAD update to MCC-7 decision update
 		UpdateMacro(UTP_PADONLY, PT_AP11ENT, rtcc->GETEval2(rtcc->calcParams.EI - 5.0*3600.0 - 45.0*60.0), 97, MST_F_TRANSEARTH_10);
