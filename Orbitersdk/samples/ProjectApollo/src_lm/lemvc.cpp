@@ -1018,9 +1018,8 @@ void LEM::RegisterActiveAreas()
 	oapiVCRegisterArea(AID_VC_EVA_Ant_Handle, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);		// Area ...
 	oapiVCSetAreaClickmode_Spherical(AID_VC_EVA_Ant_Handle, EVAAntHandleLoc + ofs, 0.05);	// Area Mode of the Click point
 
-	oapiVCRegisterArea(AID_LMVC_INTEGRAL_LIGHT, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
-	oapiVCRegisterArea(AID_LMVC_FLOOD_LIGHT, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
-	oapiVCRegisterArea(AID_LMVC_NUMERICS_LIGHT, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
+	// LMVC Lighting
+	oapiVCRegisterArea(AID_LMVC_LIGHTING,  PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
 
 	oapiVCRegisterArea(AID_VC_LM_CWS_LEFT, _R(238*TexMul, 27*TexMul, 559*TexMul, 153*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 	oapiVCRegisterArea(AID_VC_MISSION_CLOCK, _R(60*TexMul, 259*TexMul, 202*TexMul, 281*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
@@ -1474,9 +1473,6 @@ void LEM::RegisterActiveAreas()
 	const VECTOR3 COAS1Location = { -0.475804, 1.0044, 1.0043 };
 	oapiVCRegisterArea(AID_VC_COAS1, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
 	oapiVCSetAreaClickmode_Spherical(AID_VC_COAS1, COAS1Location + ofs, 0.05);
-
-	// LMVC Lighting
-	oapiVCRegisterArea(AID_LMVC_LIGHTING,  PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
 
 	//
 	// Initialize surfaces and switches
