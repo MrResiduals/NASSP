@@ -1252,11 +1252,55 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 	{
 		AP11AGSACT *form = (AP11AGSACT*)pad;
 
-		form->KFactor = 90.0*3600.0;
+		SV sv1, sv2, sv_INP;
+		double t_sunrise, t_TPI, KFactor;
+
+		PDAPOpt opt;
+		PDAPResults res;
+
+		LEM *l = (LEM *)calcParams.tgt;
+
+		sv1 = StateVectorCalc(calcParams.tgt);
+		sv2 = StateVectorCalc(calcParams.src);
+
+		sv_INP = ExecuteManeuver(sv1, TimeofIgnition, DeltaV_LVLH, 0.0, RTCC_ENGINETYPE_LMDPS);
+
+		t_sunrise = calcParams.PDI + 3.0*3600.0;
+		t_TPI = FindOrbitalSunrise(sv2, t_sunrise) - 23.0*60.0;
+
+		bool res_k = CalculateAGSKFactor(&l->agc.vagc, &l->aea.vags, KFactor);
+		if (res_k)
+		{
+			SystemParameters.MCGZSS = SystemParameters.MCGZSL + KFactor / 3600.0;
+		}
+
+		opt.dt_stage = 999999.9;
+		opt.W_TAPS = 4711.0;
+		opt.W_TDRY = 6874.3;
+		opt.dt_step = 20.0;
+		opt.t_TPI = t_TPI;
+		opt.IsTwoSegment = true;
+		opt.REFSMMAT = GetREFSMMATfromAGC(&mcc->lm->agc.vagc, false);
+		opt.R_LS = OrbMech::r_from_latlong(BZLAND.lat[RTCC_LMPOS_BEST], BZLAND.lng[RTCC_LMPOS_BEST], BZLAND.rad[RTCC_LMPOS_BEST]);
+		opt.sv_A = sv_INP;
+		opt.sv_P = sv2;
+		opt.TLAND = CZTDTGTU.GETTD;
+
+		PoweredDescentAbortProgram(opt, res);
+
+		form->KFactor = GETfromGMT(GetAGSClockZero());
+		form->DEDA224 = (int)(res.DEDA224 / 0.3048 / 100.0);
+		form->DEDA225 = (int)(res.DEDA225 / 0.3048 / 100.0);
+		form->DEDA226 = (int)(res.DEDA226 / 0.3048 / 100.0);
+		form->DEDA227 = OrbMech::DoubleToDEDA(res.DEDA227 / 0.3048*pow(2, -20), 14);
+
+		/* 
+		Pad-load:
 		form->DEDA224 = 60267;
 		form->DEDA225 = 58148;
 		form->DEDA226 = 70312;
-		form->DEDA227 = -50031;		
+		form->DEDA227 = -50031;
+		*/
 	}
 	break;
 	case 37: //SEPARATION MANEUVER

@@ -1331,11 +1331,13 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 		form->DEDA226 = (int)(res.DEDA226 / 0.3048 / 100.0);
 		form->DEDA227 = OrbMech::DoubleToDEDA(res.DEDA227 / 0.3048*pow(2, -20), 14);
 
-		/* Pad-load:
+		/*
+		Pad-load:
 		form->DEDA224 = 60326;
 		form->DEDA225 = 58158;
 		form->DEDA226 = 70312;
-		form->DEDA227 = -50181;*/
+		form->DEDA227 = -50181;
+		*/
 
 		emem[0] = 16;
 		emem[1] = 2550;
