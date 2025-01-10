@@ -1308,9 +1308,10 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		AP11ManPADOpt opt;
 		SV sv;
 		VECTOR3 dV_LVLH;
-		double t_P, t_Sep;
+		double t_P, t_Sep, t_Undock;
 		char buffer1[1000];
 		char buffer2[1000];
+		char GETBuffer[128];
 
 		AP11MNV * form = (AP11MNV *)pad;
 
@@ -1319,6 +1320,8 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		t_P = OrbMech::period(sv.R, sv.V, OrbMech::mu_Moon);
 		t_Sep = floor(calcParams.DOI - t_P / 2.0);
 		calcParams.SEP = t_Sep;
+		//Undocking 25 minutes (rounded down to the previous minute) before sep
+		t_Undock = floor((calcParams.SEP - 25.0*60.0) / 60.0)*60.0;
 		dV_LVLH = _V(0, 0, -2.5)*0.3048;
 
 		opt.TIG = t_Sep;
@@ -1332,6 +1335,8 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		AP11ManeuverPAD(opt, *form);
 		form->type = 2;
 		sprintf(form->purpose, "SEP");
+		OrbMech::format_time_HHMMSS(GETBuffer, t_Undock);
+		sprintf(form->remarks, "Undocking at %s GET", GETBuffer);
 
 		AGCStateVectorUpdate(buffer1, sv, true);
 		AGCStateVectorUpdate(buffer2, sv, false);
