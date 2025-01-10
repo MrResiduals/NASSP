@@ -221,7 +221,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, SubStateTime > 5.0*60.0, 35, MST_G_LUNAR_ORBIT_PDI_DAY_10);
 		break;
 	case MST_G_LUNAR_ORBIT_PDI_DAY_10: //AGS activation update to Separation maneuver update
-		UpdateMacro(UTP_PADONLY, PT_AP11AGSACT, SubStateTime > 3.0*60.0, 36, MST_G_LUNAR_ORBIT_PDI_DAY_11);
+		UpdateMacro(UTP_PADONLY, PT_AP11AGSACT, SubStateTime > 5.0*60.0, 36, MST_G_LUNAR_ORBIT_PDI_DAY_11);
 		break;
 	case MST_G_LUNAR_ORBIT_PDI_DAY_11: //Separation maneuver update to DOI update
 		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, MoonRev >= 13 && MoonRevTime > 30.0*60.0, 37, MST_G_LUNAR_ORBIT_PDI_DAY_12);
