@@ -3624,6 +3624,8 @@ public:
 	TemperatureTransducer WasteH2ODumpTempSensor;
 	TemperatureTransducer UrineDumpTempSensor;
 
+	TemperatureTransducer DockProbeTempSensor;
+
 protected:
 
 	// CM Optics

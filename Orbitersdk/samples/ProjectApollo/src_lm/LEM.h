@@ -477,6 +477,7 @@ public:
 	void DrogueVis();
 	void HideProbes();
 	void HideDeflectors();
+	void HideCask();
 	void ShowXPointerShades();
 	void SetTrackLight();
 	void SetDockingLights();
@@ -544,6 +545,9 @@ public:
 	virtual void StartEVA();
 	void StartSeparationPyros();
 	void StopSeparationPyros();
+
+	void AnimEVAAntHandle();
+	void SetAnimations(double);
 
 	//
 	// VISHANDLE
@@ -1559,6 +1563,12 @@ protected:
 
 	int LEMWindowShades;
 
+	/////////////////////
+    // LEM EVA Antenna //
+	/////////////////////
+ 
+	CircuitBrakerSwitch EvaAntennaHandle;
+
 	///////////////////////////
 	// ORDEAL Panel switches //
 	///////////////////////////
@@ -1694,6 +1704,7 @@ protected:
 
 	DEVMESHHANDLE probes;
 	DEVMESHHANDLE deflectors;
+	DEVMESHHANDLE cask;
 	DEVMESHHANDLE drogue;
 	DEVMESHHANDLE cdrmesh;
 	DEVMESHHANDLE lmpmesh;
@@ -1767,6 +1778,14 @@ protected:
 	double vcFreeCamz;
 	double vcFreeCamSpeed;
 	double vcFreeCamMaxOffset;
+
+	//
+	// EVA Antenna Handle
+	//
+
+	int EVAAntHandleStatus;
+	UINT EVAAntHandleAnim;
+	AnimState EVAAntHandleState;
 
 	//
 	// Failures.
