@@ -1265,7 +1265,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		sv_INP = ExecuteManeuver(sv1, TimeofIgnition, DeltaV_LVLH, 0.0, RTCC_ENGINETYPE_LMDPS);
 
 		t_sunrise = calcParams.PDI + 3.0*3600.0;
-		t_TPI = FindOrbitalSunrise(sv2, t_sunrise) - 23.0*60.0;
+		t_TPI = mcc->mcc_calcs.FindOrbitalSunrise(sv2, t_sunrise) - 23.0*60.0;
 
 		bool res_k = CalculateAGSKFactor(&l->agc.vagc, &l->aea.vags, KFactor);
 		if (res_k)
@@ -1293,7 +1293,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		form->DEDA226 = (int)(res.DEDA226 / 0.3048 / 100.0);
 		form->DEDA227 = OrbMech::DoubleToDEDA(res.DEDA227 / 0.3048*pow(2, -20), 14);
 
-		/* 
+		/*
 		Pad-load:
 		form->DEDA224 = 60267;
 		form->DEDA225 = 58148;
