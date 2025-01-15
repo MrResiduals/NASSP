@@ -1,5 +1,5 @@
 #ifndef __EMISSIONLISTLMVC_H
-#define __EMISSIONLISTLMVC
+#define __EMISSIONLISTLMVC_H
 
 // Emissionlist for LMVC.msh
 
@@ -140,7 +140,29 @@ DWORD IntegralLights_LMVC_NoTex[] = {
 DWORD NumericLights_LMVC[] = {
 	VC_MAT_Panel4_DSKY,
 	VC_MAT_Panel1_Numerics_Timer,
-	VC_MAT_DEDA_Display
+	VC_MAT_DEDA_Display,
+/*	VC_MAT_L01_PwrFail_XpointerL,
+	VC_MAT_L02_PwrFail_Thrust,
+	VC_MAT_L03_PwrFail_DPSpress,
+	VC_MAT_L04_PwrFail_RCSpress,
+	VC_MAT_L05_PwrFail_RCSquan,
+	VC_MAT_L06_PwrFail_ECSpress,
+	VC_MAT_L07_PwrFail_Glycol,
+	VC_MAT_L08_PwrFail_ECSquan,
+	VC_MAT_L09_PwrFail_XpointerR,
+	VC_MAT_L10_ContactLight1,
+	VC_MAT_L11_ContactLight2,
+	VC_MAT_L12_CompLight1_RRnottrack,
+	VC_MAT_L13_CompLight2_Glycol,
+	VC_MAT_L14_CompLight3_SuitFan,
+	VC_MAT_L15_CompLight4_CO2,
+	VC_MAT_L16_CompLight5_H2Osep,
+	VC_MAT_L17_CompLight6_DCBus,
+	VC_MAT_L18_CompLight7_BatFault,
+	VC_MAT_L19_StageSeq_SysA,
+	VC_MAT_L20_StageSeq_SysB,
+	VC_MAT_L21_PwrFail_RangeRate
+*/
 };
 
 DWORD LMVC_DSKY_Lights[] = {

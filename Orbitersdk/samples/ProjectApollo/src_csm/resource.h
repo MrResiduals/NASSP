@@ -906,6 +906,12 @@
 #define AID_VC_Ordeal_Stowed			3214
 #define AID_VC_Waste_Disposal			3215
 #define AID_VC_Panel382_Cover			3216
+#define AID_VC_DSKY_Glareshade			3217
+#define AID_VC_EMSDV_Glareshade			3218
+#define AID_VC_AccelerometerCover		3219
+#define AID_VC_MissionTimer_Glareshade	3220
+#define AID_VC_Sextant_Eyepiece			3221
+#define AID_VC_Telescope_Eyepiece		3222
 
 // VC Active Areas (Panel 2)
 #define AID_VC_PANEL_2			((id >= 4800) && (id <= 4999))

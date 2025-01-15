@@ -561,6 +561,9 @@ void Saturn::SystemsInit() {
 	WasteH2ODumpTempSensor.Init(&Panel276CB1, (h_Tank*)Panelsdk.GetPointerByString("HYDRAULIC:WATERDUMPNOZZLE"));
 	UrineDumpTempSensor.Init(&Panel276CB2, (h_Tank*)Panelsdk.GetPointerByString("HYDRAULIC:URINEDUMPNOZZLE"));
 
+	dockingprobe.Init(this);
+	DockProbeTempSensor.Init(&Panel276CB2, (h_Radiator *)Panelsdk.GetPointerByString("HYDRAULIC:DOCKPROBE"));
+
 	// Optics initialization
 	optics.Init(this);
 
@@ -1152,6 +1155,22 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 //------------------------------------------------------------------------------------
 // Various debug prints
 //------------------------------------------------------------------------------------
+//Scaling Debug Lines
+	/*
+	//double *pressCO2 = (double *)Panelsdk.GetPointerByString("HYDRAULIC:SUIT:CO2_PPRESS");
+
+	//sprintf(oapiDebugString(), "Value %.3f Volts: %.3f SCE Volts %.3f TempF: %.3f", FuelCellCondenserTempMeter.QueryValue() ,FuelCells[0]->GetCondTempVoltage(), GetSCE()->GetVoltage(2, 3), KelvinToFahrenheit(FuelCells[0]->condenserTemp));
+	//sprintf(oapiDebugString(), "Volts: %.2f mmHg: %.3f", CO2PartPressSensor.Voltage(), (*pressCO2 *MMHG));
+	//sprintf(oapiDebugString(), "Pixel %.2f MeterValue: %.2f XducerV %.2f", (129 - (O2Pressure1Meter.QueryValue()) * 20.6), O2Pressure1Meter.QueryValue(), O2Tank1PressSensor.Voltage());
+	*/
+
+// Structure Temperature Debug Lines
+	/*
+	double *DockProbeTemp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:DOCKPROBE:TEMP");
+	int *DockProbeHX = (int *)Panelsdk.GetPointerByString("HYDRAULIC:DOCKPROBEINCABIN:PUMP");
+
+	//sprintf(oapiDebugString(), "Volts: %.2f Temp: %.4f Installed: %d HX: %d", DockProbeTempSensor.Voltage(), KelvinToFahrenheit(*DockProbeTemp), dockingprobe.IsInstalled(), *DockProbeHX);
+	*/
 
 // GSE Cryo Debug Lines
 	/*
@@ -1163,6 +1182,7 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 	double *GSEH2CryoTemp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:GSECRYOH2DEWAR:TEMP");
 	double *H2Tank1Temp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:H2TANK1:TEMP");
 	double *H2Tank2Temp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:H2TANK2:TEMP");
+
 	//sprintf(oapiDebugString(), "GSEPress: %.3f GSETemp: %.3f O2T1Temp: %.3f O2T2Temp: %.3f", *GSEO2CryoPress *PSI, KelvinToFahrenheit(*GSEO2CryoTemp), KelvinToFahrenheit(*O2Tank1Temp), KelvinToFahrenheit(*O2Tank2Temp));
 	//sprintf(oapiDebugString(), "GSEPress: %.3f GSETemp: %.3f H2T1Temp: %.3f H2T2Temp: %.3f", *GSEH2CryoPress *PSI, KelvinToFahrenheit(*GSEH2CryoTemp), KelvinToFahrenheit(*H2Tank1Temp), KelvinToFahrenheit(*H2Tank2Temp));
 	*/

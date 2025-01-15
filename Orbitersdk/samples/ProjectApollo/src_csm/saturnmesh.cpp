@@ -1364,6 +1364,38 @@ void Saturn::SetAltimeterCover() {
 	}
 }
 
+void Saturn::SetDSKY_Glareshade() {
+	if (DSKY_GlareshadeStatus) {
+		DSKY_GlareshadeState.action = AnimState::OPENING;
+	} else {
+		DSKY_GlareshadeState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetEMSDV_Glareshade() {
+	if (EMSDV_GlareshadeStatus) {
+		EMSDV_GlareshadeState.action = AnimState::OPENING;
+	} else {
+		EMSDV_GlareshadeState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetAccelerometerCover() {
+	if (AccelerometerCoverStatus) {
+		AccelerometerCoverState.action = AnimState::OPENING;
+	} else {
+		AccelerometerCoverState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetMissionTimer_Glareshade() {
+	if (MissionTimer_GlareshadeStatus) {
+		MissionTimer_GlareshadeState.action = AnimState::OPENING;
+	} else {
+		MissionTimer_GlareshadeState.action = AnimState::CLOSING;
+	}
+}
+
 void Saturn::SetWasteDisposal() {
 	if (wasteDisposalStatus) {
 		wasteDisposalState.action = AnimState::OPENING;
@@ -1372,17 +1404,36 @@ void Saturn::SetWasteDisposal() {
 	}
 }
 
+void Saturn::SetSextant_Eyepiece() {
+	if (Sextant_EyepieceStatus) {
+		Sextant_EyepieceState.action = AnimState::OPENING;
+	} else {
+		Sextant_EyepieceState.action = AnimState::CLOSING;
+	}
+}
+
+void Saturn::SetTelescope_Eyepiece() {
+	if (Telescope_EyepieceStatus) {
+		Telescope_EyepieceState.action = AnimState::OPENING;
+	} else {
+		Telescope_EyepieceState.action = AnimState::CLOSING;
+	}
+}
 void Saturn::SetPanel382Cover() {
 	if (panel382CoverStatus) {
 		panel382CoverState.action = AnimState::OPENING;
+		Panel382Cover.SetState(1);
+		//Sat->panel382Enabled = 1;
 	} else {
 		panel382CoverState.action = AnimState::CLOSING;
+		Panel382Cover.SetState(0);
+		//Sat->panel382Enabled = 0;
 	}
 }
 
 
 void Saturn::SetOrdealMesh() {
-	GROUPEDITSPEC ordealMesh;
+/*	GROUPEDITSPEC ordealMesh;
 	ordealMesh.flags = GRPEDIT_SETUSERFLAG;
 	std::vector<DWORD> ordealMeshParts;
 	ordealMeshParts.push_back(VC_GRP_Screws_Panel13);
@@ -1409,7 +1460,12 @@ void Saturn::SetOrdealMesh() {
 			oapiEditMeshGroup(vcmesh, ordealMeshParts[i], &ordealMesh);
 		}
 	}
-
+*/
+	if (ordealStowed) {
+		ordealState.action = AnimState::OPENING;
+	} else {
+		ordealState.action = AnimState::CLOSING;
+	}
 }
 
 void Saturn::SetCOASMesh() {

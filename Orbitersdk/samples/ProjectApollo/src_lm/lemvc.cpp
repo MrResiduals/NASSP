@@ -731,6 +731,20 @@ bool LEM::clbkLoadVC (int id)
 	flashlight->SetVisibility(LightEmitter::VIS_COCKPIT);
 	flashlight->Activate(flashlightOn);
 
+	//FloodLight Right Pilot
+	DelLightEmitter(floodLight_Right);
+	floodLight_Right = (::PointLight*)AddPointLight(floodLightPos_Right, 3, 0, 0, 3, floodLightColor_Right, floodLightColor_Right, floodLightColor2_Right);
+	floodLight_Right->SetVisibility(LightEmitter::VIS_COCKPIT);
+	floodLight_Right->Activate(true);
+	floodLight_Right->SetIntensity(1);
+
+	//FloodLight Left Commander
+	DelLightEmitter(floodLight_Left);
+	floodLight_Left = (::PointLight*)AddPointLight(floodLightPos_Left, 3, 0, 0, 3, floodLightColor_Left, floodLightColor_Left, floodLightColor2_Left);
+	floodLight_Left->SetVisibility(LightEmitter::VIS_COCKPIT);
+	floodLight_Left->Activate(true);
+	floodLight_Left->SetIntensity(1);
+
 	switch (id) {
 	case LMVIEW_CDR:
 		viewpos = LMVIEW_CDR;
@@ -998,6 +1012,11 @@ void LEM::RegisterActiveAreas()
 		oapiVCRegisterArea(AID_VC_ROT_P1_01 + i, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_DOWN);
 		oapiVCSetAreaClickmode_Spherical(AID_VC_ROT_P1_01 + i, P1_ROT_POS[i] + ofs, 0.02);
 	}
+
+	// EVA Antenna
+	const VECTOR3 EVAAntHandleLoc = _V(-0.268539, 0.960945, -0.3565);						// Clickpoint Location ...
+	oapiVCRegisterArea(AID_VC_EVA_Ant_Handle, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);		// Area ...
+	oapiVCSetAreaClickmode_Spherical(AID_VC_EVA_Ant_Handle, EVAAntHandleLoc + ofs, 0.05);	// Area Mode of the Click point
 
 	// LMVC Lighting
 	oapiVCRegisterArea(AID_LMVC_LIGHTING,  PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
@@ -1512,6 +1531,16 @@ void LEM::RegisterActiveAreas()
 bool LEM::clbkVCMouseEvent(int id, int event, VECTOR3 &p)
 {
 	switch (id) {
+	case AID_VC_EVA_Ant_Handle:
+		if (EVAAntHandleStatus) {
+			EVAAntHandleStatus = false;
+		}
+		else {
+			EVAAntHandleStatus = true;
+		}
+		AnimEVAAntHandle();
+		return true;
+
 		case AID_VC_OVERHEADHATCH:
 			OverheadHatch.Toggle();
 			return true;
@@ -1577,39 +1606,50 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 		// Get the Caution& Warning Light Status
 		for (int i = 0; i < 5;  i++) {
 			for (int j = 0; j < 8; j++) {
-				if (CWEA.GetCWLightStatus(i, j)==1 && CWEA.IsCWPWRLTGPowered() == true) { DSKY_CW_Lights.push_back(LMVC_CW_Lights[i][j]); }
+				if (CWEA.GetCWLightStatus(i, j)==1 && CWEA.IsCWPWRLTGPowered() == true && CWEA.IsLTGPowered() == true) { DSKY_CW_Lights.push_back(LMVC_CW_Lights[i][j]); }
 			}
 		}
-		
-		if (dsky.UplinkLit())     { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_UPLINK_ACTY); }
-		if (dsky.NoAttLit())      { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_NO_ATT); }
-		if (dsky.StbyLit())       { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_STBY); }
-		if (dsky.KbRelLit())      { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_KEY_REL); }
-		if (dsky.OprErrLit())     { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_OPR_ERR); }
-		if (dsky.TempLit())       { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_TEMP); }
-		if (dsky.GimbalLockLit()) { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_GIMBAL_LOCK); }
-		if (dsky.ProgLit())       { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_PROG); }
-		if (dsky.RestartLit())    { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_RESTART); }
-		if (dsky.TrackerLit())    { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_TRACKER); }
+		if (dsky.GetStatusPower() == true && dsky.GetSegmentPower() == true)
+		{
+			if (dsky.UplinkLit())     { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_UPLINK_ACTY); }
+			if (dsky.NoAttLit())      { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_NO_ATT); }
+			if (dsky.StbyLit())       { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_STBY); }
+			if (dsky.KbRelLit())      { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_KEY_REL); }
+			if (dsky.OprErrLit())     { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_OPR_ERR); }
+			if (dsky.TempLit())       { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_TEMP); }
+			if (dsky.GimbalLockLit()) { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_GIMBAL_LOCK); }
+			if (dsky.ProgLit())       { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_PROG); }
+			if (dsky.RestartLit())    { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_RESTART); }
+			if (dsky.TrackerLit())    { DSKY_CW_Lights.push_back(VC_MAT_DSKY_LIGHTS_TRACKER); }
+		}
 
 //		sprintf(oapiDebugString(), "Integral Voltage = %lf", lca.GetNumericVoltage());
 
+		double floodRotaryValue = FloodLights.GetCDRRotaryVoltage() / 28.0;
+		floodRotaryValue = 0.0;
+
+		
+		/// Hardcode Materials with no Texture
+		SetVCLighting(vcidx,   VC_MAT_FDAI_errorneedle, MAT_LIGHT, floodRotaryValue, 1);
+
 		// MAT_LIGHT changes the Brightness of the Material
 		// MAT_EMISSION changes the Brightness of the Material controlled by its _emis Texture
-		SetVCLighting(vcidx, FloodLights_LMVC,    MAT_LIGHT, FloodLights.GetCDRRotaryVoltage() / 28.0, NUM_ELEMENTS(FloodLights_LMVC));
-		SetVCLighting(vcidx, IntegralLights_LMVC, MAT_EMISSION, ((lca.GetIntegralVoltage() / 75.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0)) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
-		SetVCLighting(vcidx, IntegralLights_LMVC_NoTex, MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0)) / 2.0, NUM_ELEMENTS(IntegralLights_LMVC));
-		SetVCLighting(vcidx, NumericLights_LMVC,  MAT_LIGHT, ((lca.GetNumericVoltage() / 110.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0) )/2, NUM_ELEMENTS(NumericLights_LMVC));
+		SetVCLighting(vcidx, FloodLights_LMVC,    MAT_LIGHT, floodRotaryValue, NUM_ELEMENTS(FloodLights_LMVC));
+		floodLight_Left->SetIntensity(FloodLights.GetCDRRotaryVoltage() / 28.0);
+		floodLight_Right->SetIntensity(FloodLights.GetLMPRotaryVoltage() / 28.0);
+		SetVCLighting(vcidx, IntegralLights_LMVC, MAT_EMISSION, (lca.GetIntegralVoltage() / 75.0) + floodRotaryValue, NUM_ELEMENTS(IntegralLights_LMVC));
+		SetVCLighting(vcidx, IntegralLights_LMVC_NoTex, MAT_LIGHT, (lca.GetIntegralVoltage() / 75.0) + floodRotaryValue, NUM_ELEMENTS(IntegralLights_LMVC));
+		SetVCLighting(vcidx, NumericLights_LMVC,  MAT_LIGHT, (lca.GetNumericVoltage() / 115.0) + floodRotaryValue, NUM_ELEMENTS(NumericLights_LMVC));
 
 		if (CWEA.GetMasterAlarm()) {
 			SetVCLighting(vcidx, MasterAlarm_NoTex,  MAT_LIGHT, 1, NUM_ELEMENTS(MasterAlarm_NoTex));
 		}
 
-		SetVCLighting(vcidx, &DSKY_CW_Lights[0],  MAT_LIGHT, ((lca.GetIntegralVoltage() / 75.0) + (FloodLights.GetCDRRotaryVoltage() / 28.0))/2.0, DSKY_CW_Lights.size());
+		SetVCLighting(vcidx, &DSKY_CW_Lights[0],  MAT_LIGHT, (lca.GetIntegralVoltage() / 75.0) + floodRotaryValue, DSKY_CW_Lights.size());
 
 		//External Meshes ***If Second parameter is 0 then the mesh contains only one Material***
-		SetVCLighting(xpointershadesidx, 0, MAT_LIGHT, FloodLights.GetCDRRotaryVoltage() / 28.0, 1); //FloodLights_XPointer_Shades
-		SetVCLighting(windowshadesidx,   0, MAT_LIGHT, FloodLights.GetCDRRotaryVoltage() / 28.0, 1); //FloodLights_WindowShades
+		SetVCLighting(xpointershadesidx, 0, MAT_LIGHT, floodRotaryValue, 1); //FloodLights_XPointer_Shades
+		SetVCLighting(windowshadesidx,   0, MAT_LIGHT, floodRotaryValue, 1); //FloodLights_WindowShades
 
 		if (deda.OprErrLit()) {
 			SetVCLighting(vcidx, VC_MAT_DEDA_Light,  MAT_LIGHT, 1, 1);
@@ -1617,16 +1657,16 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 
         //Tapemeter Lights
         if (AltRngMonSwitch.GetState() == TOGGLESWITCH_DOWN) {
-            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_AltAltRate, MAT_EMISSION, (lca.GetNumericVoltage() / 110.0), 1);
+            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_AltAltRate, MAT_EMISSION, (lca.GetNumericVoltage() / 115.0), 1);
             SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_RangeRangeRate, MAT_EMISSION, 0.25, 1);
         }
         else {
-            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_RangeRangeRate, MAT_EMISSION, (lca.GetNumericVoltage() / 110.0), 1);
+            SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_RangeRangeRate, MAT_EMISSION, (lca.GetNumericVoltage() / 115.0), 1);
             SetVCLighting(vcidx, VC_MAT_Panel1_Tapemeter_AltAltRate, MAT_EMISSION, 0.25, 1);
         }
 
         if (TempPressMonRotary.GetState() == 0) {
-            SetVCLighting(vcidx, VC_MAT_RCS_HE_PRESS_x10, MAT_EMISSION, (lca.GetNumericVoltage() / 110.0), 1);
+            SetVCLighting(vcidx, VC_MAT_RCS_HE_PRESS_x10, MAT_EMISSION, (lca.GetNumericVoltage() / 115.0), 1);
         }
         else {
             SetVCLighting(vcidx, VC_MAT_RCS_HE_PRESS_x10, MAT_EMISSION, 0.25, 1);
@@ -3245,9 +3285,18 @@ void LEM::DefineVCAnimations()
 	RRGyroSelSwitch.SetReference(Sw_RRGyroLocation, _V(-0.048633374944462, -0.519162328382934, 0.853290848204481));
 	RRGyroSelSwitch.DefineMeshGroup(VC_GRP_Sw_RRGyro);
 
+	// Crosspointers
 	MainPanelVC.DefineVCAnimations(vcidx);
 	crossPointerLeft.DefineVCAnimations(vcidx, true);
 	crossPointerRight.DefineVCAnimations(vcidx, false);
+
+	// EVA Antenna Handle
+	static UINT EVAAntHandle[1] = { VC_GRP_EVA_Ant_Handle };
+	static MGROUP_TRANSLATE mshEVAAntHandlePull(vcidx, EVAAntHandle, 1, _V(0, -0.01, 0));
+	static MGROUP_ROTATE mshEVAAntHandleRotate(vcidx, EVAAntHandle, 1, _V(-0.268539, 0.960945, -0.3565), _V(0, 1, 0), (float)(180 * RAD));
+	EVAAntHandleAnim = CreateAnimation(0.0);
+	AddAnimationComponent(EVAAntHandleAnim, 0, 0.1, &mshEVAAntHandlePull);
+	AddAnimationComponent(EVAAntHandleAnim, 0.1, 1.0, &mshEVAAntHandleRotate);
 
 	InitFDAI(vcidx);
 }
@@ -3373,20 +3422,29 @@ void LEM::SetCompLight(int m, bool state) {
 
 	MATERIAL *mat = oapiMeshMaterial(hLMVC, m);
 
-	if (state == true)
-	{   // ON
-		mat->emissive.r = 1;
-		mat->emissive.g = 0.878f;
-		mat->emissive.b = 0.506f;
-		mat->emissive.a = 1;
-	}
-	else
-	{   // OFF
-		mat->emissive.r = 0.125f;
-		mat->emissive.g = 0.11f;
-		mat->emissive.b = 0.064f;
-		mat->emissive.a = 1;
-	}
+    if (state == true)
+    {   // ON
+        mat->diffuse.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->diffuse.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->diffuse.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->diffuse.a = 1.0f;
+        mat->emissive.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->emissive.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->emissive.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
+        mat->emissive.a = 1.0f;
+    }
+    else
+    {   // OFF
+        mat->diffuse.r = 0;
+        mat->diffuse.g = 0;
+        mat->diffuse.b = 0;
+        mat->diffuse.a = 0;
+        mat->emissive.r = 0;
+        mat->emissive.g = 0;
+        mat->emissive.b = 0;
+        mat->emissive.a = 0;
+
+    }
 
 	oapiSetMaterial(vcmesh, m, mat);
 }
@@ -3553,4 +3611,19 @@ void LEM::ToggleFlashlight()
 	if ((oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
 		SetFlashlightOn(!flashlightOn);
 	}
+}
+
+void LEM::UpdateFloodLights()
+{
+	VECTOR3 camPos;
+	VECTOR3 ofs;
+	GetCameraOffset(camPos);
+	GetMeshOffset(vcidx, ofs); // First get or VC Offset
+
+	// Debug string for finding Camera and VC mesh Position
+//	sprintf(oapiDebugString(), "%.3f  %.3f  %.3f ** %.3f  %.3f  %.3f ", camPos.x, camPos.y, camPos.z, ofs.x, ofs.y, ofs.z );
+
+	// Set the Floodlights 
+	floodLight_Left->SetPosition(ofs + floodLightPos_Left);
+	floodLight_Right->SetPosition(ofs + floodLightPos_Right);
 }

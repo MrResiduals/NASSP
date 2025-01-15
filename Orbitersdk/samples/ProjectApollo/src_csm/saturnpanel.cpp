@@ -5578,36 +5578,36 @@ void Saturn::InitSwitches() {
 	DirectUllageButton.Register(PSH, "DirectUllageButton", false);
 	ThrustOnButton.Register(PSH, "ThrustOnButton", false);
 
-	H2Pressure1Meter.Register(PSH, "H2Pressure1Meter", 0, 400, 10);
-	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 400, 10);
-	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 0, 1000, 10); //Scaled for consistent display in 2D and VC
-	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 0, 1000, 10);
-	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0, 5.0, 10);
-	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0, 5.0, 10);
-	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0, 5.0, 10);
-	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0, 5.0, 10);
+	H2Pressure1Meter.Register(PSH, "H2Pressure1Meter", 0, 350, 10);
+	H2Pressure2Meter.Register(PSH, "H2Pressure2Meter", 0, 350, 10);
+	O2Pressure1Meter.Register(PSH, "O2Pressure1Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	O2Pressure2Meter.Register(PSH, "O2Pressure2Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	H2Quantity1Meter.Register(PSH, "H2Quantity1Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	H2Quantity2Meter.Register(PSH, "H2Quantity2Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	O2Quantity1Meter.Register(PSH, "O2Quantity1Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
+	O2Quantity2Meter.Register(PSH, "O2Quantity2Meter", 0.0, 5.0, 10);  //Scaled meter 0-5V
 
 	CSMACVoltMeter.Register(PSH, "ACVoltMeter", 89, 131, 3);
 	CSMDCVoltMeter.Register(PSH, "DCVoltMeter", 19, 46, 3);
 	SystemTestVoltMeter.Register(PSH, "SystemTestMeter", 0.0, 5.0, 3);
 	DCAmpMeter.Register(PSH, "DCAmpMeter", 0, 100, 3);
 
-	FuelCellH2FlowMeter.Register(PSH, "FuelCellH2FlowMeter", 0, 0.2, 2);
-	FuelCellO2FlowMeter.Register(PSH, "FuelCellO2FlowMeter", 0, 1.6, 2);
-	FuelCellTempMeter.Register(PSH, "FuelCellTempMeter", 0, 5, 2);
-	FuelCellCondenserTempMeter.Register(PSH, "FuelCellCondenserTempMeter", 150, 250, 2);
+	FuelCellH2FlowMeter.Register(PSH, "FuelCellH2FlowMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
+	FuelCellO2FlowMeter.Register(PSH, "FuelCellO2FlowMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
+	FuelCellTempMeter.Register(PSH, "FuelCellTempMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
+	FuelCellCondenserTempMeter.Register(PSH, "FuelCellCondenserTempMeter", 0.0, 5.0, 2); //Scaled meter 0-5V
 
 	SuitTempMeter.Register(PSH, "SuitTempMeter", 20, 95, 2);
-	CabinTempMeter.Register(PSH, "CabinTempMeter", 40, 120, 2);
-	SuitPressMeter.Register(PSH, "SuitPressMeter", 0, 16, 2);
-	CabinPressMeter.Register(PSH, "CabinPressMeter", 0, 16, 2);
+	CabinTempMeter.Register(PSH, "CabinTempMeter", 40, 125, 2);
+	SuitPressMeter.Register(PSH, "SuitPressMeter", 0, 17, 2);
+	CabinPressMeter.Register(PSH, "CabinPressMeter", 0, 17, 2);
 	PartPressCO2Meter.Register(PSH, "PartPressCO2Meter", 0, 30, 2);
 
-	SuitComprDeltaPMeter.Register(PSH, "SuitComprDeltaPMeter", -0.1, 1.1, 5);
-	LeftO2FlowMeter.Register(PSH, "LeftO2FlowMeter", 0.1, 1.1, 5);
+	SuitComprDeltaPMeter.Register(PSH, "SuitComprDeltaPMeter", 0.0, 1.0, 5);
+	LeftO2FlowMeter.Register(PSH, "LeftO2FlowMeter", 0.2, 1.0, 5);
 
 	SuitCabinDeltaPMeter.Register(PSH, "SuitCabinDeltaPMeter", -6, 6, 5);
-	RightO2FlowMeter.Register(PSH, "RightO2FlowMeter", 0.1, 1.1, 5);
+	RightO2FlowMeter.Register(PSH, "RightO2FlowMeter", 0.2, 1.0, 5);
 
 	EcsRadTempInletMeter.Register(PSH, "EcsRadTempInletMeter", 50, 130, 5);
 	EcsRadTempPrimOutletMeter.Register(PSH, "EcsRadTempPrimOutletMeter", -60, 110, 5, 50);

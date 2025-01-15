@@ -477,6 +477,7 @@ public:
 	void DrogueVis();
 	void HideProbes();
 	void HideDeflectors();
+	void HideCask();
 	void ShowXPointerShades();
 	void SetTrackLight();
 	void SetDockingLights();
@@ -544,6 +545,9 @@ public:
 	virtual void StartEVA();
 	void StartSeparationPyros();
 	void StopSeparationPyros();
+
+	void AnimEVAAntHandle();
+	void SetAnimations(double);
 
 	//
 	// VISHANDLE
@@ -679,6 +683,28 @@ public:
 	VECTOR3 flashlightDirGlobal;
 	VECTOR3 flashlightDirLocal;
 	bool flashlightOn;
+
+
+	// Floodlight LM Pilot
+	void UpdateFloodLights();
+	PointLight* floodLight_Left;
+	COLOUR4 floodLightColor_Left;
+	COLOUR4 floodLightColor2_Left;
+	VECTOR3 floodLightPos_Left;
+	VECTOR3 vesselPosGlobal_Left;
+	VECTOR3 floodLightDirGlobal_Left;
+	VECTOR3 floodLightDirLocal_Left;
+	bool floodLightOn_Left;
+
+	// Floodlight LM Commander
+	PointLight* floodLight_Right;
+	COLOUR4 floodLightColor_Right;
+	COLOUR4 floodLightColor2_Right;
+	VECTOR3 floodLightPos_Right;
+	VECTOR3 vesselPosGlobal_Right;
+	VECTOR3 floodLightDirGlobal_Right;
+	VECTOR3 floodLightDirLocal_Right;
+	bool floodLightOn_Right;
 
 protected:
 
@@ -1561,6 +1587,12 @@ protected:
 
 	int LEMWindowShades;
 
+	/////////////////////
+    // LEM EVA Antenna //
+	/////////////////////
+ 
+	CircuitBrakerSwitch EvaAntennaHandle;
+
 	///////////////////////////
 	// ORDEAL Panel switches //
 	///////////////////////////
@@ -1696,6 +1728,7 @@ protected:
 
 	DEVMESHHANDLE probes;
 	DEVMESHHANDLE deflectors;
+	DEVMESHHANDLE cask;
 	DEVMESHHANDLE drogue;
 	DEVMESHHANDLE cdrmesh;
 	DEVMESHHANDLE lmpmesh;
@@ -1769,6 +1802,14 @@ protected:
 	double vcFreeCamz;
 	double vcFreeCamSpeed;
 	double vcFreeCamMaxOffset;
+
+	//
+	// EVA Antenna Handle
+	//
+
+	int EVAAntHandleStatus;
+	UINT EVAAntHandleAnim;
+	AnimState EVAAntHandleState;
 
 	//
 	// Failures.
