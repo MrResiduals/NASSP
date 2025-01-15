@@ -561,6 +561,9 @@ void Saturn::SystemsInit() {
 	WasteH2ODumpTempSensor.Init(&Panel276CB1, (h_Tank*)Panelsdk.GetPointerByString("HYDRAULIC:WATERDUMPNOZZLE"));
 	UrineDumpTempSensor.Init(&Panel276CB2, (h_Tank*)Panelsdk.GetPointerByString("HYDRAULIC:URINEDUMPNOZZLE"));
 
+	dockingprobe.Init(this);
+	DockProbeTempSensor.Init(&Panel276CB2, (h_Radiator *)Panelsdk.GetPointerByString("HYDRAULIC:DOCKPROBE"));
+
 	// Optics initialization
 	optics.Init(this);
 
@@ -1153,6 +1156,14 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 // Various debug prints
 //------------------------------------------------------------------------------------
 
+// Structure Temperature Debug Lines
+	/*
+	double *DockProbeTemp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:DOCKPROBE:TEMP");
+	int *DockProbeHX = (int *)Panelsdk.GetPointerByString("HYDRAULIC:DOCKPROBEINCABIN:PUMP");
+
+	//sprintf(oapiDebugString(), "Volts: %.2f Temp: %.4f Installed: %d HX: %d", DockProbeTempSensor.Voltage(), KelvinToFahrenheit(*DockProbeTemp), dockingprobe.IsInstalled(), *DockProbeHX);
+	*/
+
 // GSE Cryo Debug Lines
 	/*
 	double *GSEO2CryoPress = (double *)Panelsdk.GetPointerByString("HYDRAULIC:GSECRYOO2DEWAR:PRESS");
@@ -1163,6 +1174,7 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 	double *GSEH2CryoTemp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:GSECRYOH2DEWAR:TEMP");
 	double *H2Tank1Temp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:H2TANK1:TEMP");
 	double *H2Tank2Temp = (double *)Panelsdk.GetPointerByString("HYDRAULIC:H2TANK2:TEMP");
+
 	//sprintf(oapiDebugString(), "GSEPress: %.3f GSETemp: %.3f O2T1Temp: %.3f O2T2Temp: %.3f", *GSEO2CryoPress *PSI, KelvinToFahrenheit(*GSEO2CryoTemp), KelvinToFahrenheit(*O2Tank1Temp), KelvinToFahrenheit(*O2Tank2Temp));
 	//sprintf(oapiDebugString(), "GSEPress: %.3f GSETemp: %.3f H2T1Temp: %.3f H2T2Temp: %.3f", *GSEH2CryoPress *PSI, KelvinToFahrenheit(*GSEH2CryoTemp), KelvinToFahrenheit(*H2Tank1Temp), KelvinToFahrenheit(*H2Tank2Temp));
 	*/
@@ -2023,22 +2035,31 @@ void Saturn::JoystickTimestep()
 		// Use Orbiter's attitude control as RHC
 		} else {
 			// Roll
-			if (GetManualControlLevel(THGROUP_ATT_BANKLEFT) > 0) {
-				rhc_x_pos = (int) ((1. - GetManualControlLevel(THGROUP_ATT_BANKLEFT)) * 32768.);
-			} else if (GetManualControlLevel(THGROUP_ATT_BANKRIGHT) > 0) {
-				rhc_x_pos = (int) (32768. + GetManualControlLevel(THGROUP_ATT_BANKRIGHT) * 32768.);
+			double rollLeft = rhc_keyboard_deflection[THGROUP_ATT_BANKLEFT - THGROUP_ATT_PITCHUP];
+			double rollRight = rhc_keyboard_deflection[THGROUP_ATT_BANKRIGHT - THGROUP_ATT_PITCHUP];
+			if (rollLeft > 0) {
+				rhc_x_pos = (int)((1.0 - rollLeft) * 32768);
+			}
+			else if (rollRight > 0) {
+				rhc_x_pos = (int)(32768 + rollRight * 32768);
 			}
 			// Pitch
-			if (GetManualControlLevel(THGROUP_ATT_PITCHDOWN) > 0) {
-				rhc_y_pos = (int) ((1. - GetManualControlLevel(THGROUP_ATT_PITCHDOWN)) * 32768.);
-			} else if (GetManualControlLevel(THGROUP_ATT_PITCHUP) > 0) {
-				rhc_y_pos = (int) (32768. + GetManualControlLevel(THGROUP_ATT_PITCHUP) * 32768.);
+			double pitchDown = rhc_keyboard_deflection[THGROUP_ATT_PITCHDOWN - THGROUP_ATT_PITCHUP];
+			double pitchUp = rhc_keyboard_deflection[THGROUP_ATT_PITCHUP - THGROUP_ATT_PITCHUP];
+			if (pitchDown > 0) {
+				rhc_y_pos = (int)((1.0 - pitchDown) * 32768);
+			}
+			else if (pitchUp > 0) {
+				rhc_y_pos = (int)(32768 + pitchUp * 32768);
 			}
 			// Yaw
-			if (GetManualControlLevel(THGROUP_ATT_YAWLEFT) > 0) {
-				rhc_rot_pos = (int) ((1. - GetManualControlLevel(THGROUP_ATT_YAWLEFT)) * 32768.);
-			} else if (GetManualControlLevel(THGROUP_ATT_YAWRIGHT) > 0) {
-				rhc_rot_pos = (int) (32768. + GetManualControlLevel(THGROUP_ATT_YAWRIGHT) * 32768.);
+			double yawLeft = rhc_keyboard_deflection[THGROUP_ATT_YAWLEFT - THGROUP_ATT_PITCHUP];
+			double yawRight = rhc_keyboard_deflection[THGROUP_ATT_YAWRIGHT - THGROUP_ATT_PITCHUP];
+			if (yawLeft > 0) {
+				rhc_rot_pos = (int)((1.0 - yawLeft) * 32768);
+			}
+			else if (yawRight > 0) {
+				rhc_rot_pos = (int)(32768 + yawRight * 32768);
 			}
 		}
 
@@ -2048,10 +2069,8 @@ void Saturn::JoystickTimestep()
 
 		// X and Y are well-duh kinda things. X=0 for full-left, Y = 0 for full-down
 		// Set bits according to joystick state. 32768 is center, so 16384 is the left half.
-		// The real RHC had a 12 degree travel. Our joystick travels 32768 points to full deflection.
-		// This means 2730 points per degree travel. The RHC breakout switches trigger at 1.5 degrees deflection and
-		// stop at 11. So from 36863 to 62798, we trigger plus, and from 28673 to 2738 we trigger minus.
-		// The last degree of travel is reserved for the DIRECT control switches.
+		// The real RHC had a 11.5 degree travel. Our joystick travels 32768 points to full deflection.
+		// The RHC breakout switches trigger at 1.5 degrees deflection and soft stop at 10.
 		if (rhc_voltage1 > SP_MIN_DCVOLTAGE || rhc_voltage2 > SP_MIN_DCVOLTAGE) { // NORMAL
 			// CMC
 			if (rhc1.GetMinusRollBreakoutSwitch()) {
@@ -2085,7 +2104,7 @@ void Saturn::JoystickTimestep()
 		if (secs.rcsc.GetCMTransferMotor1() || secs.rcsc.GetCMTransferMotor2()) sm_sep = true;
 
 		if ((rhc_directv1 > SP_MIN_DCVOLTAGE || rhc_directv2 > SP_MIN_DCVOLTAGE)) {
-			if (rhc_x_pos < 2738) {
+			if (rhc1.GetMinusRollHardStopSwitch()) {
 				// MINUS ROLL
 				if (!sm_sep) {						
 					SetRCSState(RCS_SM_QUAD_A, 2, 1);
@@ -2133,7 +2152,7 @@ void Saturn::JoystickTimestep()
 				rjec.SetDirectRollActive(true); 
 				rflag = 1;
 			}
-			if (rhc_x_pos > 62798) {
+			if (rhc1.GetPlusRollHardStopSwitch()) {
 				// PLUS ROLL
 				if (!sm_sep) {
 					SetRCSState(RCS_SM_QUAD_A, 2, 0); 
@@ -2181,7 +2200,7 @@ void Saturn::JoystickTimestep()
 				rjec.SetDirectRollActive(true); 
 				rflag = 1;
 			}
-			if (rhc_y_pos < 2738) {
+			if (rhc1.GetMinusPitchHardStopSwitch()) {
 				// MINUS PITCH
 				if (!sm_sep) {
 					SetRCSState(RCS_SM_QUAD_C, 4, 1);
@@ -2221,7 +2240,7 @@ void Saturn::JoystickTimestep()
 				rjec.SetDirectPitchActive(true); 
 				pflag = 1;
 			}
-			if (rhc_y_pos > 62798) {
+			if (rhc1.GetPlusPitchHardStopSwitch()) {
 				// PLUS PITCH
 				if (!sm_sep) {
 					SetRCSState(RCS_SM_QUAD_C, 4, 0);
@@ -2261,7 +2280,7 @@ void Saturn::JoystickTimestep()
 				rjec.SetDirectPitchActive(true); 
 				pflag = 1;
 			}
-			if (rhc_rot_pos < 2738) {
+			if (rhc1.GetMinusYawHardStopSwitch()) {
 				// MINUS YAW
 				if (!sm_sep) {
 					SetRCSState(RCS_SM_QUAD_B, 4, 1);
@@ -2301,7 +2320,7 @@ void Saturn::JoystickTimestep()
 				rjec.SetDirectYawActive(true);
 				yflag = 1;
 			}
-			if (rhc_rot_pos > 62798) {
+			if (rhc1.GetPlusYawHardStopSwitch()) {
 				// PLUS YAW
 				if (!sm_sep) {
 					SetRCSState(RCS_SM_QUAD_D, 3, 1);
@@ -2390,7 +2409,7 @@ void Saturn::JoystickTimestep()
 		}
 		
 		if (rhc_debug != -1) { 
-			sprintf(oapiDebugString(),"RHC: X/Y/Z = %d / %d / %d | rzx_id %d rot_id %d", rhc_x_pos, rhc_y_pos, rhc_rot_pos, rhc_rzx_id, rhc_rot_id); 
+			sprintf(oapiDebugString(),"RHC: X/Y/Z = %d / %d / %d | rzx_id %d rot_id %d", rhc_x_pos, rhc_y_pos, rhc_rot_pos, rhc_rzx_id, rhc_rot_id);
 		}
 
 		//
