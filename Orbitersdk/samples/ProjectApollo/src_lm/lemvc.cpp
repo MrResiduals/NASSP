@@ -3435,15 +3435,25 @@ void LEM::SetCompLight(int m, bool state) {
     }
     else
     {   // OFF
-        mat->diffuse.r = 0;
-        mat->diffuse.g = 0;
-        mat->diffuse.b = 0;
-        mat->diffuse.a = 0;
-        mat->emissive.r = 0;
-        mat->emissive.g = 0;
-        mat->emissive.b = 0;
-        mat->emissive.a = 0;
+		mat->diffuse.r = 0.184f;
+		mat->diffuse.g = 0.157f;
+		mat->diffuse.b = 0.141f;
+		mat->diffuse.a = 1.0f;
 
+		mat->emissive.r = 0.0f;
+		mat->emissive.g = 0.0f;
+		mat->emissive.b = 0.0f;
+		mat->emissive.a = 1.0f;
+
+		mat->specular.r = 0.0f;
+		mat->specular.g = 0.0f;
+		mat->specular.b = 0.0f;
+		mat->specular.a = 1.0f;
+
+		mat->ambient.r = 0.0f;
+		mat->ambient.g = 0.0f;
+		mat->ambient.b = 0.0f;
+		mat->ambient.a = 1.0f;
     }
 
 	oapiSetMaterial(vcmesh, m, mat);
