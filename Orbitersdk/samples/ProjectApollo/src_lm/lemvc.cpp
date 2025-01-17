@@ -3428,22 +3428,23 @@ void LEM::SetCompLight(int m, bool state) {
         mat->diffuse.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
         mat->diffuse.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
         mat->diffuse.a = 1.0f;
-        mat->emissive.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
+
+		mat->emissive.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
         mat->emissive.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
         mat->emissive.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
         mat->emissive.a = 1.0f;
     }
     else
     {   // OFF
-        mat->diffuse.r = 0;
-        mat->diffuse.g = 0;
-        mat->diffuse.b = 0;
-        mat->diffuse.a = 0;
-        mat->emissive.r = 0;
-        mat->emissive.g = 0;
-        mat->emissive.b = 0;
-        mat->emissive.a = 0;
+		mat->diffuse.r = 0.184f;
+		mat->diffuse.g = 0.157f;
+		mat->diffuse.b = 0.141f;
+		mat->diffuse.a = 1.0f;
 
+        mat->emissive.r = 0.0f;
+        mat->emissive.g = 0.0f;
+        mat->emissive.b = 0.0f;
+        mat->emissive.a = 1.0f;
     }
 
 	oapiSetMaterial(vcmesh, m, mat);
@@ -3508,6 +3509,11 @@ void LEM::SetStageSeqRelayLight(int m, bool state) {
 
 	if (state == true)
 	{   // ON
+		mat->diffuse.r = 1;
+		mat->diffuse.g = 1;
+		mat->diffuse.b = 1;
+		mat->diffuse.a = 1;
+
 		mat->emissive.r = 1;
 		mat->emissive.g = 1;
 		mat->emissive.b = 1;
@@ -3515,10 +3521,15 @@ void LEM::SetStageSeqRelayLight(int m, bool state) {
 	}
 	else
 	{   // OFF
-		mat->emissive.r = 0.125f;
-		mat->emissive.g = 0.125f;
-		mat->emissive.b = 0.125f;
-		mat->emissive.a = 1;
+		mat->diffuse.r = 0.184f;
+		mat->diffuse.g = 0.157f;
+		mat->diffuse.b = 0.141f;
+		mat->diffuse.a = 1.0f;
+
+        mat->emissive.r = 0.0f;
+        mat->emissive.g = 0.0f;
+        mat->emissive.b = 0.0f;
+        mat->emissive.a = 1.0f;
 	}
 
 	oapiSetMaterial(vcmesh, m, mat);
