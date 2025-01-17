@@ -3424,15 +3424,15 @@ void LEM::SetCompLight(int m, bool state) {
 
     if (state == true)
     {   // ON
-        mat->diffuse.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
-        mat->diffuse.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
-        mat->diffuse.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
-        mat->diffuse.a = 1.0f;
+		mat->diffuse.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
+		mat->diffuse.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
+		mat->diffuse.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
+		mat->diffuse.a = 1.0f;
 
 		mat->emissive.r = 0.937f * float((lca.GetAnnunVoltage() / 5.0));
-        mat->emissive.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
-        mat->emissive.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
-        mat->emissive.a = 1.0f;
+		mat->emissive.g = 0.486f * float((lca.GetAnnunVoltage() / 5.0));
+		mat->emissive.b = 0.055f * float((lca.GetAnnunVoltage() / 5.0));
+		mat->emissive.a = 1.0f;
     }
     else
     {   // OFF
