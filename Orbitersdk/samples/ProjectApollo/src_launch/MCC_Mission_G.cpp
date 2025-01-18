@@ -263,7 +263,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_NONE, PT_NONE, MoonRev >= 14 && MoonRevTime > 90.0*60.0, 81, MST_G_LUNAR_ORBIT_POST_LANDING_4);
 		break;
 	case MST_G_LUNAR_ORBIT_POST_LANDING_4: //LM Tracking PAD to LM Ascent PAD
-		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, MoonRev >= 15 && MoonRevTime > 5.0*60.0, 63, MST_G_LUNAR_ORBIT_POST_LANDING_5);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, MoonRev >= 15 && MoonRevTime > 2.0*60.0, 63, MST_G_LUNAR_ORBIT_POST_LANDING_5);
 		break;
 	case MST_G_LUNAR_ORBIT_POST_LANDING_5: //LM Ascent PAD to CSI Data Card
 		UpdateMacro(UTP_PADWITHLGCUPLINK, PT_AP11LMASCPAD, SubStateTime > 3.0*60.0, 90, MST_G_LUNAR_ORBIT_POST_LANDING_6);

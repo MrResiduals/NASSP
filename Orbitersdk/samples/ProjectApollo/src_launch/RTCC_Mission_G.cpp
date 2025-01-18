@@ -1964,11 +1964,13 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		ASCPADOpt ascopt;
 		LunarLiftoffTimeOpt opt;
 		SV sv_CSM;
+		double m0;
 		char buffer1[100], buffer2[1000];
 
 		sv_CSM = StateVectorCalc(calcParams.src);
 
 		LEM *l = (LEM*)calcParams.tgt;
+		m0 = l->GetAscentStageMass();
 
 		//T3
 		double t_sunrise, t_TPI;
@@ -2043,6 +2045,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		ascopt.Rot_VL = OrbMech::GetVesselToLocalRotMatrix(calcParams.tgt);
 
 		LunarAscentPAD(ascopt, *form);
+		sprintf(form->remarks, "LM weight is %.0f", m0 / 0.45359237);
 
 		//Store for CSI PAD
 		calcParams.DVSTORE1 = _V(PZLRPT.data[1].DVCSI*0.3048, 0, 0);
