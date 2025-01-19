@@ -688,6 +688,11 @@ void LEM::Init()
 	RegisterConnector(VIRTUAL_CONNECTOR_PORT, &lm_rr_to_csm_connector);
 	RegisterConnector(VIRTUAL_CONNECTOR_PORT, &lm_vhf_to_csm_csm_connector);
 
+	// New keyboard control values
+	for (auto i = 0; i < 6; ++i) {
+		aca_keyboard_deflection[i] = 0.0;
+	}
+
 	// Do this stuff only once
 	if(!InitLEMCalled){
 		SystemsInit();
@@ -840,17 +845,50 @@ int LEM::clbkConsumeDirectKey(char* kstate)
 		}
 	}
 
+	// Override attitude controls, but only if that wouldn't interfere with our DSKY/DEDA shortcuts.
+	// I'm using the Orbiter thruster group enum for this but the attitude thruster group
+	// starts at a non-zero value. So I subtract the first enum from each entry
+	// to get a zero-based index.
+	// Only override these keys if the user is holding no modifier keys, Alt only, or Ctrl + Alt.
+	if (GetAttitudeMode() == ATTITUDEMODE::ATTMODE_ROT && !(KEYMOD_CONTROL(kstate) && !KEYMOD_ALT(kstate)) && !KEYMOD_SHIFT(kstate)) {
+		// Possible deflection amounts are:
+		// No key modifiers: 11.5° (max proportional rate, but not hardover)
+		// Alt: 13° (full deflection, triggering hardover switches)
+		// Ctrl + Alt: 0.75° (triggering out-of-detent switches, but not commanding thrust)
+		double deflectionDegrees = KEYMOD_ALT(kstate) ? KEYMOD_CONTROL(kstate) ? 0.75 : 13.0 : 11.5;
+		double deflectionPercent = deflectionDegrees / 13.0;
+
+		aca_keyboard_deflection[THGROUP_ATT_PITCHUP - THGROUP_ATT_PITCHUP] = 
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD2) ? deflectionPercent : 0.0;
+		aca_keyboard_deflection[THGROUP_ATT_PITCHDOWN - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD8) ? deflectionPercent : 0.0;
+		aca_keyboard_deflection[THGROUP_ATT_BANKLEFT - THGROUP_ATT_PITCHUP] = 
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD4) ? deflectionPercent : 0.0;
+		aca_keyboard_deflection[THGROUP_ATT_BANKRIGHT - THGROUP_ATT_PITCHUP] = 
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD6) ? deflectionPercent : 0.0;
+		aca_keyboard_deflection[THGROUP_ATT_YAWLEFT - THGROUP_ATT_PITCHUP] = 
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD1) ? deflectionPercent : 0.0;
+		aca_keyboard_deflection[THGROUP_ATT_YAWRIGHT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD3) ? deflectionPercent : 0.0;
+
+		// Prevent Orbiter from acting upon the attitude control keys
+		RESETKEY(kstate, OAPI_KEY_NUMPAD2);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD8);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD4);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD6);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD1);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD3);
+	}
+
 	return 0;
 }
 
 int LEM::clbkConsumeBufferedKey(DWORD key, bool down, char *keystate) {
 
-	// rewrote to get key events rather than monitor key state - LazyD
-
 	if (enableVESIM) vesim.clbkConsumeBufferedKey(key, down, keystate);
 
 	// DS20060404 Allow keys to control DSKY like in the CM
-	if (KEYMOD_SHIFT(keystate)) {
+	if (KEYMOD_SHIFT(keystate) && !KEYMOD_CONTROL(keystate) && !KEYMOD_ALT(keystate)) {
 		// Do DSKY stuff
 		DSKYPushSwitch* dskyKeyChanged = nullptr;
 		switch (key) {
@@ -920,13 +958,6 @@ int LEM::clbkConsumeBufferedKey(DWORD key, bool down, char *keystate) {
 				dskyKeyChanged->SetHeld(true);
 				dskyKeyChanged->SetState(PUSHBUTTON_PUSHED);
 			}
-
-			switch (key) {
-			case OAPI_KEY_K:
-				//kill rotation
-				SetAngularVel(_V(0, 0, 0));
-				break;
-			}
 		} else {
 			// KEY UP
 			if (dskyKeyChanged != nullptr) {
@@ -937,7 +968,8 @@ int LEM::clbkConsumeBufferedKey(DWORD key, bool down, char *keystate) {
 		}
 		return 0;
 	}
-	else if (KEYMOD_CONTROL(keystate)) {
+
+	if (KEYMOD_CONTROL(keystate) && !KEYMOD_ALT(keystate) && !KEYMOD_SHIFT(keystate)) {
 		// Do DEDA stuff
 		DEDAPushSwitch* dedaKeyChanged = nullptr;
 		switch (key) {

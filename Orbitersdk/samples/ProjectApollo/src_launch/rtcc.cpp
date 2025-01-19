@@ -5412,6 +5412,7 @@ double RTCC::GetClockTimeFromAGC(agc_t *agc)
 
 double RTCC::GetTEPHEMFromAGC(agc_t *agc, bool IsCMC)
 {
+	//Returns TEPHEM in centiseconds
 	int tephem_int[3], address;
 
 	//Either CMC or LGC TEPHEM address
@@ -8072,22 +8073,6 @@ void RTCC::SetManeuverData(double TIG, VECTOR3 DV)
 	DeltaV_LVLH = DV;
 }
 
-int RTCC::SPSRCSDecision(double a, VECTOR3 dV_LVLH)
-{
-	double t;
-
-	t = length(dV_LVLH) / a;
-
-	if (t > 0.5)
-	{
-		return RTCC_ENGINETYPE_CSMSPS;
-	}
-	else
-	{
-		return RTCC_ENGINETYPE_CSMRCSPLUS4;
-	}
-}
-
 void RTCC::ExecuteManeuver(EphemerisData sv, PLAWDTOutput WeightsTable_before, double P30TIG, VECTOR3 dV_LVLH, int Thruster, EphemerisData &sv_after, PLAWDTOutput &WeightsTable_after)
 {
 	SV sv0, sv1;
@@ -8550,16 +8535,6 @@ void RTCC::GetTLIParameters(VECTOR3 &RIgn_global, VECTOR3 &VIgn_global, VECTOR3 
 	RIgn_global = _V(RIgn.x, RIgn.z, RIgn.y);
 	VIgn_global = _V(VIgn.x, VIgn.z, VIgn.y);
 	dV_LVLH = DeltaV_LVLH;
-}
-
-bool RTCC::REFSMMATDecision(VECTOR3 Att)
-{
-	if (cos(Att.z) > 0.5) //Yaw between 300° and 60°
-	{
-		return true;
-	}
-
-	return false;
 }
 
 int RTCC::PMMSPT(PMMSPTInput &in)
@@ -9380,64 +9355,6 @@ double RTCC::GetDockedVesselMass(VESSEL *vessel) const
 	}
 
 	return LMmass;
-}
-
-double RTCC::FindOrbitalMidnight(SV sv, double t_TPI_guess)
-{
-	SV sv1;
-	double GET_SV, dt, ttoMidnight;
-
-	OBJHANDLE hSun = oapiGetObjectByName("Sun");
-
-	GET_SV = OrbMech::GETfromMJD(sv.MJD, CalcGETBase());
-	dt = t_TPI_guess - GET_SV;
-
-	sv1 = coast(sv, dt);
-
-	ttoMidnight = OrbMech::sunrise(SystemParameters.MAT_J2000_BRCS, sv1.R, sv1.V, sv1.MJD, sv1.gravref, hSun, 1, 1, false);
-	return t_TPI_guess + ttoMidnight;
-}
-
-void RTCC::FindRadarAOSLOS(SV sv, double lat, double lng, double &GET_AOS, double &GET_LOS)
-{
-	VECTOR3 R_P;
-	double LmkRange, dt1, dt2;
-
-	R_P = unit(_V(cos(lng)*cos(lat), sin(lng)*cos(lat), sin(lat)))*oapiGetSize(sv.gravref);
-
-	dt1 = OrbMech::findelev_gs(SystemParameters.AGCEpoch, SystemParameters.MAT_J2000_BRCS, sv.R, sv.V, R_P, sv.MJD, 175.0*RAD, sv.gravref, LmkRange);
-	dt2 = OrbMech::findelev_gs(SystemParameters.AGCEpoch, SystemParameters.MAT_J2000_BRCS, sv.R, sv.V, R_P, sv.MJD, 5.0*RAD, sv.gravref, LmkRange);
-
-	GET_AOS = OrbMech::GETfromMJD(sv.MJD, CalcGETBase()) + dt1;
-	GET_LOS = OrbMech::GETfromMJD(sv.MJD, CalcGETBase()) + dt2;
-}
-
-void RTCC::FindRadarMidPass(SV sv, double lat, double lng, double &GET_Mid)
-{
-	VECTOR3 R_P;
-	double LmkRange, dt;
-
-	R_P = unit(_V(cos(lng)*cos(lat), sin(lng)*cos(lat), sin(lat)))*oapiGetSize(sv.gravref);
-
-	dt = OrbMech::findelev_gs(SystemParameters.AGCEpoch, SystemParameters.MAT_J2000_BRCS, sv.R, sv.V, R_P, sv.MJD, 90.0*RAD, sv.gravref, LmkRange);
-
-	GET_Mid = OrbMech::GETfromMJD(sv.MJD, CalcGETBase()) + dt;
-}
-
-double RTCC::FindOrbitalSunrise(SV sv, double t_sunrise_guess)
-{
-	SV sv1;
-	double GET_SV, dt, ttoSunrise;
-
-	OBJHANDLE hSun = oapiGetObjectByName("Sun");
-
-	GET_SV = OrbMech::GETfromMJD(sv.MJD, CalcGETBase());
-	dt = t_sunrise_guess - GET_SV;
-
-	sv1 = coast(sv, dt);
-
-	ttoSunrise = OrbMech::sunrise(SystemParameters.MAT_J2000_BRCS, sv1.R, sv1.V, sv1.MJD, sv1.gravref, hSun, true, false, false);
-	return t_sunrise_guess + ttoSunrise;
 }
 
 VECTOR3 RTCC::PointAOTWithCSM(MATRIX3 REFSMMAT, EphemerisData sv, int AOTdetent, int star, double dockingangle)
@@ -12974,16 +12891,6 @@ RTCC_PMMAPD_1_2:
 	}
 
 	return 0;
-}
-
-bool RTCC::GETEval2(double get)
-{
-	if (OrbMech::GETfromMJD(oapiGetSimMJD(), CalcGETBase()) > get)
-	{
-		return true;
-	}
-
-	return false;
 }
 
 void RTCC::MPTMassUpdate(VESSEL *vessel, MED_M50 &med1, MED_M55 &med2, MED_M49 &med3, bool docked)

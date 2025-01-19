@@ -4375,6 +4375,7 @@ protected:
 	THRUSTER_HANDLE th_att_cm[12], th_att_cm_sys1[6], th_att_cm_sys2[6];    // CM RCS  
 	THRUSTER_HANDLE th_o2_vent;
 	bool th_att_cm_commanded[12];
+	double rhc_keyboard_deflection[6];	// Holds deflection values (0.0 to 1.0) for each Orbiter attitude direction
 
 	PSTREAM_HANDLE dyemarker;
 	PSTREAM_HANDLE wastewaterdump;

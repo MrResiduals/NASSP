@@ -2604,7 +2604,6 @@ public:
 	AEGBlock SVToAEG(EphemerisData sv, double Area, double Weight, double KFactor);
 	//Apsides Determination Subroutine
 	int PMMAPD(AEGHeader Header, AEGDataBlock Z, int KAOP, int KE, double *INFO, AEGDataBlock *sv_A, AEGDataBlock *sv_P);
-	bool GETEval2(double get);
 	bool PDIIgnitionAlgorithm(SV sv, VECTOR3 R_LS, double TLAND, SV &sv_IG, double &t_go, double &CR, VECTOR3 &U_IG, MATRIX3 &REFSMMAT);
 	bool PoweredDescentAbortProgram(PDAPOpt opt, PDAPResults &res);
 	MATRIX3 GetREFSMMATfromAGC(agc_t *agc, bool cmc);
@@ -5031,16 +5030,8 @@ private:
 	void SunburstLMPCommand(char *list, int code);
 	void SunburstMassUpdate(char *list, double masskg);
 	void P27PADCalc(const P27Opt &opt, P27PAD &pad);
-	int SPSRCSDecision(double a, VECTOR3 dV_LVLH);	//0 = SPS, 1 = RCS
-	bool REFSMMATDecision(VECTOR3 Att); //true = everything ok, false = Preferred REFSMMAT necessary
-	double FindOrbitalMidnight(SV sv, double t_TPI_guess);
-	double FindOrbitalSunrise(SV sv, double t_sunrise_guess);
-	void FindRadarAOSLOS(SV sv, double lat, double lng, double &GET_AOS, double &GET_LOS);
-	void FindRadarMidPass(SV sv, double lat, double lng, double &GET_Mid);
 	void papiWriteScenario_REFS(FILEHANDLE scn, char *item, int tab, int i, REFSMMATData in);
 	bool papiReadScenario_REFS(char *line, char *item, int &tab, int &i, REFSMMATData &out);
-	void DMissionRendezvousPlan(SV sv_A0, double &t_TPI0);
-	void FMissionRendezvousPlan(VESSEL *chaser, VESSEL *target, SV sv_A0, double t_TIG, double t_TPI, double &t_Ins, double &CSI);
 
 	bool CalculationMTP_B(int fcn, LPVOID &pad, char * upString = NULL, char * upDesc = NULL, char * upMessage = NULL);
 	bool CalculationMTP_C(int fcn, LPVOID &pad, char * upString = NULL, char * upDesc = NULL, char * upMessage = NULL);

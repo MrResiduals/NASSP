@@ -625,6 +625,7 @@ public:
 	PROPELLANT_HANDLE ph_RCSA,ph_RCSB;   // RCS Fuel A and B, replaces ph_rcslm0
 	PROPELLANT_HANDLE ph_Dsc, ph_Asc; // handles for propellant resources
 	THRUSTER_HANDLE th_hover[1];               // handles for orbiter main engines
+	double aca_keyboard_deflection[6];		// Deflection values (0 to 1) for the six directions the ACA can move.
 	// There are 16 RCS. 4 clusters, 4 per cluster.
 	THRUSTER_HANDLE th_rcs[16];
 	THGROUP_HANDLE thg_hover;		          // handles for thruster groups
