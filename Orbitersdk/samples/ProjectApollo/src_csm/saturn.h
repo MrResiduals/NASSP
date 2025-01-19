@@ -92,7 +92,6 @@ namespace mission
 #define RCS_CM_RING_1		4
 #define RCS_CM_RING_2		5
 
-
 ///
 /// \brief Cabin atmosphere status.
 /// \ingroup InternalInterface
@@ -1215,6 +1214,20 @@ public:
 	
 	void SetCMdocktgtMesh();
 
+	/// Set Altimeter Cover
+	void SetAltimeterCover();
+	void SetOrdealMesh();
+
+	/// Waste Disposal and others
+	void SetDSKY_Glareshade();
+	void SetEMSDV_Glareshade();
+	void SetAccelerometerCover();
+	void SetWasteDisposal();
+	void SetPanel382Cover();
+	void SetMissionTimer_Glareshade();
+	void SetSextant_Eyepiece();
+	void SetTelescope_Eyepiece();
+
 	///
 	/// \brief Set VC seats mesh
 	///
@@ -1284,6 +1297,8 @@ public:
 	mission::Mission *GetMission() { return pMission; }
 
 	void ClearMeshes();
+	void SetAnimations(double);
+	void DoMeshAnimation(AnimState &, UINT &, double, double);
 
 	//
 	// Flashlight for VC
@@ -1299,6 +1314,43 @@ public:
 	VECTOR3 flashlightDirGlobal;
 	VECTOR3 flashlightDirLocal;
 	bool flashlightOn;
+
+	//
+	// FloodLight Panel 5
+	//
+	void UpdateFloodLights();
+	PointLight* floodLight_P5;
+	COLOUR4 floodLightColor_P5;
+	COLOUR4 floodLightColor2_P5;
+	VECTOR3 floodLightPos_P5;
+	VECTOR3 vesselPosGlobal_P5;
+	VECTOR3 floodLightDirGlobal_P5;
+	VECTOR3 floodLightDirLocal_P5;
+	bool floodLightOn_P5;
+
+	//
+	// FloodLight Panel 8
+	//
+	PointLight* floodLight_P8;
+	COLOUR4 floodLightColor_P8;
+	COLOUR4 floodLightColor2_P8;
+	VECTOR3 floodLightPos_P8;
+	VECTOR3 vesselPosGlobal_P8;
+	VECTOR3 floodLightDirGlobal_P8;
+	VECTOR3 floodLightDirLocal_P8;
+	bool floodLightOn_P8;
+
+	//
+	// FloodLight Panel 100(LEB)
+	//
+	PointLight* floodLight_P100;
+	COLOUR4 floodLightColor_P100;
+	COLOUR4 floodLightColor2_P100;
+	VECTOR3 floodLightPos_P100;
+	VECTOR3 vesselPosGlobal_P100;
+	VECTOR3 floodLightDirGlobal_P100;
+	VECTOR3 floodLightDirLocal_P100;
+	bool floodLightOn_P100;
 
 protected:
 
@@ -1567,6 +1619,89 @@ protected:
 	int hatchPanel600EnabledLeft;
 	int hatchPanel600EnabledRight;
 	int panel382Enabled;
+
+/// BEGINN TEST by JORDAN
+
+/// Waste Disposal
+	int wasteDisposalStatus = true;
+	double wasteDisposalProc;
+	int meshidxWasteDisposal;
+	int meshidxWasteDisposalAll;
+	UINT wasteDisposalAnim;
+	AnimState wasteDisposalState;
+
+/// Panel 382 Cover
+	int panel382CoverStatus = true;
+	double panel382CoverProc;
+	int meshidxpanel382Cover;
+	UINT panel382CoverAnim;
+	AnimState panel382CoverState;
+
+/// Altimeter Cover
+	int altimeterCovered;
+	int altimeterCoverStatus;
+	double altimeterCoverProc;
+	int meshidxaltimeterCover;
+	UINT altimeterCoverAnim;
+	AnimState altimeterCoverState;
+
+/// Ordeal
+	int ordealStowed;
+	int ordealStatus;
+	double ordealProc;
+	int meshidxOrdeal;
+	UINT ordealAnim;
+	AnimState ordealState;
+
+/// DSKY_Glareshade
+	int DSKY_GlareshadeStowed;
+	int DSKY_GlareshadeStatus;
+	double DSKY_GlareshadeProc;
+	int meshidxDSKY_Glareshade;
+	UINT DSKY_GlareshadeAnim;
+	AnimState DSKY_GlareshadeState;
+
+/// EMSDV_Glareshade
+	int EMSDV_GlareshadeStowed;
+	int EMSDV_GlareshadeStatus;
+	double EMSDV_GlareshadeProc;
+	int meshidxEMSDV_Glareshade;
+	UINT EMSDV_GlareshadeAnim;
+	AnimState EMSDV_GlareshadeState;
+
+/// AccelerometerCover
+	int AccelerometerCoverStowed;
+	int AccelerometerCoverStatus;
+	double AccelerometerCoverProc;
+	int meshidxAccelerometerCover;
+	UINT AccelerometerCoverAnim;
+	AnimState AccelerometerCoverState;
+
+/// MissionTimer_Glareshade
+	int MissionTimer_GlareshadeStowed;
+	int MissionTimer_GlareshadeStatus;
+	double MissionTimer_GlareshadeProc;
+	int meshidxMissionTimer_Glareshade;
+	UINT MissionTimer_GlareshadeAnim;
+	AnimState MissionTimer_GlareshadeState;
+
+/// Sextant_Eyepiece
+	int Sextant_EyepieceStowed;
+	int Sextant_EyepieceStatus;
+	double Sextant_EyepieceProc;
+	int meshidxSextant_Eyepiece;
+	UINT Sextant_EyepieceAnim;
+	AnimState Sextant_EyepieceState;
+
+/// Telescope_Eyepiece
+	int Telescope_EyepieceStowed;
+	int Telescope_EyepieceStatus;
+	double Telescope_EyepieceProc;
+	int meshidxTelescope_Eyepiece;
+	UINT Telescope_EyepieceAnim;
+	AnimState Telescope_EyepieceState;
+
+/// END TEST by JORDAN
 
 	///
 	/// \brief Right-hand FDAI.
@@ -3609,12 +3744,12 @@ public:
 	CSMTankPressTransducer FCN2PressureSensor1;
 	CSMTankPressTransducer FCN2PressureSensor2;
 	CSMTankPressTransducer FCN2PressureSensor3;
-	CSMPipeFlowTransducer FCO2FlowSensor1;
-	CSMPipeFlowTransducer FCO2FlowSensor2;
-	CSMPipeFlowTransducer FCO2FlowSensor3;
-	CSMPipeFlowTransducer FCH2FlowSensor1;
-	CSMPipeFlowTransducer FCH2FlowSensor2;
-	CSMPipeFlowTransducer FCH2FlowSensor3;
+	FCO2FlowTransducer FCO2FlowSensor1;
+	FCO2FlowTransducer FCO2FlowSensor2;
+	FCO2FlowTransducer FCO2FlowSensor3;
+	FCH2FlowTransducer FCH2FlowSensor1;
+	FCH2FlowTransducer FCH2FlowSensor2;
+	FCH2FlowTransducer FCH2FlowSensor3;
 	TemperatureTransducer SPSFuelLineTempSensor;
 	TemperatureTransducer SPSOxidizerLineTempSensor;
 	TemperatureTransducer SPSFuelFeedTempSensor;
@@ -4158,9 +4293,11 @@ protected:
 	// Integral Lights
 	//
 #ifdef _OPENORBITER
-	void SetCMVCIntegralLight(UINT meshidx, DWORD *matList, MatProp EmissionMode, double state, int cnt);
+	void SetVCLighting(UINT meshidx, DWORD *matList, MatProp EmissionMode, double state, int cnt);
+	void SetVCLighting(UINT meshidx, int material, MatProp EmissionMode, double state, int cnt);
 #else
-	void SetCMVCIntegralLight(UINT meshidx, DWORD *matList, int EmissionMode, double state, int cnt);
+	void SetVCLighting(UINT meshidx, DWORD *matList, int EmissionMode, double state, int cnt);
+	void SetVCLighting(UINT meshidx, int material, int EmissionMode, double state, int cnt);
 #endif
 
 	//

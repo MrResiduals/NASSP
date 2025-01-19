@@ -1155,6 +1155,14 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 //------------------------------------------------------------------------------------
 // Various debug prints
 //------------------------------------------------------------------------------------
+//Scaling Debug Lines
+	/*
+	//double *pressCO2 = (double *)Panelsdk.GetPointerByString("HYDRAULIC:SUIT:CO2_PPRESS");
+
+	//sprintf(oapiDebugString(), "Value %.3f Volts: %.3f SCE Volts %.3f TempF: %.3f", FuelCellCondenserTempMeter.QueryValue() ,FuelCells[0]->GetCondTempVoltage(), GetSCE()->GetVoltage(2, 3), KelvinToFahrenheit(FuelCells[0]->condenserTemp));
+	//sprintf(oapiDebugString(), "Volts: %.2f mmHg: %.3f", CO2PartPressSensor.Voltage(), (*pressCO2 *MMHG));
+	//sprintf(oapiDebugString(), "Pixel %.2f MeterValue: %.2f XducerV %.2f", (129 - (O2Pressure1Meter.QueryValue()) * 20.6), O2Pressure1Meter.QueryValue(), O2Tank1PressSensor.Voltage());
+	*/
 
 // Structure Temperature Debug Lines
 	/*
