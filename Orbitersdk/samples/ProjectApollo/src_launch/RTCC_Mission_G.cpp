@@ -2068,9 +2068,6 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 
 		AP10CSIPADOpt opt;
 
-		//Use nominal AGS K-Factor for now
-		SystemParameters.MCGZSS = SystemParameters.MCGZSL + 90.0;
-
 		opt.dV_LVLH = calcParams.DVSTORE1;
 		opt.enginetype = RTCC_ENGINETYPE_LMRCSPLUS4;
 		opt.REFSMMAT = GetREFSMMATfromAGC(&mcc->lm->agc.vagc, false);
