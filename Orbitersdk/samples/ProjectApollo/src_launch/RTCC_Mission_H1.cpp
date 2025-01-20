@@ -1169,7 +1169,7 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 
 		AP11ManeuverPAD(manopt, *form);
 		sprintf(form->purpose, "LOI-2");
-		sprintf(form->remarks, "Two-jet ullage for 19 seconds");
+		sprintf(form->remarks, "Ullage: 2 jet, 19 seconds");
 
 		TimeofIgnition = P30TIG;
 		DeltaV_LVLH = dV_LVLH;
@@ -1637,7 +1637,7 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 		form->GET05G = GETfromGMT(entout.t_05g);
 		form->type = 2;
 
-		sprintf(form->remarks, "Four-jet ullage for 11 seconds");
+		sprintf(form->remarks, "Ullage: 4 jet, 11 seconds");
 
 		if (fcn == 40 || fcn == 43)
 		{
@@ -2762,14 +2762,14 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 		if (fcn == 94)
 		{
 			sprintf(form->purpose, "PLANE CHANGE 1");
-			sprintf(form->remarks, "Ullage: 2 jets, 15 seconds");
+			sprintf(form->remarks, "Ullage: 2 jet, 15 seconds");
 			sprintf(updesc, "CSM state vector, target load, PC REFSMMAT");
 			AGCStateVectorUpdate(buffer1, sv, true);
 		}
 		else
 		{
 			sprintf(form->purpose, "PLANE CHANGE 2");
-			sprintf(form->remarks, "Ullage: 4 jets, 11 seconds");
+			sprintf(form->remarks, "Ullage: 4 jet, 11 seconds");
 			sprintf(updesc, "CSM state vector and V66, target load, PC REFSMMAT");
 			AGCStateVectorUpdate(buffer1, sv, true, true);
 		}

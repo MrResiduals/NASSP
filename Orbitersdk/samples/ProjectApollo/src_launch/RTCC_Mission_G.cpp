@@ -1097,6 +1097,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 
 		AP11ManeuverPAD(manopt, *form);
 		sprintf(form->purpose, "LOI-2");
+		sprintf(form->remarks, "Ullage: 2 jet, 19 seconds");
 
 		TimeofIgnition = P30TIG;
 		DeltaV_LVLH = dV_LVLH;
@@ -1518,7 +1519,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		}
 		else if (fcn == 45 || fcn == 46)
 		{
-			sprintf(form->remarks, "Two-jet ullage for 16 seconds");
+			sprintf(form->remarks, "Ullage: 2 jet, 16 seconds");
 		}
 
 		if (fcn != 47)
@@ -2205,6 +2206,10 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 			sprintf(upMessage, "Plane Change has been scrubbed");
 			scrubbed = true;
 		}
+		else
+		{
+			sprintf(upMessage, "Plane Change will have to be executed");
+		}
 	}
 	break;
 	case 94: //PLANE CHANGE TARGETING (FOR REFSMMAT)
@@ -2269,6 +2274,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 
 			AP11ManeuverPAD(manopt, *form);
 			sprintf(form->purpose, "PLANE CHANGE");
+			sprintf(form->remarks, "Ullage: 2 jet, 19 seconds");
 
 			AGCStateVectorUpdate(buffer1, 1, 1, sv_CSM);
 			CMCExternalDeltaVUpdate(buffer2, TimeofIgnition, DeltaV_LVLH);
