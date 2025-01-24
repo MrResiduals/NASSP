@@ -2434,6 +2434,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 
 		GETbase = CalcGETBase();
 
+		sv_CSM = StateVectorCalc(calcParams.src);
 		sv_CSM_upl = coast(sv_CSM, calcParams.Insertion + 18.0*60.0 - OrbMech::GETfromMJD(sv_CSM.MJD, GETbase));
 		sv_LM_upl = coast(calcParams.SVSTORE1, calcParams.Insertion + 18.0*60.0 - OrbMech::GETfromMJD(calcParams.SVSTORE1.MJD, GETbase));
 
@@ -2463,6 +2464,9 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 
 		LEM *l = (LEM*)calcParams.tgt;
 		m0 = l->GetAscentStageMass();
+
+		//Initialize with nominal AGS K-Factor for protection
+		SystemParameters.MCGZSS = SystemParameters.MCGZSL + 120.0;
 
 		double KFactor;
 
