@@ -296,19 +296,19 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_PADONLY, PT_AP11LMARKTRKPAD, MoonRev >= 21 && MoonRevTime > 65.0*60.0, 64, MST_G_LUNAR_ORBIT_EVA_DAY_4);
 		break;
 	case MST_G_LUNAR_ORBIT_EVA_DAY_4: //LM Liftoff Times Update 3 to LGC CSM state vector update
-		UpdateMacro(UTP_PADONLY, PT_LIFTOFFTIMES, MoonRev >= 24 && MoonRevTime > 35.0*60.0, 98, MST_G_LUNAR_ORBIT_ASCENT_DAY_1);
+		UpdateMacro(UTP_PADONLY, PT_LIFTOFFTIMES, MoonRev >= 24 && MoonRevTime > 25.0*60.0, 98, MST_G_LUNAR_ORBIT_ASCENT_DAY_1);
 		break;
-	case MST_G_LUNAR_ORBIT_ASCENT_DAY_1: //LGC CSM state vector update to Nominal Insertion targeting
-		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, MoonRev >= 24 && MoonRevTime > 70.0*60.0, 3, MST_G_LUNAR_ORBIT_ASCENT_DAY_2);
+	case MST_G_LUNAR_ORBIT_ASCENT_DAY_1: //LGC CSM state vector update to Nominal Insertion targeting & LGC CSM state vector update
+		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, MoonRev >= 24 && MoonRevTime > 65.0*60.0, 3, MST_G_LUNAR_ORBIT_ASCENT_DAY_2);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_2: //Nominal Insertion targeting to CMC State Vector uplinks
-		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, SubStateTime > 1.0*60.0, 100, MST_G_LUNAR_ORBIT_ASCENT_DAY_3);
+		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, SubStateTime > 2.0*60.0, 100, MST_G_LUNAR_ORBIT_ASCENT_DAY_3);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_3: //CMC State Vector uplinks to LM Ascent PAD
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 1.0*60.0, 101, MST_G_LUNAR_ORBIT_ASCENT_DAY_4);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 5.0*60.0, 101, MST_G_LUNAR_ORBIT_ASCENT_DAY_4);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_4: //LM Ascent PAD to CSI Data Card
-		UpdateMacro(UTP_PADONLY, PT_AP11LMASCPAD, SubStateTime > 5.0*60.0, 102, MST_G_LUNAR_ORBIT_ASCENT_DAY_5);
+		UpdateMacro(UTP_PADONLY, PT_AP11LMASCPAD, SubStateTime > 3.0*60.0, 102, MST_G_LUNAR_ORBIT_ASCENT_DAY_5);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_5: //CSI Data Card to LM Liftoff Evaluation
 		UpdateMacro(UTP_PADONLY, PT_AP10CSI, mcc_calcs.GETEval(rtcc->calcParams.LunarLiftoff + 20.0), 103, MST_G_LUNAR_ORBIT_ASCENT_DAY_6);
