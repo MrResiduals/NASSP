@@ -2491,7 +2491,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 		LunarAscentPAD(ascopt, *form);
 
 		OrbMech::format_time_HHMMSS(buffer1, TimeofIgnition);
-		sprintf(form->remarks, "LM weight is %.0f, T%d is %s,  K-Factor is %d:%02d : %05.2f", m0 / 0.45359237, mcc->MoonRev - 10, buffer1, hh, mm, ss);
+		sprintf(form->remarks, "LM weight is %.0f, T%d is %s,  K-Factor is %d:%02d:%05.2f", m0 / 0.45359237, mcc->MoonRev - 10, buffer1, hh, mm, ss);
 	}
 	break;
 	case 103: //NOMINAL CSI PAD
