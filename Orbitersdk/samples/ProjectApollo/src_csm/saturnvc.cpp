@@ -841,7 +841,7 @@ bool Saturn::clbkLoadVC (int id)
 		viewpos = SATVIEW_CENTERSEAT;
 		SetCameraRotationRange(0.8 * PI, 0.8 * PI, 0.4 * PI, 0.4 * PI);
 		SetCameraMovement(_V(-0.0, -0.15, 0.0), 0, 0, _V(-0.3, 0.0, 0.0), 0, 0, _V(0.3, 0.0, 0.0), 0, 0);
-		oapiVCSetNeighbours(SATVIEW_LEFTSEAT, SATVIEW_RIGHTSEAT, SATVIEW_UPPER_CENTER, SATVIEW_LOWER_CENTER);
+		oapiVCSetNeighbours(SATVIEW_LEFTSEAT, SATVIEW_RIGHTSEAT, SATVIEW_SIDEHATCH, SATVIEW_LOWER_CENTER);
 
 		SetView(true);
 
@@ -878,7 +878,19 @@ bool Saturn::clbkLoadVC (int id)
 	case SATVIEW_LEFTDOCK:
 		viewpos = SATVIEW_LEFTDOCK;
 		SetCameraMovement(_V(0.0, 0.0, 0.0), 0, 0, _V(0.0, 0.0, 0.0), 0, 0, _V(0.0, 0.0, 0.0), 0, 0);
-		oapiVCSetNeighbours(-1, SATVIEW_RIGHTDOCK, -1, SATVIEW_LEFTSEAT);
+		oapiVCSetNeighbours(-1, SATVIEW_SIDEHATCH, -1, SATVIEW_LEFTSEAT);
+
+		SetView(true);
+		SetCOASMesh();
+
+		RegisterActiveAreas();
+
+		return true;
+
+	case SATVIEW_SIDEHATCH:
+		viewpos = SATVIEW_SIDEHATCH;
+		SetCameraMovement(_V(0.0, 0.0, 0.0), 0, 0, _V(0.0, 0.0, 0.0), 0, 0, _V(0.0, 0.0, 0.0), 0, 0);
+		oapiVCSetNeighbours(SATVIEW_LEFTDOCK, SATVIEW_RIGHTDOCK, SATVIEW_UPPER_CENTER, SATVIEW_CENTERSEAT);
 
 		SetView(true);
 		SetCOASMesh();
@@ -890,7 +902,7 @@ bool Saturn::clbkLoadVC (int id)
 	case SATVIEW_RIGHTDOCK:
 		viewpos = SATVIEW_RIGHTDOCK;
 		SetCameraMovement(_V(0.0, 0.0, 0.0), 0, 0, _V(0.0, 0.0, 0.0), 0, 0, _V(0.0, 0.0, 0.0), 0, 0);
-		oapiVCSetNeighbours(SATVIEW_LEFTDOCK, -1, -1, SATVIEW_RIGHTSEAT);
+		oapiVCSetNeighbours(SATVIEW_SIDEHATCH, -1, -1, SATVIEW_RIGHTSEAT);
 
 		SetView(true);
 
@@ -923,7 +935,7 @@ bool Saturn::clbkLoadVC (int id)
 	case SATVIEW_UPPER_CENTER:
 		viewpos = SATVIEW_UPPER_CENTER;
 		SetCameraMovement(_V(0.0, 0.0, 0.0), 0, 0, _V(0.2, -0.03, -0.1), 0, 20 * RAD, _V(-0.2, -0.03, -0.1), 0, 20 * RAD);
-		oapiVCSetNeighbours(-1, -1, -1, SATVIEW_CENTERSEAT);
+		oapiVCSetNeighbours(-1, -1, -1, SATVIEW_SIDEHATCH);
 
 		SetView(true);
 
@@ -2616,7 +2628,14 @@ void Saturn::SetView(double offset, bool update_direction)
 				//v.y += vcFreeCamy;
 				//v.z += vcFreeCamz;
 				break;
-			
+
+			case SATVIEW_SIDEHATCH:
+				v = _V(0.0, 1, 0.2 + ofs_vc.z);
+				//v.x += vcFreeCamx;
+				//v.y += vcFreeCamy;
+				//v.z += vcFreeCamz;
+				break;
+
 			case SATVIEW_RIGHTDOCK:
 				v = _V(0.6, 1.05, 0.1 + ofs_vc.z);
 				//v.x += vcFreeCamx;
@@ -2679,6 +2698,8 @@ void Saturn::SetView(double offset, bool update_direction)
 				SetCameraDefaultDirection(_V(0.0, 1.0, 0.0), 180 * RAD);
 			} else if (viewpos == SATVIEW_UPPER_CENTER) {
 				SetCameraDefaultDirection(_V(0.0, 0.0, -1.0));
+			} else if (viewpos == SATVIEW_SIDEHATCH) {
+				SetCameraDefaultDirection(_V(0.0, 0.85, 0.0));
 			} else if (viewpos == SATVIEW_LEFTSEAT || viewpos == SATVIEW_CENTERSEAT || viewpos == SATVIEW_RIGHTSEAT) {
 				SetCameraDefaultDirection(_V(0.00, -sin(P1_3_TILT), cos(P1_3_TILT)));
 			} else {
