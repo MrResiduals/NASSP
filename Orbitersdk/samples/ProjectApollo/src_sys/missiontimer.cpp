@@ -39,7 +39,7 @@
 #include "missiontimer.h"
 #include "papi.h"
 
-MissionTimer::MissionTimer(PanelSDK &p) : DCPower(0, p)
+MissionTimer::MissionTimer(PanelSDK &p) : DCPower(0, p), ExternalTimingPower(0, p)
 {
 	Running = false;
 	CountUp = TIMER_COUNT_UP;
@@ -61,12 +61,13 @@ MissionTimer::~MissionTimer()
 	// Nothing for now.
 }
 
-void MissionTimer::Init(e_object *a, e_object *b, ContinuousRotationalSwitch *dimmer, e_object *c, ToggleSwitch *override)
+void MissionTimer::Init(e_object *a, e_object *b, ContinuousRotationalSwitch *dimmer, e_object *c, ToggleSwitch *override, e_object *timing_a, e_object *timing_b)
 {
 	DCPower.WireToBuses(a, b);
 	WireTo(c);
 	DimmerRotationalSwitch = dimmer;
 	DimmerOverride = override;
+	ExternalTimingPower.WireToBuses(timing_a, timing_b);
 }
 
 void MissionTimer::Reset()
@@ -290,10 +291,10 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	const int DigitHeight = 23*TexMul;
 	int Curdigit, divisor;
 
-	// Display tuning fork symbol if CTE reference is lost, and we're operating on internal frequency
-	// TODO: Add the actual logic for choosing whether to display this symbol or not.
-	// Do not merge this PR until this is added!
-	oapiBlt(surf, digits, 0, 0, (int)(DigitWidth * 13.33), 0, DigitWidth / 2, DigitHeight);
+	// Display tuning fork symbol if CTE (CM) or PCMTE (LM) reference is lost, and we're operating on internal frequency
+	if (ExternalTimingPower.Voltage() < SP_MIN_DCVOLTAGE) {
+		oapiBlt(surf, digits, 0, 0, (int)(DigitWidth * 13.33), 0, DigitWidth / 2, DigitHeight);
+	}
 
 	// Margin of half of a digit on the left for the tuning-fork symbol
 	double margin = 0.5;
@@ -483,6 +484,14 @@ EventTimer::~EventTimer()
 	//
 	// Nothing for now
 	//
+}
+
+void EventTimer::Init(e_object* a, e_object* b, ContinuousRotationalSwitch* dimmer, e_object* c, ToggleSwitch* override)
+{
+	DCPower.WireToBuses(a, b);
+	WireTo(c);
+	DimmerRotationalSwitch = dimmer;
+	DimmerOverride = override;
 }
 
 void EventTimer::Render(SURFHANDLE surf, SURFHANDLE digits, int TexMul)

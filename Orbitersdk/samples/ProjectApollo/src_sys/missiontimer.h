@@ -43,7 +43,7 @@ public:
 	MissionTimer(PanelSDK &p);
 	virtual ~MissionTimer();
 
-	void Init(e_object *a, e_object *b, ContinuousRotationalSwitch *dimmer, e_object *c, ToggleSwitch *overide);
+	void Init(e_object *a, e_object *b, ContinuousRotationalSwitch *dimmer, e_object *c, ToggleSwitch *overide, e_object *timing_a, e_object *timing_b);
 	void Timestep(double simt, double deltat, bool persistent);
 	virtual void SystemTimestep(double simdt);
 	void SaveState(FILEHANDLE scn, char *start_str, char *end_str, bool persistent);
@@ -100,6 +100,7 @@ protected:
 	ContinuousRotationalSwitch *DimmerRotationalSwitch;
 	ToggleSwitch *DimmerOverride;
 	PowerMerge DCPower;
+	PowerMerge ExternalTimingPower;
 };
 
 //
@@ -110,6 +111,7 @@ class EventTimer: public MissionTimer {
 public:
 	EventTimer(PanelSDK &p);
 	virtual ~EventTimer();
+	void Init(e_object* a, e_object* b, ContinuousRotationalSwitch* dimmer, e_object* c, ToggleSwitch* override);
 	void Render(SURFHANDLE surf, SURFHANDLE digits, int xTexMul = 1);
 	void Render90(SURFHANDLE surf, SURFHANDLE digits, int xTexMul = 1);
 	void SystemTimestep(double simdt);
