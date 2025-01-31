@@ -305,7 +305,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_LGCUPLINKONLY, PT_NONE, SubStateTime > 2.0*60.0, 100, MST_G_LUNAR_ORBIT_ASCENT_DAY_3);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_3: //CMC State Vector uplinks to LM Ascent PAD
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, SubStateTime > 5.0*60.0, 101, MST_G_LUNAR_ORBIT_ASCENT_DAY_4);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, mcc_calcs.GETEval(rtcc->calcParams.LunarLiftoff - 90.0 * 60.0), 101, MST_G_LUNAR_ORBIT_ASCENT_DAY_4);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_4: //LM Ascent PAD to CSI Data Card
 		UpdateMacro(UTP_PADONLY, PT_AP11LMASCPAD, SubStateTime > 3.0*60.0, 102, MST_G_LUNAR_ORBIT_ASCENT_DAY_5);
@@ -317,7 +317,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_NONE, PT_NONE, mcc_calcs.GETEval(rtcc->calcParams.Insertion + 120.0), 104, MST_G_LUNAR_ORBIT_ASCENT_DAY_7, scrubbed, SubStateTime > 15.0*60.0, MST_G_LUNAR_ORBIT_ASCENT_DAY_2);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_7: //CMC LM State Vector update to CSM DAP Update
-		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, (rtcc->calcParams.src->DockingStatus(0) == 1) && (MoonRev >= 27 && MoonRevTime > 38.0*60.0), 2, MST_G_LUNAR_ORBIT_ASCENT_DAY_8);
+		UpdateMacro(UTP_CMCUPLINKONLY, PT_NONE, (rtcc->calcParams.src->DockingStatus(0) == 1) && (MoonRev >= 27 && MoonRevTime > 35.0*60.0), 2, MST_G_LUNAR_ORBIT_ASCENT_DAY_8);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_8: //CSM DAP Update to CSM state vector update
 		UpdateMacro(UTP_PADONLY, PT_AP10DAPDATA, MoonRev >= 27 && MoonRevTime > 95.0*60.0, 39, MST_G_LUNAR_ORBIT_ASCENT_DAY_9);
