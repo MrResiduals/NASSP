@@ -344,6 +344,13 @@ public:
 	void SeparateCSM();
 	bool IsLowerStageDocked();
 
+	///
+	/// \brief Turn on strobe lights.
+	///
+	void CreateStrobes();
+	void ActivateStrobes();
+	void MoveStrobes();
+
 	SIVBToSIConnector *GetSIVBSIConnector() { return &sivbSIConnector; }
 
 protected:
@@ -515,6 +522,9 @@ protected:
 	Pyro CSMLVSeparationInitiator;
 	Pyro LMSLASeparationInitiators;
 	Pyro SLAPanelDeployInitiator;
+
+	BEACONLIGHTSPEC trackLight[4];
+	VECTOR3 trackLightPos[4];
 };
 
 ///
