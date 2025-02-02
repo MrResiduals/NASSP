@@ -39,7 +39,7 @@
 #include "missiontimer.h"
 #include "papi.h"
 
-MissionTimer::MissionTimer(PanelSDK &p) : DCPower(0, p), ExternalTimingPower(0, p)
+MissionTimer::MissionTimer(PanelSDK &p) : DCPower(0, p)
 {
 	Running = false;
 	CountUp = TIMER_COUNT_UP;
@@ -61,13 +61,13 @@ MissionTimer::~MissionTimer()
 	// Nothing for now.
 }
 
-void MissionTimer::Init(e_object *a, e_object *b, ContinuousRotationalSwitch *dimmer, e_object *c, ToggleSwitch *override, e_object *timing_a, e_object *timing_b)
+void MissionTimer::Init(e_object *a, e_object *b, ContinuousRotationalSwitch *dimmer, e_object *c, ToggleSwitch *override, TimingEquipment* extTiming)
 {
 	DCPower.WireToBuses(a, b);
 	WireTo(c);
 	DimmerRotationalSwitch = dimmer;
 	DimmerOverride = override;
-	ExternalTimingPower.WireToBuses(timing_a, timing_b);
+	externalTimingEquipment = extTiming;
 }
 
 void MissionTimer::Reset()
@@ -292,7 +292,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	int Curdigit, divisor;
 
 	// Display tuning fork symbol if CTE (CM) or PCMTE (LM) reference is lost, and we're operating on internal frequency
-	if (ExternalTimingPower.Voltage() < SP_MIN_DCVOLTAGE) {
+	if (!externalTimingEquipment->TimingSignal()) {
 		oapiBlt(surf, digits, 0, 0, (int)(DigitWidth * 13.33), 0, DigitWidth / 2, DigitHeight);
 	}
 

@@ -3678,6 +3678,7 @@ protected:
 	VHFRangingSystem vhfranging;
 	VHFAMTransceiver vhftransceiver;
 	RNDZXPDRSystem RRTsystem;
+	CTE cte;
 
 	//Instrumentation
 	SCE sce;
