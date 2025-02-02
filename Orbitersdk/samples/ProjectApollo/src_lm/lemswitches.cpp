@@ -1971,7 +1971,7 @@ void LEMDigitalHeliumPressureMeter::DoDrawSwitch(double v, SURFHANDLE drawSurfac
 
 	for (int i = 0; i < 4; ++i) {
 		int Curdigit = (int)(v / divisor) % 10;
-		oapiBlt(drawSurface, Digits, DigitWidth * i, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(drawSurface, Digits, DigitWidth * i * 1.15, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		divisor /= 10;
 	}
 }
@@ -1993,7 +1993,7 @@ void LEMDigitalHeliumPressureMeter::DrawSwitchVC(int id, int event, SURFHANDLE s
 
 	for (int i = 0; i < 4; ++i) {
 		int Curdigit = (int)(v / divisor) % 10;
-		oapiBlt(surf, DigitsVC, DigitWidth * i, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, DigitsVC, DigitWidth * i * 1.15, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		divisor /= 10;
 	}
 }

@@ -303,7 +303,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	divisor = 100;
 	for (int i = 0; i < 3; ++i) {
 		Curdigit = (hours / divisor) % 10;
-		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -315,7 +315,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (minutes / divisor) % 10;
-		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -327,7 +327,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (seconds / divisor) % 10;
-		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -354,7 +354,7 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	divisor = 100;
 	for (int i = 0; i < 3; ++i) {
 		Curdigit = (hours / divisor) % 10;
-		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)), 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)) * 0.95, 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -366,7 +366,7 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (minutes / divisor) % 10;
-		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)), 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)) * 0.95, 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -378,7 +378,7 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (seconds / divisor) % 10;
-		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)), 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)) * 0.95, 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -447,15 +447,15 @@ void LEMEventTimer::Render(SURFHANDLE surf, SURFHANDLE digits, int TexMul)
 	Curdigit = minutes % 10;
 	Curdigit2 = (minutes / 10) % 10;
 	oapiBlt(surf, digits, 0, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
-	oapiBlt(surf, digits, DigitWidth, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, DigitWidth * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 
 	double margin = 2.33;	// One-third digit gap between minutes and seconds
 
 	// Seconds
 	Curdigit = seconds % 10;
 	Curdigit2 = (seconds / 10) % 10;
-	oapiBlt(surf, digits, DigitWidth * margin, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
-	oapiBlt(surf, digits, DigitWidth * (margin + 1), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, DigitWidth * margin * 0.95, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, DigitWidth * (margin + 1) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 }
 
 void LEMEventTimer::CountingThroughZero(double &t)
