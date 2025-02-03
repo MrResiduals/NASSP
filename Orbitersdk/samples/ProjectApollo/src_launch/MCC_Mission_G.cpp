@@ -329,7 +329,7 @@ void MCC::MissionSequence_G()
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, MoonRev >= 30 && MoonRevTime > 55.0*60.0, 45, MST_G_LUNAR_ORBIT_ASCENT_DAY_11);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_11: //Final TEI-30 Update to TEI-31 PAD
-		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 5.0*60.0, 46, MST_G_LUNAR_ORBIT_ASCENT_DAY_12);
+		UpdateMacro(UTP_PADWITHCMCUPLINK, PT_AP11MNV, SubStateTime > 3.0*60.0, 46, MST_G_LUNAR_ORBIT_ASCENT_DAY_12);
 		break;
 	case MST_G_LUNAR_ORBIT_ASCENT_DAY_12: //TEI-31 PAD to TEI Evaluation
 		UpdateMacro(UTP_PADONLY, PT_AP11MNV, mcc_calcs.GETEval(rtcc->calcParams.TEI + 300.0), 47, MST_G_LUNAR_ORBIT_ASCENT_DAY_13);
