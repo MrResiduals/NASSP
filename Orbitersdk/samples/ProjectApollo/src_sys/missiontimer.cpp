@@ -447,15 +447,16 @@ void LEMEventTimer::Render(SURFHANDLE surf, SURFHANDLE digits, int TexMul)
 	Curdigit = minutes % 10;
 	Curdigit2 = (minutes / 10) % 10;
 	oapiBlt(surf, digits, 0, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
-	oapiBlt(surf, digits, DigitWidth * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, DigitWidth, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 
 	double margin = 2.33;	// One-third digit gap between minutes and seconds
 
 	// Seconds
 	Curdigit = seconds % 10;
 	Curdigit2 = (seconds / 10) % 10;
-	oapiBlt(surf, digits, DigitWidth * margin * 0.95, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
-	oapiBlt(surf, digits, DigitWidth * (margin + 1) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, DigitWidth * margin, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, DigitWidth * (margin + 1), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+	// I subtract 1 from this final digit's target position to fix floating point rounding causing the last digit to be one pixel further away than the rest.
 }
 
 void LEMEventTimer::CountingThroughZero(double &t)
