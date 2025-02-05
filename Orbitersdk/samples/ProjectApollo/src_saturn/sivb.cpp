@@ -247,6 +247,7 @@ void SIVB::InitS4b()
 	PanelsHinged = false;
 	PanelsOpened = false;
 	UseWideSLA = false;
+	SLAHasBeacons = false;
 	LowRes = false;
 	IUSCContPermanentEnabled = true;
 	PayloadCreated = false;
@@ -652,7 +653,7 @@ void SIVB::SetS4b()
 		sivbsys->CreateParticleEffects(1400.0*0.0254); //CG location
 	}
 
-	if (PanelsHinged) {
+	if (PanelsHinged && SLAHasBeacons) {
 		ActivateStrobes();
 	}
 }
@@ -953,6 +954,7 @@ void SIVB::clbkSaveState (FILEHANDLE scn)
 
 	oapiWriteScenario_int (scn, "S4PL", PayloadType);
 	oapiWriteScenario_int (scn, "WIDESLA", UseWideSLA);
+	oapiWriteScenario_int (scn, "SLABEACONS", SLAHasBeacons);
 	oapiWriteScenario_int (scn, "MAINSTATE", GetMainState());
 	oapiWriteScenario_int (scn, "VECHNO", VehicleNo);
 	oapiWriteScenario_float (scn, "EMASS", EmptyMass);
@@ -1255,6 +1257,12 @@ void SIVB::clbkLoadStateEx (FILEHANDLE scn, void *vstatus)
 			int i;
 			sscanf(line + 7, "%d", &i);
 			UseWideSLA = (i != 0);
+		}
+		else if (!strnicmp(line, "SLABEACONS", 10))
+		{
+			int i;
+			sscanf(line + 10, "%d", &i);
+			SLAHasBeacons = (i != 0);
 		}
 		else if (!strnicmp (line, "MAINSTATE", 9))
 		{
@@ -1676,6 +1684,7 @@ void SIVB::SetState(SIVBSettings &state)
 		SaturnVStage = state.SaturnVStage;
 		PanelsHinged = state.PanelsHinged;
 		UseWideSLA = state.UseWideSLA;
+		SLAHasBeacons = state.SLAHasBeacons;
 		VehicleNo = state.VehicleNo;
 		LowRes = state.LowRes;
 		IUSCContPermanentEnabled = state.IUSCContPermanentEnabled;
