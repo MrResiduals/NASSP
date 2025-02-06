@@ -138,8 +138,7 @@ public:
 	void SkylabSaturnIBLaunchCalc();
 	void SkylabSaturnIBLaunchUplink();
 	void TransferTIToMPT();
-	void TransferSPQToMPT();
-	void TransferDKIToMPT();
+	void Transfer_SPQ_Or_DKI_To_MPT();
 	void TransferDescentPlanToMPT();
 	void TransferPoweredDescentToMPT();
 	void TransferPoweredAscentToMPT();
@@ -305,6 +304,7 @@ public:
 	bool manpad_ullage_opt; //true = 4 jets, false = 2 jets
 	int ManPADMPT; //1 = CSM, 3 = LEM
 	int ManPADMPTManeuver; //1-15
+	bool TLIPAD_StudyAid; //False = nominal TLI, true = study aid
 
 	//MAP UPDATE PAGE
 	AP10MAPUPDATE mapupdate;

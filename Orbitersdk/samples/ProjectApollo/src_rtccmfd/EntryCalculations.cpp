@@ -1006,9 +1006,6 @@ bool RetrofirePlanning::RMSDBMP(EphemerisData sv, double GETI, double lat_T, dou
 	//Set error indicator to zero
 	ERR = 0;
 
-	//Get REFSMMAT
-	refsdata = pRTCC->EZJGMTX1.data[refsid - 1];
-
 	//Get thruster thrust and mass flow
 	double ullage_overlap = pRTCC->SystemParameters.MCTSD9;
 	switch (Thruster)
@@ -1123,8 +1120,8 @@ bool RetrofirePlanning::RMSDBMP(EphemerisData sv, double GETI, double lat_T, dou
 		sv_BI_SEP = coastin.sv_cutoff;
 
 		//Calculate attitude
-		VECTOR3 U_T_SEP, IMUAtt_SEP;
-		RMMATT(1, 1, false, pRTCC->RZJCTTC.R30_Att, refsdata.REFSMMAT, pRTCC->RZJCTTC.R30_Thruster, sv_BI_SEP.R, sv_BI_SEP.V, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, IMUAtt_SEP);
+		VECTOR3 U_T_SEP;
+		RMMATT_LVLH(pRTCC->RZJCTTC.R30_Att, sv_BI_SEP.R, sv_BI_SEP.V, pRTCC->RZJCTTC.R30_Thruster, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, X_B, Y_B, Z_B);
 
 		//Maneuver simulation
 		integin.sv0 = sv_BI_SEP;
@@ -1282,8 +1279,8 @@ bool RetrofirePlanning::RMSDBMP(EphemerisData sv, double GETI, double lat_T, dou
 		sv_BI_SEP = pRTCC->RotateSVToSOI(out.SV);
 
 		//Calculate attitude
-		VECTOR3 U_T_SEP, IMUAtt_SEP;
-		RMMATT(1, 1, false, pRTCC->RZJCTTC.R30_Att, refsdata.REFSMMAT, pRTCC->RZJCTTC.R30_Thruster, sv_BI_SEP.R, sv_BI_SEP.V, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, IMUAtt_SEP);
+		VECTOR3 U_T_SEP;
+		RMMATT_LVLH(pRTCC->RZJCTTC.R30_Att, sv_BI_SEP.R, sv_BI_SEP.V, pRTCC->RZJCTTC.R30_Thruster, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, X_B, Y_B, Z_B);
 
 		//Maneuver simulation
 		integin.sv0 = sv_BI_SEP;
@@ -1348,7 +1345,7 @@ bool RetrofirePlanning::RMSDBMP(EphemerisData sv, double GETI, double lat_T, dou
 	{
 		LVLHAtt = _V(0.0, -(31.7*RAD + 2.15*RAD + acos(OrbMech::R_Earth / length(sv_BI.R))), PI);
 	}
-	RMMATT(1, 1, false, LVLHAtt, refsdata.REFSMMAT, Thruster, sv_BI.R, sv_BI.V, GimbalIndicator, CSMmass_Sep, U_T, IMUAtt);
+	RMMATT_LVLH(LVLHAtt, sv_BI.R, sv_BI.V, Thruster, GimbalIndicator, CSMmass_Sep, U_T, X_B, Y_B, Z_B);
 
 	//Maneuver simulation
 	integin.sv0 = sv_BI;
@@ -1572,8 +1569,8 @@ bool RetrofirePlanning::RMSDBMP(EphemerisData sv, double GETI, double lat_T, dou
 			sv_BI_SEP = pRTCC->RotateSVToSOI(out.SV);
 
 			//Calculate attitude
-			VECTOR3 U_T_SEP, IMUAtt_SEP;
-			RMMATT(1, 1, false, pRTCC->RZJCTTC.R30_Att, refsdata.REFSMMAT, pRTCC->RZJCTTC.R30_Thruster, sv_BI_SEP.R, sv_BI_SEP.V, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, IMUAtt_SEP);
+			VECTOR3 U_T_SEP;
+			RMMATT_LVLH(pRTCC->RZJCTTC.R30_Att, sv_BI_SEP.R, sv_BI_SEP.V, pRTCC->RZJCTTC.R30_Thruster, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, X_B, Y_B, Z_B);
 
 			//Maneuver simulation
 			integin.sv0 = sv_BI_SEP;
@@ -1633,7 +1630,7 @@ bool RetrofirePlanning::RMSDBMP(EphemerisData sv, double GETI, double lat_T, dou
 		{
 			LVLHAtt = _V(0.0, -(31.7*RAD + 2.15*RAD + acos(OrbMech::R_Earth / length(sv_BI.R))), PI);
 		}
-		RMMATT(1, 1, false, LVLHAtt, refsdata.REFSMMAT, Thruster, sv_BI.R, sv_BI.V, GimbalIndicator, CSMmass_Sep, U_T, IMUAtt);
+		RMMATT_LVLH(LVLHAtt, sv_BI.R, sv_BI.V, Thruster, GimbalIndicator, CSMmass_Sep, U_T, X_B, Y_B, Z_B);
 
 		integin.sv0 = sv_BI;
 		integin.A = Area;
@@ -1828,6 +1825,9 @@ void RetrofirePlanning::RMMDBF()
 	else if (ManeuverType == 1)
 	{
 		GMT_TI = GMTI - pRTCC->RZJCTTC.R30_DeltaT_Sep;
+		//Change search limits for separation maneuver
+		TL = TL - (pRTCC->RZJCTTC.R30_DeltaT_Sep - 20.0*60.0);
+		TR = TR - (pRTCC->RZJCTTC.R30_DeltaT_Sep - 20.0*60.0);
 	}
 	else
 	{
@@ -1892,13 +1892,13 @@ void RetrofirePlanning::RMMDBM()
 		else
 		{
 			EphemerisData sv_TIG_SEP, sv_apo_SEP;
-			VECTOR3 U_T_SEP, IMUAtt_SEP;
+			VECTOR3 U_T_SEP;
 			double DVBURN_SEP;
 
 			sv_TIG_SEP = sv_apo_SEP = pRTCC->RotateSVToSOI(out.SV);
 
 			//Calculate thrust direction
-			RMMATT(1, 1, false, pRTCC->RZJCTTC.R30_Att, refsdata.REFSMMAT, pRTCC->RZJCTTC.R30_Thruster, sv_TIG_SEP.R, sv_TIG_SEP.V, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, IMUAtt_SEP);
+			RMMATT_LVLH(pRTCC->RZJCTTC.R30_Att, sv_TIG_SEP.R, sv_TIG_SEP.V, pRTCC->RZJCTTC.R30_Thruster, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T_SEP, X_B, Y_B, Z_B);
 
 			if (pRTCC->RZJCTTC.R30_DeltaV > 0)
 			{
@@ -1927,7 +1927,7 @@ void RetrofirePlanning::RMMDBM()
 		}
 
 		//Calculate thrust direction
-		RMMATT(1, 1, false, Att, refsdata.REFSMMAT, Thruster, sv_TIG.R, sv_TIG.V, GimbalIndicator, CSMmass, U_T, IMUAtt);
+		RMMATT_LVLH(Att, sv_TIG.R, sv_TIG.V, Thruster, GimbalIndicator, CSMmass, U_T, X_B, Y_B, Z_B);
 
 		//Adjust thrust direction for impulsive maneuver
 		Y = unit(crossp(sv_TIG.V, sv_TIG.R));
@@ -2241,22 +2241,20 @@ void RetrofirePlanning::RMMDBN(int entry)
 	}
 }
 
-void RetrofirePlanning::RMMATT(int entry, int opt, bool calcDesired, VECTOR3 Att, MATRIX3 REFSMMAT, int thruster, VECTOR3 R, VECTOR3 V, int TrimIndicator, double mass, VECTOR3 &U_T, VECTOR3 &OtherAtt)
+void RetrofirePlanning::RMMATT_LVLH(VECTOR3 LVLH_Att, VECTOR3 R, VECTOR3 V, int thruster, int TrimIndicator, double mass, VECTOR3 &U_T, VECTOR3 &X_B, VECTOR3 &Y_B, VECTOR3 &Z_B) const
 {
-	//entry: 1 = calculate unit vector. 2 = calculate attitude in the other coordinate system and the deorbit REFSMMAT
-	//opt: 1 = Att is LVLH, 2 = Att is IMU
+	//Inputs: LVLH attitude, state vector, thruster, mass
+	//Outputs: thrust direction and body attitude
 
-	VECTOR3 X_P, Y_P, Z_P;
-	double SINP, SINY, SINR, COSP, COSY, COSR;
-	double AL, BE, a1, a2, a3, b1, b2, b3, c1, c2, c3;
-	double P_G = 0.0, Y_G = 0.0;
+	VECTOR3 X_P, Y_P, Z_P, Y_T, Z_T;
+	double SINP, SINY, SINR, COSP, COSY, COSR, P_G, Y_G, AL, BE, a1, a2, a3, b1, b2, b3, c1, c2, c3;
 
-	SINP = sin(Att.y);
-	SINY = sin(Att.z);
-	SINR = sin(Att.x);
-	COSP = cos(Att.y);
-	COSY = cos(Att.z);
-	COSR = cos(Att.x);
+	SINP = sin(LVLH_Att.y);
+	SINY = sin(LVLH_Att.z);
+	SINR = sin(LVLH_Att.x);
+	COSP = cos(LVLH_Att.y);
+	COSY = cos(LVLH_Att.z);
+	COSR = cos(LVLH_Att.x);
 
 	if (thruster == RTCC_ENGINETYPE_CSMSPS)
 	{
@@ -2271,147 +2269,103 @@ void RetrofirePlanning::RMMATT(int entry, int opt, bool calcDesired, VECTOR3 Att
 			pRTCC->GetSystemGimbalAngles(RTCC_ENGINETYPE_CSMSPS, P_G, Y_G);
 		}
 	}
-
-	if (opt == 1)
+	else
 	{
-		VECTOR3 Y_T, Z_T;
+		P_G = Y_G = 0.0;
+	}
 
-		Z_P = -unit(R);
-		Y_P = -unit(crossp(R, V));
-		X_P = crossp(Y_P, Z_P);
+	Z_P = -unit(R);
+	Y_P = -unit(crossp(R, V));
+	X_P = crossp(Y_P, Z_P);
 
-		AL = SINP * SINR;
-		BE = SINP * COSR;
-		a1 = COSY * COSP;
-		a2 = SINY * COSP;
-		a3 = -SINP;
-		b1 = AL * COSY - SINY * COSR;
-		b2 = AL * SINY + COSY * COSR;
-		b3 = COSP * SINR;
-		c1 = BE * COSY + SINY * SINR;
-		c2 = BE * SINY - COSY * SINR;
-		c3 = COSP * COSR;
+	AL = SINP * SINR;
+	BE = SINP * COSR;
+	a1 = COSY * COSP;
+	a2 = SINY * COSP;
+	a3 = -SINP;
+	b1 = AL * COSY - SINY * COSR;
+	b2 = AL * SINY + COSY * COSR;
+	b3 = COSP * SINR;
+	c1 = BE * COSY + SINY * SINR;
+	c2 = BE * SINY - COSY * SINR;
+	c3 = COSP * COSR;
 
-		U_T = X_P * a1 + Y_P * a2 + Z_P * a3;
-		Y_T = X_P * b1 + Y_P * b2 + Z_P * b3;
-		Z_T = X_P * c1 + Y_P * c2 + Z_P * c3;
+	U_T = X_P * a1 + Y_P * a2 + Z_P * a3;
+	Y_T = X_P * b1 + Y_P * b2 + Z_P * b3;
+	Z_T = X_P * c1 + Y_P * c2 + Z_P * c3;
 
-		X_B = U_T * cos(P_G)*cos(Y_G) - Y_T * cos(P_G)*sin(Y_G) + Z_T * sin(P_G);
-		Y_B = U_T * sin(Y_G) + Y_T * cos(Y_G);
-		Z_B = crossp(X_B, Y_B);
+	X_B = U_T * cos(P_G)*cos(Y_G) - Y_T * cos(P_G)*sin(Y_G) + Z_T * sin(P_G);
+	Y_B = U_T * sin(Y_G) + Y_T * cos(Y_G);
+	Z_B = crossp(X_B, Y_B);
+}
+
+VECTOR3 RetrofirePlanning::RMMATT_IMU(VECTOR3 X_B, VECTOR3 Y_B, VECTOR3 Z_B, MATRIX3 REFSMMAT) const
+{
+	//Calculate IMU angles from body attitude
+
+	VECTOR3 X_P, Y_P, Z_P, IMUAngles;
+
+	X_P = _V(REFSMMAT.m11, REFSMMAT.m12, REFSMMAT.m13);
+	Y_P = _V(REFSMMAT.m21, REFSMMAT.m22, REFSMMAT.m23);
+	Z_P = _V(REFSMMAT.m31, REFSMMAT.m32, REFSMMAT.m33);
+
+	IMUAngles.z = asin(dotp(Y_P, X_B));
+	if (abs(abs(IMUAngles.z) - PI05) < 1e-8)
+	{
+		IMUAngles.x = 0.0;
+		IMUAngles.y = atan2(dotp(X_P, Z_B), dotp(Z_P, Z_B));
 	}
 	else
 	{
-		X_P = _V(REFSMMAT.m11, REFSMMAT.m12, REFSMMAT.m13);
-		Y_P = _V(REFSMMAT.m21, REFSMMAT.m22, REFSMMAT.m23);
-		Z_P = _V(REFSMMAT.m31, REFSMMAT.m32, REFSMMAT.m33);
-
-		AL = COSP * SINY;
-		BE = SINP * SINY;
-		a1 = COSP * COSY;
-		a2 = SINY;
-		a3 = -SINP * COSY;
-		b1 = SINP * SINR - AL * COSR;
-		b2 = COSY * COSR;
-		b3 = COSP * SINR + BE * COSR;
-		c1 = SINP * COSR + AL * SINR;
-		c2 = -COSY * SINR;
-		c3 = COSP * COSR - BE * SINR;
-
-		X_B = X_P * a1 + Y_P * a2 + Z_P * a3;
-		Y_B = X_P * b1 + Y_P * b2 + Z_P * b3;
-		Z_B = X_P * c1 + Y_P * c2 + Z_P * c3;
-
-		if (thruster == RTCC_ENGINETYPE_CSMSPS)
-		{
-			MATRIX3 MTEMP = _M(X_B.x, X_B.y, X_B.z, Y_B.x, Y_B.y, Y_B.z, Z_B.x, Z_B.y, Z_B.z);
-			MATRIX3 MTEMP2 = pRTCC->GLMRTM(MTEMP, P_G, 2, Y_G, 3);
-			U_T = _V(MTEMP2.m11, MTEMP2.m12, MTEMP2.m13);
-		}
-		else if (thruster == RTCC_ENGINETYPE_CSMRCSPLUS2 || thruster == RTCC_ENGINETYPE_CSMRCSPLUS4)
-		{
-			U_T = X_B;
-		}
-		else
-		{
-			U_T = -X_B;
-		}
+		IMUAngles.x = atan2(-dotp(Y_P, Z_B), dotp(Y_P, Y_B));
+		IMUAngles.y = atan2(-dotp(Z_P, X_B), dotp(X_P, X_B));
 	}
 
-	if (entry == 1)
+	if (IMUAngles.x < 0)
 	{
-		return;
+		IMUAngles.x += PI2;
 	}
-
-	//Attitude in other coordinates
-	if (opt == 1)
+	if (IMUAngles.y < 0)
 	{
-		//Calculate IMU angles
-		X_P = _V(REFSMMAT.m11, REFSMMAT.m12, REFSMMAT.m13);
-		Y_P = _V(REFSMMAT.m21, REFSMMAT.m22, REFSMMAT.m23);
-		Z_P = _V(REFSMMAT.m31, REFSMMAT.m32, REFSMMAT.m33);
+		IMUAngles.y += PI2;
+	}
+	if (IMUAngles.z < 0)
+	{
+		IMUAngles.z += PI2;
+	}
+	return IMUAngles;
+}
 
-		OtherAtt.z = asin(dotp(Y_P, X_B));
-		if (abs(abs(OtherAtt.z) - PI05) < 1e-8)
-		{
-			OtherAtt.x = 0.0;
-			OtherAtt.y = atan2(dotp(X_P, Z_B), dotp(Z_P, Z_B));
-		}
-		else
-		{
-			OtherAtt.x = atan2(-dotp(Y_P, Z_B), dotp(Y_P, Y_B));
-			OtherAtt.y = atan2(-dotp(Z_P, X_B), dotp(X_P, X_B));
-		}
+VECTOR3 RetrofirePlanning::RMMATT_LVLH_Body(VECTOR3 X_B, VECTOR3 Y_B, VECTOR3 Z_B, VECTOR3 R, VECTOR3 V) const
+{
+	VECTOR3 X_P, Y_P, Z_P, LVLHAngles;
 
-		if (OtherAtt.x < 0)
-		{
-			OtherAtt.x += PI2;
-		}
-		if (OtherAtt.y < 0)
-		{
-			OtherAtt.y += PI2;
-		}
-		if (OtherAtt.z < 0)
-		{
-			OtherAtt.z += PI2;
-		}
+	Z_P = unit(-R);
+	Y_P = unit(crossp(V, R));
+	X_P = unit(crossp(Y_P, Z_P));
+	LVLHAngles.y = asin(-dotp(Z_P, X_B));
+	if (abs(abs(LVLHAngles.y) - PI05) < 0.0017)
+	{
+		LVLHAngles.x = 0.0;
+		LVLHAngles.z = atan2(-dotp(X_P, Y_B), dotp(Y_P, Y_B));
 	}
 	else
 	{
-		//Calculate LVLH angles
-		Z_P = unit(-R);
-		Y_P = unit(crossp(V, R));
-		X_P = unit(crossp(Y_P, Z_P));
-		OtherAtt.y = asin(-dotp(Z_P, X_B));
-		if (abs(abs(OtherAtt.y) - PI05) < 0.0017)
-		{
-			OtherAtt.x = 0.0;
-			OtherAtt.z = atan2(-dotp(X_P, Y_B), dotp(Y_P, Y_B));
-		}
-		else
-		{
-			OtherAtt.z = atan2(dotp(Y_P, X_B), dotp(X_P, X_B));
-			OtherAtt.x = atan2(dotp(Z_P, Y_B), dotp(Z_P, Z_B));
-		}
+		LVLHAngles.z = atan2(dotp(Y_P, X_B), dotp(X_P, X_B));
+		LVLHAngles.x = atan2(dotp(Z_P, Y_B), dotp(Z_P, Z_B));
 	}
+	return LVLHAngles;
+}
 
-	if (calcDesired)
-	{
-		//Retrofire preferred alignment
-		VECTOR3 X_SM, Y_SM, Z_SM;
-		X_SM = -X_B;
-		if (thruster == RTCC_ENGINETYPE_CSMSPS)
-		{
-			Y_SM = -Y_B;
-			Z_SM = Z_B;
-		}
-		else
-		{
-			Y_SM = Y_B;
-			Z_SM = -Z_B;
-		}
-		DesREFSMMAT = _M(X_SM.x, X_SM.y, X_SM.z, Y_SM.x, Y_SM.y, Y_SM.z, Z_SM.x, Z_SM.y, Z_SM.z);
-	}
+MATRIX3 RetrofirePlanning::RMMATT_REFSMMAT(VECTOR3 X_B, VECTOR3 Y_B, VECTOR3 Z_B, VECTOR3 R) const
+{
+	//Desired REFSMMAT from body axes and position vector
+	VECTOR3 X_SM, Y_SM, Z_SM;
+	X_SM = -X_B;
+	Y_SM = unit(crossp(X_SM, R));
+	Z_SM = unit(crossp(X_SM, Y_SM));
+
+	return _M(X_SM.x, X_SM.y, X_SM.z, Y_SM.x, Y_SM.y, Y_SM.z, Z_SM.x, Z_SM.y, Z_SM.z);
 }
 
 void RetrofirePlanning::RMSTTF()
@@ -2422,74 +2376,8 @@ void RetrofirePlanning::RMSTTF()
 	TimeConstraintsTable elem;
 	double r_apo, r_peri;
 
+	//Calculate output data for the retrofire maneuver
 	tab->Indicator = 0;
-
-	if (pRTCC->RZJCTTC.R32_Code == 2)
-	{
-		tab->Indicator_Sep = 0;
-
-		EphemerisData sv_BO_SEP_ECT;
-		pRTCC->ELVCNV(sv_BO_SEP, 1, sv_BO_SEP_ECT);
-		sv_BO_SEP_ECT.RBI = BODY_EARTH;
-		pRTCC->EMMDYNEL(sv_BO_SEP_ECT, elem);
-		
-		pRTCC->PIFAAP(elem.a, elem.e, elem.i, elem.TA, elem.TA + elem.AoP, length(sv_BO_SEP_ECT.R), r_apo, r_peri);
-
-		tab->CSMWeightSep = burnaux_sep.WTENGON *LBS*1000.0;
-		tab->H_apo = (r_apo - OrbMech::R_Earth) / 1852.0;
-		tab->H_peri = (r_peri - OrbMech::R_Earth) / 1852.0;
-		tab->TrueAnomalySep = elem.TA*DEG;
-		tab->H_Sep = elem.h / 1852.0;
-
-		if (pRTCC->RZJCTTC.R30_Thruster == RTCC_ENGINETYPE_CSMSPS)
-		{
-			if (pRTCC->RZJCTTC.R30_Use4UllageThrusters)
-			{
-				tab->UllageQuads_Sep = 4;
-			}
-			else
-			{
-				tab->UllageQuads_Sep = 2;
-			}
-		}
-		else
-		{
-			tab->UllageQuads_Sep = 0;
-		}
-
-		RMMATT(2, 1, true, pRTCC->RZJCTTC.R30_Att, refsdata.REFSMMAT, pRTCC->RZJCTTC.R30_Thruster, sv_TIG_SEP.R, sv_TIG_SEP.V, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T, IMUAtt);
-		tab->Att_IMU_Sep = IMUAtt * DEG;
-		RMMATT(2, 2, false, IMUAtt, refsdata.REFSMMAT, pRTCC->RZJCTTC.R30_Thruster, sv_TIG_SEP.R, sv_TIG_SEP.V, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T, BodyAtt);
-		tab->Att_LVLH_Sep = BodyAtt * DEG;
-		for (int i = 0;i < 3;i++)
-		{
-			if (tab->Att_IMU_Sep.data[i] < 0)
-			{
-				tab->Att_IMU_Sep.data[i] += 360.0;
-			}
-		}
-		tab->DVC_Sep = burnaux_sep.DV_C / 0.3048;
-		tab->BurnTime_Sep = burnaux_sep.DT_B;
-		tab->DVT_Sep = burnaux_sep.DV / 0.3048;
-		tab->UllageDT_Sep = dt_ullage_sep;
-		tab->GMTI_Sep = burnaux_sep.GMT_BI;
-		tab->GETI_Sep = pRTCC->GETfromGMT(tab->GMTI_Sep);
-
-		if (pRTCC->RZJCTTC.R30_Thruster == RTCC_ENGINETYPE_CSMSPS)
-		{
-			tab->P_G_Sep = (burnaux_sep.P_G - pRTCC->SystemParameters.MCTSPP)*DEG;
-			tab->Y_G_Sep = (burnaux_sep.Y_G - pRTCC->SystemParameters.MCTSYP)*DEG;
-		}
-		else
-		{
-			tab->P_G_Sep = 0.0;
-			tab->Y_G_Sep = 0.0;
-		}
-	}
-	else
-	{
-		tab->Indicator_Sep = 1;
-	}
 
 	if (pRTCC->RZJCTTC.R31_Use4UllageThrusters)
 	{
@@ -2501,25 +2389,44 @@ void RetrofirePlanning::RMSTTF()
 	}
 	//TBD: Burn code
 	//TBD: Area
-	char Buffer[16];
-	pRTCC->EMGSTGENName(pRTCC->RZJCTTC.R31_REFSMMAT, Buffer);
-	tab->RefsID.assign(Buffer);
+
 	tab->CSMWeightRetro = burnaux.WTENGON *LBS*1000.0;
 
 	pRTCC->EMMDYNEL(sv_TIG, elem);
 
 	tab->TrueAnomalyRetro = elem.TA*DEG;
-	RMMATT(2, 1, true, LVLHAtt, refsdata.REFSMMAT, Thruster, sv_TIG.R, sv_TIG.V, GimbalIndicator, CSMmass_Sep, U_T, IMUAtt);
-	tab->Att_IMU = IMUAtt * DEG;
-	RMMATT(2, 2, false, IMUAtt, refsdata.REFSMMAT, Thruster, sv_TIG.R, sv_TIG.V, GimbalIndicator, CSMmass_Sep, U_T, BodyAtt);
-	tab->Att_LVLH = BodyAtt * DEG;
-	for (int i = 0;i < 3;i++)
+
+	//Calculate retrofire body axes
+	RMMATT_LVLH(LVLHAtt, sv_BI.R, sv_BI.V, Thruster, GimbalIndicator, CSMmass_Sep, U_T, X_B, Y_B, Z_B);
+
+	//Get REFSMMAT for maneuvers
+	if (refsid < 9)
+	{
+		char Buffer[16];
+		pRTCC->EMGSTGENName(refsid, Buffer);
+		tab->RefsID.assign(Buffer);
+		refsdata = pRTCC->EZJGMTX1.data[refsid - 1];
+	}
+	else
+	{
+		tab->RefsID = "DES";
+		refsdata.REFSMMAT = RMMATT_REFSMMAT(X_B, Y_B, Z_B, sv_TIG.R);
+	}
+
+	//Calculate retrofire IMU attitude
+	tab->Att_IMU = RMMATT_IMU(X_B, Y_B, Z_B, refsdata.REFSMMAT);
+	tab->Att_IMU = tab->Att_IMU * DEG;
+	for (int i = 0; i < 3; i++)
 	{
 		if (tab->Att_IMU.data[i] < 0)
 		{
 			tab->Att_IMU.data[i] += 360.0;
 		}
 	}
+	//Calculate retofire LVLH body attitude
+	tab->Att_LVLH = RMMATT_LVLH_Body(X_B, Y_B, Z_B, sv_TIG.R, sv_TIG.V);
+	tab->Att_LVLH = tab->Att_LVLH * DEG;
+
 	tab->DVC = burnaux.DV_C / 0.3048;
 	tab->BurnTime = burnaux.DT_B;
 	tab->DVT = burnaux.DV / 0.3048;
@@ -2542,13 +2449,13 @@ void RetrofirePlanning::RMSTTF()
 	{
 		tab->RETRB = 0.0;
 	}
-	
+
 	tab->lat_ML = lat_ML * DEG;
 	tab->lng_ML = lng_ML * DEG;
 	if (pRTCC->RZJCTTC.Type == 2)
 	{
 		//Save predicted impact as target
-		tab->lat_T = lat_IP*DEG;
+		tab->lat_T = lat_IP * DEG;
 		tab->lng_T = lng_IP * DEG;
 	}
 	else
@@ -2574,10 +2481,10 @@ void RetrofirePlanning::RMSTTF()
 		tab->P_G = 0.0;
 		tab->Y_G = 0.0;
 	}
-	tab->REFSMMAT = DesREFSMMAT;
+	tab->REFSMMAT = refsdata.REFSMMAT;
 	tab->DV_TO = burnaux.DV_TO / 0.3048;
 	tab->DT_TO = burnaux.DT_TO;
-	
+
 	VECTOR3 DV_EXDV = pRTCC->PIEXDV(sv_TIG.R, sv_TIG.V, CSMmass_Sep, TCMC, U_T*DVBURN, 0);
 
 	tab->VG_XDX = DV_EXDV / 0.3048;
@@ -2590,6 +2497,81 @@ void RetrofirePlanning::RMSTTF()
 	pRTCC->PIFAAP(elem.a, elem.e, elem.i, elem.TA, elem.TA + elem.AoP, length(sv_BO_ECT.R), r_apo, r_peri);
 	tab->H_apo = (r_apo - OrbMech::R_Earth) / 1852.0;
 	tab->H_peri = (r_peri - OrbMech::R_Earth) / 1852.0;
+
+	if (pRTCC->RZJCTTC.R32_Code == 2)
+	{
+		//Calculate output data for the shaping/separation maneuver
+		tab->Indicator_Sep = 0;
+
+		EphemerisData sv_BO_SEP_ECT;
+		pRTCC->ELVCNV(sv_BO_SEP, 1, sv_BO_SEP_ECT);
+		sv_BO_SEP_ECT.RBI = BODY_EARTH;
+		pRTCC->EMMDYNEL(sv_BO_SEP_ECT, elem);
+		
+		pRTCC->PIFAAP(elem.a, elem.e, elem.i, elem.TA, elem.TA + elem.AoP, length(sv_BO_SEP_ECT.R), r_apo, r_peri);
+
+		tab->CSMWeightSep = burnaux_sep.WTENGON *LBS*1000.0;
+		tab->H_apo_sep = (r_apo - OrbMech::R_Earth) / 1852.0;
+		tab->H_peri_sep = (r_peri - OrbMech::R_Earth) / 1852.0;
+		tab->TrueAnomalySep = elem.TA*DEG;
+		tab->H_Sep = elem.h / 1852.0;
+
+		if (pRTCC->RZJCTTC.R30_Thruster == RTCC_ENGINETYPE_CSMSPS)
+		{
+			if (pRTCC->RZJCTTC.R30_Use4UllageThrusters)
+			{
+				tab->UllageQuads_Sep = 4;
+			}
+			else
+			{
+				tab->UllageQuads_Sep = 2;
+			}
+		}
+		else
+		{
+			tab->UllageQuads_Sep = 0;
+		}
+
+		//Calculate shaping/sep maneuver body axes
+		RMMATT_LVLH(pRTCC->RZJCTTC.R30_Att, sv_TIG_SEP.R, sv_TIG_SEP.V, pRTCC->RZJCTTC.R30_Thruster, pRTCC->RZJCTTC.R30_GimbalIndicator, CSMmass, U_T, X_B, Y_B, Z_B);
+		//Calculate shaping/sep maneuver IMU attitude
+		tab->Att_IMU_Sep = RMMATT_IMU(X_B, Y_B, Z_B, refsdata.REFSMMAT);
+		tab->Att_IMU_Sep = tab->Att_IMU_Sep * DEG;
+		for (int i = 0; i < 3; i++)
+		{
+			if (tab->Att_IMU_Sep.data[i] < 0)
+			{
+				tab->Att_IMU_Sep.data[i] += 360.0;
+			}
+		}
+		//Calculate shaping/sep maneuver LVLH body attitude
+		tab->Att_LVLH_Sep = RMMATT_LVLH_Body(X_B, Y_B, Z_B, sv_TIG_SEP.R, sv_TIG_SEP.V);
+		tab->Att_LVLH_Sep = tab->Att_LVLH_Sep * DEG;
+
+		tab->DVC_Sep = burnaux_sep.DV_C / 0.3048;
+		tab->BurnTime_Sep = burnaux_sep.DT_B;
+		tab->DVT_Sep = burnaux_sep.DV / 0.3048;
+		tab->UllageDT_Sep = dt_ullage_sep;
+		tab->GMTI_Sep = burnaux_sep.GMT_BI;
+		tab->GETI_Sep = pRTCC->GETfromGMT(tab->GMTI_Sep);
+
+		if (pRTCC->RZJCTTC.R30_Thruster == RTCC_ENGINETYPE_CSMSPS)
+		{
+			tab->P_G_Sep = (burnaux_sep.P_G - pRTCC->SystemParameters.MCTSPP)*DEG;
+			tab->Y_G_Sep = (burnaux_sep.Y_G - pRTCC->SystemParameters.MCTSYP)*DEG;
+		}
+		else
+		{
+			tab->P_G_Sep = 0.0;
+			tab->Y_G_Sep = 0.0;
+		}
+
+		tab->VG_XDV_Sep = pRTCC->PIEXDV(sv_TIG_SEP.R, sv_TIG_SEP.V, CSMmass, TCMC, U_T*burnaux_sep.DV, 0) / 0.3048;
+	}
+	else
+	{
+		tab->Indicator_Sep = 1;
+	}
 
 	//Transfer table
 	RetrofireTransferTableEntry *tab2 = &pRTCC->RZRFTT.Manual;
@@ -2991,17 +2973,24 @@ void RetrofirePlanning::RMGTTF(std::string source, int i)
 		}
 		message.push_back(Buffer2);
 		//Line 5
-		sprintf_s(Buffer, "LVLH BODY-ROLL=%+07.2lf PITCH=%+07.2lf YAW=%+07.2lf TRIM ANGLES--PITCH=%+07.2lf YAW=%+07.2lf", BodyAtt.x*DEG, BodyAtt.y*DEG, BodyAtt.z*DEG, tab->P_G, tab->Y_G);
+		sprintf_s(Buffer, "LVLH BODY-ROLL=%+07.2lf PITCH=%+07.2lf YAW=%+07.2lf TRIM ANGLES--PITCH=%+07.2lf YAW=%+07.2lf", tab->Att_LVLH.x, tab->Att_LVLH.y, tab->Att_LVLH.z, tab->P_G, tab->Y_G);
 		Buffer2.assign(Buffer);
 		message.push_back(Buffer2);
 		//Line 6
-		sprintf_s(Buffer, "IMU-------ROLL=%+07.2lf PITCH=%+07.2lf YAW=%+07.2lf HT AT RETRO=%+07.2lf TRUE ANOMALY AT GETI(RET)=%+07.2lf", IMUAtt.x*DEG, IMUAtt.y*DEG, IMUAtt.z*DEG, tab->H_Retro, tab->TrueAnomalyRetro);
+		sprintf_s(Buffer, "IMU-------ROLL=%+07.2lf PITCH=%+07.2lf YAW=%+07.2lf HT AT RETRO=%+07.2lf TRUE ANOMALY AT GETI(RET)=%+07.2lf", tab->Att_IMU.x, tab->Att_IMU.y, tab->Att_IMU.z, tab->H_Retro, tab->TrueAnomalyRetro);
 		Buffer2.assign(Buffer);
 		message.push_back(Buffer2);
 		//Line 7
 		Buffer2.assign("REFSMMAT ID=");
-		pRTCC->FormatREFSMMATCode(refsid, refsdata.ID, Buffer);
-		Buffer2.append(Buffer);
+		if (refsid < 9)
+		{
+			pRTCC->FormatREFSMMATCode(refsid, refsdata.ID, Buffer);
+			Buffer2.append(Buffer);
+		}
+		else
+		{
+			Buffer2.append("DES000");
+		}
 		sprintf_s(Buffer, " XX=%+.8lf XY=%+.8lf XZ=%+.8lf", refsdata.REFSMMAT.m11, refsdata.REFSMMAT.m12, refsdata.REFSMMAT.m13);
 		Buffer2.append(Buffer);
 		message.push_back(Buffer2);
@@ -4911,7 +4900,7 @@ void ConicRTEEarthNew::StoreSolution(VECTOR3 dv, double lat, double t0, double t
 void ConicRTEEarthNew::INITAL()
 {
 	VECTOR3 R4, R5, R_p, U0_apo;
-	double SAZ, CAZ, T1, T2, A_m, beta_r, p, R_a, A, DV, e, V_a, beta_a, T_1i, T_s, delta_0, Am1, Am2, beta_r_apo, A_Z;
+	double SAZ, CAZ, T1, T2, A_m, beta_r, p, R_a, AINV, DV, e, V_a, beta_a, T_1i, T_s, delta_0, Am1, Am2, beta_r_apo, A_Z;
 	double theta_mu, theta_md, K1, K2, U_rmin, T_apo, DNDT, I_0, T, delta, U_r, VR_a, VT_a, eta_ar;
 	int FLAG;
 	bool QA;
@@ -4961,12 +4950,12 @@ void ConicRTEEarthNew::INITAL()
 		return;
 	}
 	//Generate return flight time for max reentry speed and apogee passage (also prograde)
-	if (RUBR(1, 0, length(X0), length(U0), U_rmax, beta_r, A, DV, e, T_1i, V_a, beta_a))
+	if (RUBR(1, 0, length(X0), length(U0), U_rmax, beta_r, AINV, DV, e, T_1i, V_a, beta_a))
 	{
 		T_1i = 10000000.0;
 	}
 	//Generate return flight time for max reentry speed and no apogee passage (also prograde)
-	RUBR(0, 0, length(X0), length(U0), U_rmax, beta_r, A, DV, e, T_s, V_a, beta_a);
+	RUBR(0, 0, length(X0), length(U0), U_rmax, beta_r, AINV, DV, e, T_s, V_a, beta_a);
 	
 	if (T_1i < T1)
 	{
@@ -5023,7 +5012,7 @@ RTEEarth_INITAL_B:
 		goto RTEEarth_INITAL_B;
 	}
 	//Return time with minimum reentry speed
-	RUBR(0, 0, length(X0), length(U0), U_rmin, beta_r, A, DV, e, T_apo, V_a, beta_a);
+	RUBR(0, 0, length(X0), length(U0), U_rmin, beta_r, AINV, DV, e, T_apo, V_a, beta_a);
 	//Azimuth change nearest to inclination constraint
 	if (Am1 <= A_Z && A_Z <= Am2)
 	{
@@ -5129,40 +5118,26 @@ RTEEarth_INITAL_End:
 	//PARP = 0;
 }
 
-bool ConicRTEEarthNew::RUBR(int QA, int QE, double R_a, double U_0, double U_r, double beta_r, double &A, double &DV, double &e, double &T, double &V_a, double &beta_a)
+bool ConicRTEEarthNew::RUBR(int QA, int QE, double R_a, double U_0, double U_r, double beta_r, double &AINV, double &DV, double &e, double &T, double &V_a, double &beta_a)
 {
 	//INPUTS:
 	//QA: Apogee passage flag. 0 = no apogee passage, 1 = apogee passage
 	//QE: Postabort motion flag. 0 = direct, 1 = retrograde
 
-	double E, T_ap, T_rp, Period, sin_beta_a;
+	double p, T_ap, T_rp, Period, sin_beta_a;
 
-	//Specific orbital energy
-	E = U_r * U_r / mu - 2.0 / RR;
+	//Inverse of semi major axis
+	AINV = 2.0 / RR - U_r * U_r / mu;
 
-	//E>0 means hyperbolic orbit. If apogee passage is desired and orbit is hyperbolic, then you aren't coming home
-	if (E > 0 && QA == 1)
+	//AINV<0 means hyperbolic orbit. If apogee passage is desired and orbit is hyperbolic, then you aren't coming home
+	if (AINV <= 0 && QA == 1)
 	{
 		//No solution
 		return true;
 	}
-	//Check for elliptic vs. hyperbolic. If nearly hyperbolic use hyperbolic
-	if (abs(E) - 0.0001 > 0)
-	{
-		//Elliptical or hyperbolic orbit
-		//Semi-major axis
-		A = -1.0 / E;
-		//Orbit parameter (semi-latus rectum)
-		double P = pow(RR*U_r*sin(beta_r), 2) / mu;
-		//Eccentricity
-		e = sqrt(1.0 - P / A);
-	}
-	else
-	{
-		//Parabolic orbit
-		A = pow(RR*U_r*sin(beta_r), 2) / mu;
-		e = 1.0;
-	}
+
+	//Semi-latus rectum
+	p = U_r * U_r / mu * pow(RR*sin(beta_r), 2);
 	//Postabort speed
 	V_a = sqrt(mu*(U_r*U_r / mu + 2.0 / R_a - 2.0 / RR));
 	//Sine of postabort flight-path angle
@@ -5182,9 +5157,9 @@ bool ConicRTEEarthNew::RUBR(int QA, int QE, double R_a, double U_0, double U_r, 
 	//Change in velocity
 	DV = sqrt(U_0*U_0 + V_a * V_a - 2.0*U_0*V_a*cos(beta_a - beta_0));
 	//Time from abort to perigee
-	pRTCC->PITFPC(mu, QA, A, e, R_a, T_ap, Period);
+	pRTCC->PITFPC(mu, QA, AINV, p, R_a, T_ap, Period, e);
 	//Time from reentry to perigee
-	pRTCC->PITFPC(mu, QA, A, e, RR, T_rp, Period);
+	pRTCC->PITFPC(mu, QA, AINV, p, RR, T_rp, Period, e);
 	//Time from abort to reentry
 	T = T_ap - T_rp;
 	if (T < 0)
@@ -5320,7 +5295,7 @@ void ConicRTEEarthNew::VELCOM(double T, double R_a, double &beta_r, double &dt, 
 
 void ConicRTEEarthNew::FCUA(int FLAG, VECTOR3 R_a, double &beta_r, double &DV, double &U_r, double &V_a, double &beta_a)
 {
-	double r_a, beta_r_apo, dbeta, ER, ERR, BS, U_rmax_apo, A, e, T;
+	double r_a, beta_r_apo, dbeta, ER, ERR, BS, U_rmax_apo, AINV, e, T;
 	int QA;
 
 	r_a = length(R_a);
@@ -5398,7 +5373,7 @@ ConicRTE_FCUA_B:
 				U_rmax_apo = min(U_rmax, 36323.0*0.3048);
 			}
 			beta_r = EntryCalculations::ReentryTargetLine(U_rmax_apo*KMPER*1000.0 / SCPHR, false);
-			RUBR(QA, 0, r_a, u0, U_r, beta_r, A, DV, e, T, V_a, beta_a);
+			RUBR(QA, 0, r_a, u0, U_r, beta_r, AINV, DV, e, T, V_a, beta_a);
 			if (DV > DVM)
 			{
 				NOSOLN = 1;
@@ -5939,7 +5914,7 @@ ConicRTEEarth_TCOMP_C2:
 void ConicRTEEarthNew::TMIN(double &dv, int &FLAG, double &T, double &U_r, double &VT_a, double &VR_a, double &beta_r)
 {
 	VECTOR3 V_a;
-	double A, e, v_a, beta_a, T1, p, eta_ar, eps1, eps2, T2;
+	double AINV, e, v_a, beta_a, T1, p, eta_ar, eps1, eps2, T2;
 	int SW;
 	bool QA;
 
@@ -5954,7 +5929,7 @@ void ConicRTEEarthNew::TMIN(double &dv, int &FLAG, double &T, double &U_r, doubl
 	//Reentry flight-path angle with maximum reentry speed
 	beta_r = EntryCalculations::ReentryTargetLine(U_r*KMPER*1000.0 / SCPHR, false);
 	//Calculate trajectory from abort to reentry with maximum speed
-	RUBR(QA, 0, r0, u0, U_r, beta_r, A, dv, e, T, v_a, beta_a);
+	RUBR(QA, 0, r0, u0, U_r, beta_r, AINV, dv, e, T, v_a, beta_a);
 	//Trip time shorter than allowed?
 	if (T < T_min)
 	{
@@ -6086,7 +6061,7 @@ ConicRTEEarth_TMIN_C:
 void ConicRTEEarthNew::VACOMP(double VR_a, double VT_a, double beta_r, double theta, VECTOR3 &DV, double &T_z, VECTOR3 &V_a, double &alpha, double &delta, double &lambda)
 {
 	VECTOR3 R_z, N, R_e;
-	double T_rz, eta_rz, theta_cr, eta, A, e, E, P, beta_a, Period, T_ap, T_rp, T, eta_ar, U_r, C0, C1, C2, S1;
+	double T_rz, eta_rz, theta_cr, eta, AINV, e, P, beta_a, Period, T_ap, T_rp, T, eta_ar, U_r, C0, C1, C2, S1;
 	int k;
 
 	if (Mode == 2 || Mode == 3)
@@ -6126,19 +6101,12 @@ void ConicRTEEarthNew::VACOMP(double VR_a, double VT_a, double beta_r, double th
 	theta = theta_0;
 	V_a = R0 * VR_a + R2 * VT_a*cos(theta) + R1 * VT_a*sin(theta);
 
-	E = pow(length(V_a), 2) / mu - 2.0 / r0;
+	//Flight path angle
 	beta_a = atan2(VT_a, VR_a);
-	if (abs(E) - 0.0001 > 0)
-	{
-		A = -1.0 / E;
-		P = pow(r0*length(V_a)*sin(beta_a), 2) / mu;
-		e = sqrt(1.0 - P / A);
-	}
-	else
-	{
-		A = pow(r0*length(V_a)*sin(beta_a), 2) / mu;
-		e = 1.0;
-	}
+	//Semi-latus rectum
+	P = pow(r0*length(V_a)*sin(beta_a), 2) / mu;
+	//Inverse of semi-major axis
+	AINV = 2.0 / r0 - pow(length(V_a), 2) / mu;
 
 	if (beta_a > PI05)
 	{
@@ -6149,8 +6117,8 @@ void ConicRTEEarthNew::VACOMP(double VR_a, double VT_a, double beta_r, double th
 		k = 1;
 	}
 
-	pRTCC->PITFPC(mu, k, A, e, r0, T_ap, Period);
-	pRTCC->PITFPC(mu, k, A, e, RR, T_rp, Period);
+	pRTCC->PITFPC(mu, k, AINV, P, r0, T_ap, Period, e);
+	pRTCC->PITFPC(mu, k, AINV, P, RR, T_rp, Period, e);
 	T = T_ap - T_rp;
 	if (T < 0)
 	{
@@ -6335,25 +6303,17 @@ void ConicRTEEarthNew::VUP2(VECTOR3 R_a, VECTOR3 V_a, double T_ar, double beta_r
 double ConicRTEEarthNew::TripTime(double v_a, double beta_a)
 {
 	VECTOR3 V_a;
-	double VT_a, VR_a, E, A, P, e, T_ap, T_rp, Period, T;
+	double VT_a, VR_a, AINV, P, e, T_ap, T_rp, Period, T;
 	int k;
 
 	VT_a = v_a * sin(beta_a);
 	VR_a = v_a * cos(beta_a);
 	V_a = R0 * VR_a + R2 * VT_a*cos(theta_0) + R1 * VT_a*sin(theta_0);
 
-	E = pow(v_a, 2) / mu - 2.0 / r0;
-	if (abs(E) - 0.0001 > 0)
-	{
-		A = -1.0 / E;
-		P = pow(r0*v_a*sin(beta_a), 2) / mu;
-		e = sqrt(1.0 - P / A);
-	}
-	else
-	{
-		A = pow(r0*v_a*sin(beta_a), 2) / mu;
-		e = 1.0;
-	}
+	//Semi-latus rectum
+	P = pow(r0*v_a*sin(beta_a), 2) / mu;
+	//Inverse of semi-major axis
+	AINV = 2.0 / r0 - pow(v_a, 2) / mu;
 
 	if (beta_a > PI05)
 	{
@@ -6364,8 +6324,8 @@ double ConicRTEEarthNew::TripTime(double v_a, double beta_a)
 		k = 1;
 	}
 
-	pRTCC->PITFPC(mu, k, A, e, r0, T_ap, Period);
-	pRTCC->PITFPC(mu, k, A, e, RR, T_rp, Period);
+	pRTCC->PITFPC(mu, k, AINV, P, r0, T_ap, Period, e);
+	pRTCC->PITFPC(mu, k, AINV, P, RR, T_rp, Period, e);
 	T = T_ap - T_rp;
 	if (T < 0)
 	{
@@ -7302,7 +7262,7 @@ VECTOR3 RTEMoon::ThreeBodyAbort(VECTOR3 R_I, VECTOR3 V_I, double t_I, double t_E
 	EphemerisData sv1, sv2;
 	VECTOR3 R_I_star, delta_I_star, delta_I_star_dot, R_I_sstar, V_I_sstar, V_I_star, R_S, R_I_star_apo, R_E_apo, V_E_apo, V_I_apo;
 	VECTOR3 R_m, V_m;
-	double t_S, tol, dt_S, Incl_apo, r_s, a, e, u_r, beta_r, beta_r_apo, t_z, a_H, e_H, p_H, theta, beta_a, beta_x;
+	double t_S, tol, dt_S, Incl_apo, r_s, a, e, u_r, beta_r, beta_r_apo, t_z, ainv_H, e_H, p_H, theta, beta_a, beta_x;
 	int ITS, INFO;
 	bool q_m_out, q_d, q_a, NIR;
 
@@ -7348,7 +7308,7 @@ VECTOR3 RTEMoon::ThreeBodyAbort(VECTOR3 R_I, VECTOR3 V_I, double t_I, double t_E
 
 			V_I_star = V_I_sstar - V_m - delta_I_star_dot;
 
-			INRFV(R_I, V_I_star, r_s, mu_M, q_m, a_H, e_H, p_H, theta, V_I_apo, R_S, dt_S, q_m_out, q_d, beta_a, beta_x);
+			INRFV(R_I, V_I_star, r_s, mu_M, q_m, ainv_H, e_H, p_H, theta, V_I_apo, R_S, dt_S, q_m_out, q_d, beta_a, beta_x);
 			t_S = t_I + dt_S;
 			R_I_star_apo = R_I_star;
 			R_I_star = R_S + V_I_star * (t_I - t_S);
@@ -7408,7 +7368,7 @@ int RTEMoon::MCDRIV(VECTOR3 Y_0, VECTOR3 V_0, double t_0, double var, bool q_m, 
 	//Fictitious abort position vector
 	VECTOR3 Y_a_apo;
 	//Selenocentric orbital parameters
-	double a_h, e_h, p_h;
+	double ainv_h, e_h, p_h;
 
 	double tol, beta_r, u_r, a, e, beta_r_apo, dy_x, dy_x_apo, v_m, T_EI_apo, T_a, P, T_x, t_x, theta, dt_S, beta_a, beta_x, delta_t, Dy_0, t_x_apo;
 	int INFO, KOUNT, k_x;
@@ -7461,15 +7421,10 @@ RTEMoon_MCDRIV_5_S:
 	V_x = U_x - U_mx;
 RTEMoon_MCDRIV_7_R:
 	//Given initial position Y_a_apo and velocity at PTS V_x, calculate initial velocity V_a and position at PTS Y_x_apo
-	INRFV(Y_a_apo, V_x, r_s, mu_M, q_m, a_h, e_h, p_h, theta, V_a, Y_x_apo, dt_S, q_m_out, q_d, beta_a, beta_x);
+	INRFV(Y_a_apo, V_x, r_s, mu_M, q_m, ainv_h, e_h, p_h, theta, V_a, Y_x_apo, dt_S, q_m_out, q_d, beta_a, beta_x);
 
-	//Near parabolic orbit?
-	if (abs(e_h - 1.0) < 1e-5)
-	{
-		a_h = p_h;
-	}
 	//Calculate time from pericynthion to PTS
-	pRTCC->PITFPC(mu_M, 0, a_h, e_h, r_s, T_x, P, false);
+	pRTCC->PITFPC(mu_M, 0, ainv_h, p_h, r_s, T_x, P, e_h);
 	//Calculate pericynthion radius
 	y_p = p_h / (1.0 + e_h);
 	//Near pericynthion
@@ -7481,11 +7436,11 @@ RTEMoon_MCDRIV_7_R:
 	else
 	{
 		//Calculate time from pericynthion to abort
-		pRTCC->PITFPC(mu_M, q_d, a_h, e_h, length(Y_a_apo), T_a, P, false);
+		pRTCC->PITFPC(mu_M, q_d, ainv_h, p_h, length(Y_a_apo), T_a, P, e_h);
 	}
 
 	//Update pseudstate
-	PSTATE(a_h, e_h, p_h, t_0, T_x, Y_0, Y_a_apo, V_x, theta, beta_a, beta_x, T_a, V_a, t_x_apo, Y_x_apo, Dy_0, delta_t, X_mx, U_mx);
+	PSTATE(ainv_h, e_h, p_h, t_0, T_x, Y_0, Y_a_apo, V_x, theta, beta_a, beta_x, T_a, V_a, t_x_apo, Y_x_apo, Dy_0, delta_t, X_mx, U_mx);
 	//
 	dy_x = length(Y_x - Y_x_apo);
 
@@ -7826,7 +7781,7 @@ bool RTEMoon::FINDUX(VECTOR3 X_x, double t_x, double r_r, double u_r, double bet
 	//t_z: Time of landing from base time
 
 	VECTOR3 X_x_u, R_1, U_x_u;
-	double x_x, E, e, a, eta_r, eta_x, eta_xr, T_r, T_x, P, beta_x, alpha_x, delta_x, sin_delta_r, cos_delta_r, theta, alpha_r, eta_x1, t_z, T_xr, T_rz;
+	double x_x, p, ainv, e, eta_r, eta_x, eta_xr, T_r, T_x, P, beta_x, alpha_x, delta_x, sin_delta_r, cos_delta_r, theta, alpha_r, eta_x1, t_z, T_xr, T_rz;
 	bool NIR;
 
 	Incl_apo = i_r;
@@ -7837,40 +7792,37 @@ bool RTEMoon::FINDUX(VECTOR3 X_x, double t_x, double r_r, double u_r, double bet
 	X_x_u = unit(X_x);
 	OrbMech::ra_and_dec_from_r(X_x_u, alpha_x, delta_x);
 
-	E = u_r * u_r / mu - 2.0 / r_r;
-	if (abs(E) < 1e-3 / 6378165.0)
-	{
-		e = 1.0;
-	}
-	else
-	{
-		a = -1.0 / E;
-		e = sqrt(1.0 - r_r * r_r*u_r*u_r*sin(beta_r)*sin(beta_r) / (mu*a));
-	}
-	if (abs(e - 1.0) < 1e-5)
-	{
-		a = pow(r_r, 2) * pow(u_r, 2)*pow(sin(beta_r), 2) / mu;
-		eta_r = PI2 - acos(a / r_r - 1.0);
-		eta_x = acos(a / x_x - 1.0);
-	}
-	else
-	{
-		eta_r = PI2 - acos((a*(1.0 - e * e) / r_r - 1.0) / e);
-		eta_x = acos((a*(1.0 - e * e) / x_x - 1.0) / e);
-	}
+	//Semi-latus retum
+	p = pow(u_r, 2) / mu * pow(r_r*sin(beta_r), 2);
+	//Inverse of semi-major axis
+	ainv = 2.0 / r_r - pow(u_r, 2) / mu;
+
+	//Time from perigee to reentry
+	pRTCC->PITFPC(mu, 0, ainv, p, r_r, T_r, P, e);
+	//Time from perigee to abort
+	pRTCC->PITFPC(mu, 0, ainv, p, x_x, T_x, P, e);
+	//True anomaly at reentry
+	eta_r = PI2 - acos((p / r_r - 1.0) / e);
+	//True anomaly at abort (0 to PI)
+	eta_x = acos((p / x_x - 1.0) / e);
+	//Apogee passage?
 	if (q_a == 0)
 	{
+		//No, true anomaly has to be between PI and PI2
 		eta_x = PI2 - eta_x;
 	}
+	//Angle between abort and reentry
 	eta_xr = eta_r - eta_x;
-	pRTCC->PITFPC(mu, 0, a, e, r_r, T_r, P, false);
-	pRTCC->PITFPC(mu, 0, a, e, x_x, T_x, P, false);
-	if (q_a == 0 || (q_a == 1 && E >= 0))
+
+	//Time of reentry
+	if (q_a == 0 || (q_a == 1 && P == 0.0))
 	{
+		//No apogee passage or apogee passage not possible because orbit is hyperbolic
 		t_z = t_x + T_x - T_r + T_rz;
 	}
 	else
 	{
+		//Apogee passage
 		t_z = t_x + P - T_x - T_r + T_rz;
 	}
 	T_xr = t_z - t_x - T_rz;
@@ -7906,7 +7858,7 @@ bool RTEMoon::FINDUX(VECTOR3 X_x, double t_x, double r_r, double u_r, double bet
 	return NIR;
 }
 
-void RTEMoon::INRFV(VECTOR3 R_1, VECTOR3 V_2, double r_2, double mu, bool k3, double &a, double &e, double &p, double &theta, VECTOR3 &V_1, VECTOR3 &R_2, double &dt_2, bool &q_m, bool &k_1, double &beta_1, double &beta_2) const
+void RTEMoon::INRFV(VECTOR3 R_1, VECTOR3 V_2, double r_2, double mu, bool k3, double &ainv, double &e, double &p, double &theta, VECTOR3 &V_1, VECTOR3 &R_2, double &dt_2, bool &q_m, bool &k_1, double &beta_1, double &beta_2) const
 {
 	//INPUTS:
 	//R_1: Initial positon vector
@@ -7999,8 +7951,8 @@ void RTEMoon::INRFV(VECTOR3 R_1, VECTOR3 V_2, double r_2, double mu, bool k3, do
 	f = 1.0 - r_2 * (1.0 - cos(theta)) / p;
 	g = r_2 * r_1*sin(theta) / sqrt(mu*p);
 	V_1 = (R_2 - R_1 * f) / g;
-	a = 1.0 / (2.0 / r_2 - v_2 * v_2 / mu);
-	e = sqrt(1.0 - p / a);
+	ainv = 2.0 / r_2 - v_2 * v_2 / mu;
+	e = sqrt(1.0 - p * ainv);
 
 	OrbMech::time_theta(R_1, V_1, theta, mu, dt_2);
 	//VECTOR3 R2_apo, V2_apo;
@@ -8051,7 +8003,7 @@ void RTEMoon::STORE(int opt, double &dv, double &i_r, double &INTER, double &t_z
 	}
 }
 
-void RTEMoon::PSTATE(double a_H, double e_H, double p_H, double t_0, double T_x, VECTOR3 Y_0, VECTOR3 &Y_a_apo, VECTOR3 V_x, double theta, double beta_a, double beta_x, double T_a, VECTOR3 &V_a, double &t_x_aaapo, VECTOR3 &Y_x_apo, double &Dy_0, double &deltat, VECTOR3 &X_mx, VECTOR3 &U_mx) const
+void RTEMoon::PSTATE(double ainv_H, double e_H, double p_H, double t_0, double T_x, VECTOR3 Y_0, VECTOR3 &Y_a_apo, VECTOR3 V_x, double theta, double beta_a, double beta_x, double T_a, VECTOR3 &V_a, double &t_x_aaapo, VECTOR3 &Y_x_apo, double &Dy_0, double &deltat, VECTOR3 &X_mx, VECTOR3 &U_mx) const
 {
 	//INPUTS:
 	//a_h: semimajor axis of selenocentric conic

@@ -552,6 +552,7 @@ Saturn::Saturn(OBJHANDLE hObj, int fmodel) : ProjectApolloConnectorVessel (hObj,
 	SPSFuelFeedTempSensor("SPS-Fuel-Feed-Temp-Sensor", 0.0, 200.0),
 	SPSOxidizerFeedTempSensor("SPS-Oxidizer-Feed-Temp-Sensor", 0.0, 200.0),
 	SPSEngVlvTempSensor("SPS-Engine-Valve-Temp-Sensor", 0.0, 200.0),
+	DockProbeTempSensor("Docking-Probe-Temp-Sensor", -100.0, 300.0),
 	vesim(&cbCSMVesim, this),
 	CueCards(vcidx, this, 11),
 	Failures(this)
@@ -715,6 +716,10 @@ void Saturn::initSaturn()
 
 	SLARotationLimit = 45;
 	SLAWillSeparate = true;
+
+	UseWideSLA = false;
+
+	SLAHasBeacons = false;
 
 	hStage1Mesh = 0;
 	hStage2Mesh = 0;
@@ -999,6 +1004,18 @@ void Saturn::initSaturn()
 	FovSave = 0;
 
 	//
+	// Flashlight
+	//
+	flashlight = 0;
+	flashlightColor = { 1,1,1,0 };
+	flashlightColor2 = { 0,0,0,0 };
+	flashlightPos = { 0,0,0 };
+	vesselPosGlobal = { 0,0,0 };
+	flashlightDirGlobal = { 0,0,1 };
+	flashlightDirLocal = { 0,0,1 };
+	flashlightOn = 0;
+
+	//
 	// Save the last view offset set.
 	//
 
@@ -1104,6 +1121,9 @@ void Saturn::initSaturn()
 	LMAscentEmptyMassKg = 2150.0;
 	LMDescentEmptyMassKg = 2224.0;
 
+	customPayloadMass = 0;
+	customPayloadClass[0] = 0;
+
 	UseATC = false;
 
 	SIISepState = false;
@@ -1194,6 +1214,11 @@ void Saturn::initSaturn()
 	CurrentFuelWeight = 0;
 	LastFuelWeight = numeric_limits<double>::infinity(); // Ensure update at first opportunity
 	currentCoG = _V(0, 0, 0);
+
+	// New keyboard control values
+	for (auto i = 0; i < 6; ++i) {
+		rhc_keyboard_deflection[i] = 0.0;
+	}
 
 	// call only once 
 	if (!InitSaturnCalled) {
@@ -1565,6 +1590,11 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 		dsky.SendNetworkPacketDSKY();
 	}
 
+	if ((oapiGetFocusObject() == GetHandle()) && (oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
+		//We have focus on this vessel, and are in the VC
+		MoveFlashlight();
+	}
+
 	sprintf(buffer, "End time(0) %lld", time(0)); 
 	TRACE(buffer);
 }
@@ -1759,6 +1789,12 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	if (SIVBPayload != PAYLOAD_LEM) {
 		oapiWriteScenario_int (scn, "S4PL", SIVBPayload);
 	}
+	oapiWriteScenario_int(scn, "WIDESLA", UseWideSLA);
+	oapiWriteScenario_int(scn, "SLABEACONS", SLAHasBeacons);
+	oapiWriteScenario_float(scn, "CUSTOMPAYLOADMASS", customPayloadMass);
+	if (customPayloadClass[0])
+		oapiWriteScenario_string(scn, "CUSTOMPAYLOADCLASS", customPayloadClass);
+
 	oapiWriteScenario_string (scn, "LANG", AudioLanguage);
 	
 	if (PayloadName[0])
@@ -2359,6 +2395,23 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	else if (!strnicmp(line, "S4PL", 4)) {
 		sscanf(line + 4, "%d", &SIVBPayload);
 	}
+	else if (!strnicmp(line, "WIDESLA", 7)) {
+		int i;
+		sscanf(line + 7, "%d", &i);
+		UseWideSLA = (i != 0);
+	}
+	else if (!strnicmp(line, "SLABEACONS", 10)) {
+		int i;
+		sscanf(line + 10, "%d", &i);
+		SLAHasBeacons = (i != 0);
+	}
+	else if (!strnicmp(line, "CUSTOMPAYLOADMASS", 17)) {
+		sscanf(line + 17, "%f", &ftcp);
+		customPayloadMass = ftcp;
+	}
+	else if (!strnicmp(line, "CUSTOMPAYLOADCLASS", 18)) {
+		strncpy(customPayloadClass, line + 19, 256);
+	}
 	else if (!strnicmp(line, "SMFUELLOAD", 10)) {
 		sscanf(line + 10, "%f", &ftcp);
 		SM_FuelMass = ftcp;
@@ -2897,6 +2950,10 @@ void Saturn::UpdatePayloadMass()
 
 	case PAYLOAD_DOCKING_ADAPTER:
 		S4PL_Mass = 4700.0; // see http://www.ibiblio.org/mscorbit/mscforum/index.php?topic=2064.0
+		break;
+
+	case PAYLOAD_CUSTOM:
+		S4PL_Mass = customPayloadMass;
 		break;
 
 	default:
@@ -3478,6 +3535,41 @@ int Saturn::clbkConsumeDirectKey(char *kstate)
 		}
 	}
 
+	// Override attitude controls, but only if that wouldn't interfere with our DSKY shortcuts.
+	// I'm using the Orbiter thruster group enum for this but the attitude thruster group
+	// starts at a non-zero value. So I subtract the first enum from each entry
+	// to get a zero-based index.
+	// Only override these keys if the user is holding no modifier keys, Alt only, or Ctrl + Alt.
+	if (GetAttitudeMode() == ATTITUDEMODE::ATTMODE_ROT && !(KEYMOD_CONTROL(kstate) && !KEYMOD_ALT(kstate)) && !KEYMOD_SHIFT(kstate)) {
+		// Possible deflection amounts are:
+		// No key modifiers: 10.5° (max proportional rate, but not hardover)
+		// Alt: 11.5° (full deflection, triggering direct switches)
+		// Ctrl + Alt: 1.51° (triggering breakout switches)
+		double deflectionDegrees = KEYMOD_ALT(kstate) ? KEYMOD_CONTROL(kstate) ? 1.51 : 11.5 : 10.5;
+		double deflectionPercent = deflectionDegrees / 11.5;
+
+		rhc_keyboard_deflection[THGROUP_ATT_PITCHUP - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD2) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_PITCHDOWN - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD8) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_BANKLEFT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD4) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_BANKRIGHT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD6) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_YAWLEFT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD1) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_YAWRIGHT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD3) ? deflectionPercent : 0.0;
+
+		// Prevent Orbiter from acting upon the attitude control keys
+		RESETKEY(kstate, OAPI_KEY_NUMPAD2);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD8);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD4);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD6);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD1);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD3);
+	}
+
 	return 0;
 }
 
@@ -3487,7 +3579,7 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 
 	if (enableVESIM) vesim.clbkConsumeBufferedKey(key, down, kstate);
 
-	if (KEYMOD_SHIFT(kstate)){
+	if (KEYMOD_SHIFT(kstate) && !KEYMOD_CONTROL(kstate) && !KEYMOD_ALT(kstate)){
 		// Do DSKY stuff
 		DSKYPushSwitch* dskyKeyChanged = nullptr;
 		switch (key) {
@@ -3592,6 +3684,7 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 		}
 		return 0;
 	}
+
 	if (KEYMOD_CONTROL(kstate)) {
 		switch (key) {
 			case OAPI_KEY_D:
@@ -3601,6 +3694,7 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 		}
 		return 0;
 	}
+
 	if (KEYMOD_ALT(kstate))
 	{
 		if (down) {
@@ -3673,6 +3767,10 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 				agc.SetInputChannelBit(016,MarkReject,0);
 				return 1;
 		}
+	}
+
+	if ((down) && (key == OAPI_KEY_F)) {
+		ToggleFlashlight();
 	}
 
 	// MCC CAPCOM interface key handling                                                                                                
