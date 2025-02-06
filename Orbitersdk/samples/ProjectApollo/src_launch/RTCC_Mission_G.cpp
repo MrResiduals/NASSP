@@ -2637,7 +2637,7 @@ bool RTCC::CalculationMTP_G(int fcn, LPVOID &pad, char * upString, char * upDesc
 				opt.TIG = res.P30TIG;
 				opt.dV_LVLH = res.dV_LVLH;
 				opt.enginetype = mcc->mcc_calcs.SPSRCSDecision(SPS_THRUST / opt.WeightsTable.ConfigWeight, res.dV_LVLH);
-				opt.HeadsUp = false;
+				opt.HeadsUp = true;
 				opt.REFSMMAT = REFSMMAT;
 				opt.RV_MCC = ConvertSVtoEphemData(sv);
 
