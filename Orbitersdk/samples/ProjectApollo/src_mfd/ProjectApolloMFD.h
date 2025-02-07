@@ -31,6 +31,7 @@ class Saturn;
 class LEM;
 class Crawler;
 class MCC;
+class SIVB;
 
 ///
 /// \ingroup MFD
@@ -126,14 +127,17 @@ protected:
 	SURFHANDLE hLogo;
 	DWORD width;
 	DWORD height;
+	VESSEL *our_vessel;
 	//We can link to the Saturn OR the Crawler.  Only the Saturn has full funcionality.  The Crawler can ONLY read the mission time.
 	Saturn *saturn;
 	Crawler *crawler;
 	LEM *lem;
+	SIVB *sivb;
 	MCC *mcc;
 	int screen;
 	bool debug_frozen;
 	bool isSaturnV;
+	bool Supported; //Vessel is supported
 	unsigned FailureSubpage;
 
 	static struct ScreenData {
