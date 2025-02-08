@@ -583,6 +583,8 @@ double FCell::GetCondTempVoltage() //Returns scaled voltage for SCE/TM
 	else
 
 		return -0.000001384126984 * pow(condenserTempF, 3) + 0.000730539682546 * pow(condenserTempF, 2) - 0.075160317461531 * condenserTempF - 0.24166666659273;
+
+	// While values should stay in range, this eventually needs a check to fix an upper and lower limit to prevent the power function from returning our of range voltage
 }
 
 double FCell::GetSkinTempVoltage() //Returns scaled voltage for SCE/TM
