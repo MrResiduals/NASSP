@@ -576,13 +576,25 @@ void FCell::Clogging(double dt)
 double FCell::GetCondTempVoltage() //Returns scaled voltage for SCE/TM
 {
 	double condenserTempF = KelvinToFahrenheit(condenserTemp);
-	return -0.000001384126984*pow(condenserTempF, 3) + 0.000730539682546*pow(condenserTempF, 2) - 0.075160317461531*condenserTempF - 0.24166666659273;
+	if (!IsEnabled()) //Returns 0V when SM Jettisoned (FC Disabled)
+	{
+		return 0.0;
+	}
+	else
+
+		return -0.000001384126984 * pow(condenserTempF, 3) + 0.000730539682546 * pow(condenserTempF, 2) - 0.075160317461531 * condenserTempF - 0.24166666659273;
 }
 
 double FCell::GetSkinTempVoltage() //Returns scaled voltage for SCE/TM
 {
 	double skinTempF = KelvinToFahrenheit(Temp);
-	return (0.0106382979*skinTempF) - 0.8510638298;
+	if (!IsEnabled()) //Returns 0V when SM Jettisoned (FC Disabled)
+	{
+		return 0.0;
+	}
+	else
+
+		return (0.0106382979 * skinTempF) - 0.8510638298;
 }
 
 void FCell::Load(char* line)
