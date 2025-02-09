@@ -1169,7 +1169,7 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 
 		AP11ManeuverPAD(manopt, *form);
 		sprintf(form->purpose, "LOI-2");
-		sprintf(form->remarks, "Two-jet ullage for 19 seconds");
+		sprintf(form->remarks, "Ullage: 2 jet, 19 seconds");
 
 		TimeofIgnition = P30TIG;
 		DeltaV_LVLH = dV_LVLH;
@@ -1329,11 +1329,13 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 		form->DEDA226 = (int)(res.DEDA226 / 0.3048 / 100.0);
 		form->DEDA227 = OrbMech::DoubleToDEDA(res.DEDA227 / 0.3048*pow(2, -20), 14);
 
-		/* Pad-load:
+		/*
+		Pad-load:
 		form->DEDA224 = 60326;
 		form->DEDA225 = 58158;
 		form->DEDA226 = 70312;
-		form->DEDA227 = -50181;*/
+		form->DEDA227 = -50181;
+		*/
 
 		emem[0] = 16;
 		emem[1] = 2550;
@@ -1635,7 +1637,7 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 		form->GET05G = GETfromGMT(entout.t_05g);
 		form->type = 2;
 
-		sprintf(form->remarks, "Four-jet ullage for 11 seconds");
+		sprintf(form->remarks, "Ullage: 4 jet, 11 seconds");
 
 		if (fcn == 40 || fcn == 43)
 		{
@@ -2760,14 +2762,14 @@ bool RTCC::CalculationMTP_H1(int fcn, LPVOID &pad, char * upString, char * upDes
 		if (fcn == 94)
 		{
 			sprintf(form->purpose, "PLANE CHANGE 1");
-			sprintf(form->remarks, "Ullage: 2 jets, 15 seconds");
+			sprintf(form->remarks, "Ullage: 2 jet, 15 seconds");
 			sprintf(updesc, "CSM state vector, target load, PC REFSMMAT");
 			AGCStateVectorUpdate(buffer1, sv, true);
 		}
 		else
 		{
 			sprintf(form->purpose, "PLANE CHANGE 2");
-			sprintf(form->remarks, "Ullage: 4 jets, 11 seconds");
+			sprintf(form->remarks, "Ullage: 4 jet, 11 seconds");
 			sprintf(updesc, "CSM state vector and V66, target load, PC REFSMMAT");
 			AGCStateVectorUpdate(buffer1, sv, true, true);
 		}
