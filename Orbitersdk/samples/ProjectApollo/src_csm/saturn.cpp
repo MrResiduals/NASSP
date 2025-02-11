@@ -779,6 +779,7 @@ void Saturn::initSaturn()
 	// Default mission time to an hour prior to launch.
 	//
 
+	SimulatedTime = 0.0;
 	MissionTime = (-3600);
 	NextMissionEventTime = 0;
 
@@ -1428,15 +1429,17 @@ void Saturn::GetApolloName(char *s)
 	sprintf(s, "AS-%d", VehicleNo);
 }
 
-void Saturn::UpdateLaunchTime(double t)
-
+void Saturn::UpdateLaunchTime(double dt)
 {
-	if (t < 0)
+	//Don't allow earlier launch
+	if (dt < 0.0)
+		return;
+	//Don't allow during terminal countdown
+	if (MissionTime >= -186.0)
 		return;
 
-	if (MissionTime < 0) {
-		MissionTime = (-t);
-	}
+	//Update time
+	MissionTime -= dt;
 }
 
 //
@@ -1619,7 +1622,7 @@ void Saturn::clbkPostStep(double simt, double simdt, double mjd)
 		// to inhibit Orbiter's thrust control
 		//
 
-		SPSEngine.Timestep(MissionTime, simdt);
+		SPSEngine.Timestep(SimulatedTime, simdt);
 
 		// Better acceleration measurement stability
 		imu.Timestep(simdt);
@@ -1691,6 +1694,7 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	oapiWriteScenario_int (scn, "PANEL_ID", PanelId);
 	oapiWriteScenario_int(scn, "VIEWPOS", viewpos);
 	papiWriteScenario_double (scn, "TCP", TCPO);
+	papiWriteScenario_double(scn, "SIMULATEDTIME", SimulatedTime);
 	papiWriteScenario_double (scn, "MISSNTIME", MissionTime);
 	papiWriteScenario_double (scn, "NMISSNTIME", NextMissionEventTime);
 
@@ -2286,6 +2290,10 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	else if (!strnicmp (line, "SATTYPE", 7)) {
 		sscanf (line+7, "%d", &SaturnType);
 	}
+	else if (!strnicmp(line, "SIMULATEDTIME", 13)) {
+		sscanf(line + 13, "%f", &ftcp);
+		SimulatedTime = ftcp;
+	}
 	else if (!strnicmp(line, "MISSNTIME", 9)) {
         sscanf (line+9, "%f", &ftcp);
 		MissionTime = ftcp;
@@ -2842,6 +2850,12 @@ void Saturn::GetScenarioState (FILEHANDLE scn, void *vstatus)
         }
     }
 
+	//Backwards compatibility for simulated time
+	if (SimulatedTime == 0.0)
+	{
+		SimulatedTime = MissionTime;
+	}
+
 	//
 	// Recalculate stage masses.
 	//
@@ -3132,15 +3146,16 @@ void Saturn::GenericTimestep(double simt, double simdt, double mjd)
 	// Update mission time.
 	//
 
+	SimulatedTime += simdt;
 	MissionTime += simdt;
 
 	//
 	// Panel flash counter.
 	//
 
-	if (MissionTime >= NextFlashUpdate) {
+	if (SimulatedTime >= NextFlashUpdate) {
 		PanelFlashOn = !PanelFlashOn;
-		NextFlashUpdate = MissionTime + 0.25;
+		NextFlashUpdate = SimulatedTime + 0.25;
 	}
 
 	//
@@ -3312,9 +3327,9 @@ void Saturn::GenericTimestep(double simt, double simdt, double mjd)
 
 	if (noiselat > 0.0 || (vAccel.x*vAccel.x + vAccel.y*vAccel.y + vAccel.z*vAccel.z) > 0.01) {
 		JostleViewpoint(noiselat, noiselong, noisefreq, simdt, -seatacc.x / 200.0, -seatacc.y / 200.0, -seatacc.z / 300.0);
-		LastVPAccelTime = MissionTime;
+		LastVPAccelTime = SimulatedTime;
 	}
-	else if (MissionTime<LastVPAccelTime + 5.0){	
+	else if (SimulatedTime <LastVPAccelTime + 5.0){
 		ViewOffsetx *= 0.95;
 		ViewOffsety *= 0.95;
 		ViewOffsetz *= 0.95;
@@ -3362,9 +3377,9 @@ void Saturn::GenericTimestep(double simt, double simdt, double mjd)
 	// Destroy obsolete stages
 	//
 
-	if (MissionTime >= NextDestroyCheckTime) {
+	if (SimulatedTime >= NextDestroyCheckTime) {
 		DestroyStages(simt);
-		NextDestroyCheckTime = MissionTime + 1.0;
+		NextDestroyCheckTime = SimulatedTime + 1.0;
 	}
 
 	//
