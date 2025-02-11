@@ -130,7 +130,7 @@ void EnckeFreeFlightIntegrator::Propagate(EMMENIInputTable &in)
 		//1 meter tolerance for radius and height
 		DEV = 1.0;
 	}
-	else if (ISTOPS == 4 || ISTOPS == 6)
+	else if (ISTOPS == 4 || ISTOPS == 6 || ISTOPS == 7 || ISTOPS == 8)
 	{
 		//0.0001° tolerance
 		DEV = 0.0001*RAD;
@@ -221,7 +221,15 @@ EMMENI_Edit_3B:
 	}
 	else
 	{
-		dt_max = min(dt_lim, K*OrbMech::power(rr, 1.5) / sqrt(mu));
+		if (DRAG > 0.0 && P == BODY_EARTH && rr < 6499920.0)
+		{
+			//Special atmospheric integration step logic
+			dt_max = 10.0;
+		}
+		else
+		{
+			dt_max = min(dt_lim, K*OrbMech::power(rr, 1.5) / sqrt(mu));
+		}
 	}
 
 	//Should we even check?
@@ -237,6 +245,7 @@ EMMENI_Edit_3B:
 	{
 		if (ISTOPS == 2 || ISTOPS == 5)
 		{
+			//Radius
 			FUNCT = length(R);
 			if (P == BODY_EARTH)
 			{
@@ -249,6 +258,7 @@ EMMENI_Edit_3B:
 		}
 		else if (ISTOPS == 3)
 		{
+			//Altitude
 			if (P == BODY_EARTH)
 			{
 				FUNCT = length(R) - OrbMech::R_Earth;
@@ -262,6 +272,7 @@ EMMENI_Edit_3B:
 		}
 		else if (ISTOPS == 4)
 		{
+			//Sine of flight path angle
 			FUNCT = dotp(unit(R), unit(V));
 			if (P == BODY_EARTH)
 			{
@@ -274,6 +285,7 @@ EMMENI_Edit_3B:
 		}
 		else if (ISTOPS == 6)
 		{
+			//Ascending node
 			VECTOR3 NVEC, H_ECT;
 			EphemerisData2 sv_temp, sv_ECT;
 
@@ -286,6 +298,47 @@ EMMENI_Edit_3B:
 			H_ECT = unit(crossp(sv_ECT.R, sv_ECT.V));
 			NVEC = unit(crossp(_V(0, 0, 1), H_ECT));
 			RCALC = OrbMech::PHSANG(sv_ECT.R, sv_ECT.V, NVEC);
+		}
+		else if (ISTOPS == 7)
+		{
+			//Longitude
+			double lat;
+			OrbMech::latlong_from_r(R_EF, lat, FUNCT);
+
+			if (P == BODY_EARTH)
+			{
+				RCALC = FUNCT - STOPVAE - OrbMech::w_Earth*CurrentTime();
+			}
+			else
+			{
+				RCALC = FUNCT - STOPVAM;
+			}
+
+			//modulo between -PI and PI
+			if (RCALC > 0)
+			{
+				RCALC = fmod(RCALC + PI, PI2) - PI;
+			}
+			else
+			{
+				RCALC = fmod(RCALC - PI, PI2) + PI;
+			}
+		}
+		else if (ISTOPS == 8)
+		{
+			//Latitude
+
+			double lng;
+			OrbMech::latlong_from_r(R_EF, FUNCT, lng);
+
+			if (P == BODY_EARTH)
+			{
+				RCALC = FUNCT - STOPVAE;
+			}
+			else
+			{
+				RCALC = FUNCT - STOPVAM;
+			}
 		}
 	}
 
@@ -320,8 +373,20 @@ EMMENI_Edit_3B:
 	else if (INITE == -1)
 	{
 		//Not bounded
-		if (RCALC*RES1 >= 0)
+		bool found = false;
+
+		if (RCALC*RES1 < 0.0)
 		{
+			//For longitude search, prevent ambiguity
+			if (!(ISTOPS == 7 && abs(RCALC) > PI05))
+			{
+				found = true;
+			}
+		}
+
+		if (!found)
+		{
+			//No sign switch, not bounded
 			goto EMMENI_Edit_4A;
 		}
 
@@ -502,7 +567,7 @@ void EnckeFreeFlightIntegrator::adfunc()
 			//Get Earth rotation matrix only during initialization. For the Moon the libration matrix is updated by the PLEFEM call below
 			if (P == BODY_EARTH)
 			{
-				pRTCC->ELVCNV(CurrentTime(), RTCC_COORDINATES_ECT, RTCC_COORDINATES_ECI, Rot);
+				pRTCC->ELVCNV(CurrentTime(), RTCC_COORDINATES_ECI, RTCC_COORDINATES_ECT, Rot);
 				U_Z = tmul(Rot, _V(0, 0, 1));
 			}
 		}
@@ -572,7 +637,19 @@ void EnckeFreeFlightIntegrator::adfunc()
 		}
 		if (VENT > 0.0)
 		{
-			VECTOR3 VENTDIR = unit(crossp(unit(crossp(R, V)), R));
+			VECTOR3 VENTDIR = crossp(R, V);
+			//Protect against radial trajectories
+			if (length(VENTDIR) < 1e-10)
+			{
+				//Apply along velocity vector instead
+				VENTDIR = unit(V);
+			}
+			else
+			{
+				//Normal case
+				VENTDIR = unit(crossp(unit(VENTDIR), R));
+			}
+
 			double TV = CurrentTime() - pRTCC->GetGMTLO()*3600.0 - pRTCC->SystemParameters.MCGVEN;
 
 			if (TV < 0.0)
@@ -614,11 +691,14 @@ void EnckeFreeFlightIntegrator::SetBodyParameters(int p)
 		rect2 = 0.75*OrbMech::power(2.0, 2.0)*100.0;
 		P = BODY_EARTH;
 		GMD = 4;
-		GMO = 0; //4 to use the full tesseral data
+		GMO = pRTCC->SystemParameters.MGTESE;
 		ZONAL[0] = 0.0; ZONAL[1] = OrbMech::J2_Earth; ZONAL[2] = OrbMech::J3_Earth; ZONAL[3] = OrbMech::J4_Earth;
-		//Use this when Orbiter simulates it
-		//C[0] = -1.1619e-9; C[1] =  1.5654e-6; C[2] = 2.1625e-6; C[3] =  3.18750e-7; C[4] = 9.7078e-8; C[5] = -5.1257e-7; C[6] = 7.739e-8; C[7] =  5.7700e-8; C[8] = -3.4567e-9;
-		//S[0] = -4.1312e-9; S[1] = -8.9613e-7; S[2] = 2.6809e-7; S[3] = -2.15567e-8; S[4] = 1.9885e-7; S[5] = -4.4095e-7; S[6] = 1.497e-7; S[7] = -1.2389e-8; S[8] =  6.4464e-9;
+
+		for (int i = 0; i < 9; i++)
+		{
+			C[i] = pRTCC->SystemParameters.MDCMAT[i];
+			S[i] = pRTCC->SystemParameters.MDSMAT[i];
+		}
 	}
 	else
 	{
@@ -629,10 +709,14 @@ void EnckeFreeFlightIntegrator::SetBodyParameters(int p)
 		rect2 = 0.75*OrbMech::power(2.0, -2.0)*100.0;
 		P = BODY_MOON;
 		GMD = 3;
-		GMO = 0; //3 with L1 model
+		GMO = pRTCC->SystemParameters.MMTESE;
 		ZONAL[0] = 0.0; ZONAL[1] = OrbMech::J2_Moon; ZONAL[2] = OrbMech::J3_Moon; ZONAL[3] = 0.0;
-		//L1 model, use this when Orbiter simulates it
-		//C[0] = 0.0; C[1] = 0.20715e-4; C[2] = 0.34e-4; C[4] = 0.02583e-4;
+
+		for (int i = 0; i < 9; i++)
+		{
+			C[i] = pRTCC->SystemParameters.MMCMAT[i];
+			S[i] = pRTCC->SystemParameters.MMSMAT[i];
+		}
 	}
 }
 

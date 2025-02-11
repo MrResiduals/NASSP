@@ -98,6 +98,8 @@ LM_VHF::LM_VHF():
 	receiveB = false;
 	transmitA = false;
 	transmitB = false;
+
+	anim_VHF = 0;
 }
 
 void LM_VHF::Init(LEM *vessel, h_HeatLoad *vhfh){
@@ -453,8 +455,32 @@ bool LM_PCM::TimingSignal() //Currently just looking for power from the PCM/TE c
 	return false;
 }
 
-void LM_PCM::SystemTimestep(double simdt)
+void LM_VHF::DefineAnimations(UINT idx)
 {
+	//EVA VHF Antenna Animation
+	ANIMATIONCOMPONENT_HANDLE EVA_VHF_ROTATION;
+	ANIMATIONCOMPONENT_HANDLE EVA_VHF_SCALE;
+	const VECTOR3 LM_VHF_PIVOT = { -0.35859, 1.3652, -0.89566 };    //Antenna Pivot Point
+	const VECTOR3 LM_VHF_SCALE = { -0.3588, 2.1558, -0.93309 };        //Antenna Cone Scale Point
+	static UINT meshgroup_vhf[3] = { AS_GRP_EVA_Ant, AS_GRP_EVA_AntTop, AS_GRP_EVA_AntCone };
+	static MGROUP_ROTATE EVAAnt(idx, meshgroup_vhf, 3, LM_VHF_PIVOT, _V(0, 0, 1), (float)(RAD * 84));
+	static UINT meshgroup_vhfcone = AS_GRP_EVA_AntCone;
+	static MGROUP_SCALE EVACone(idx, &meshgroup_vhfcone, 1, LM_VHF_SCALE, _V(-999, -999, -999));
+	anim_VHF = lem->CreateAnimation(1.0);
+	EVA_VHF_ROTATION = lem->AddAnimationComponent(anim_VHF, 0, 0.7, &EVAAnt);
+	EVA_VHF_SCALE = lem->AddAnimationComponent(anim_VHF, 0.7, 1, &EVACone, EVA_VHF_ROTATION);
+
+	lem->SetAnimation(anim_VHF, 1);
+
+}
+
+void LM_VHF::SetAnimation(double state)
+{
+	lem->SetAnimation(anim_VHF, state);
+}
+
+void LM_PCM::SystemTimestep(double simdt){
+
 	// PMP
 	if (lem->COMM_PMP_CB.Voltage() > 0) {
 		lem->COMM_PMP_CB.DrawPower(4.3);
@@ -2633,16 +2659,16 @@ void LM_SBAND::Timestep(double simt){
 	}
 
 	// Receiver AGC Voltage
-	if (lem->SBandPASelSwitch.IsUp()) {
-		if (ant && pa_mode_1 > 2) {
+	if (lem->SBandXCvrSelSwitch.IsUp()) {
+		if (ant && tc_mode_1 > 2) {
 			rcvr_agc_voltage = ant->GetSignalStrength();
 		}
 		else {
 			rcvr_agc_voltage = 0.0;
 		}
 	}
-	else if (lem->SBandPASelSwitch.IsDown()){
-		if (ant && pa_mode_2 > 2) {
+	else if (lem->SBandXCvrSelSwitch.IsDown()) {
+		if (ant && tc_mode_2 > 2) {
 			rcvr_agc_voltage = ant->GetSignalStrength();
 		}
 		else {
@@ -2656,14 +2682,14 @@ void LM_SBAND::Timestep(double simt){
 }
 
 void LM_SBAND::LoadState(char *line) {
-	sscanf(line + 12, "%i %i %lf %lf", &pa_mode_1, &pa_mode_2, &pa_timer_1, &pa_timer_2);
+	sscanf(line + 12, "%i %i %lf %lf %i %i %lf %lf", &pa_mode_1, &pa_mode_2, &pa_timer_1, &pa_timer_2, &tc_mode_1, &tc_mode_2, &tc_timer_1, &tc_timer_2);
 }
 
 
 void LM_SBAND::SaveState(FILEHANDLE scn) {
 	char buffer[256];
 
-	sprintf(buffer, "%i %i %lf %lf", pa_mode_1, pa_mode_2, pa_timer_1, pa_timer_2);
+	sprintf(buffer, "%i %i %lf %lf %i %i %lf %lf", pa_mode_1, pa_mode_2, pa_timer_1, pa_timer_2, tc_mode_1, tc_mode_2, tc_timer_1, tc_timer_2);
 
 	oapiWriteScenario_string(scn, "UNIFIEDSBAND", buffer);
 }
