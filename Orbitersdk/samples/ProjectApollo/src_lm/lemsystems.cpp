@@ -383,7 +383,7 @@ void LEM::SystemsInit()
 	// The DSKY brightness IS controlled by the ANUN/NUM knob on panel 5, but by means of an isolated section of it.
 	// The source of the isolated section is coming from the LGC supply.
 	NumDockCompLTGFeeder.WireToBuses(&CDR_LTG_ANUN_DOCK_COMPNT_CB, &LTG_ANUN_DOCK_COMPNT_CB); //This should be handled in the LCA, powermerger for temporary functionality
-	dsky.Init(&NumDockCompLTGFeeder, &LGC_DSKY_CB, &LtgAnunNumKnob);
+	dsky.Init(&NumDockCompLTGFeeder, &LGC_DSKY_CB, &LtgAnunNumKnob, &LtgIntegralKnob, &LtgORideAnunSwitch, &LtgORideIntegralSwitch);
 	agc.InitHeat((h_HeatLoad *)Panelsdk.GetPointerByString("HYDRAULIC:LGCHEAT"));
 
 	// AGS stuff
@@ -988,25 +988,31 @@ void LEM::JoystickTimestep(double simdt)
 			// No JS
 
 			// Roll
-			if (GetManualControlLevel(THGROUP_ATT_BANKLEFT) > 0) {
-				rhc_pos[0] = (int)(32768 - GetManualControlLevel(THGROUP_ATT_BANKLEFT) * 32768);
+			double rollLeft = aca_keyboard_deflection[THGROUP_ATT_BANKLEFT - THGROUP_ATT_PITCHUP];
+			double rollRight = aca_keyboard_deflection[THGROUP_ATT_BANKRIGHT - THGROUP_ATT_PITCHUP];
+			if (rollLeft > 0) {
+				rhc_pos[0] = (int)(32768 - rollLeft * 32768);
 			}
-			else if (GetManualControlLevel(THGROUP_ATT_BANKRIGHT) > 0) {
-				rhc_pos[0] = (int)(32768 + GetManualControlLevel(THGROUP_ATT_BANKRIGHT) * 32768);
+			else if (rollRight > 0) {
+				rhc_pos[0] = (int)(32768 + rollRight * 32768);
 			}
 			// Pitch
-			if (GetManualControlLevel(THGROUP_ATT_PITCHDOWN) > 0) {
-				rhc_pos[1] = (int)(32768 - GetManualControlLevel(THGROUP_ATT_PITCHDOWN) * 32768);
+			double pitchDown = aca_keyboard_deflection[THGROUP_ATT_PITCHDOWN - THGROUP_ATT_PITCHUP];
+			double pitchUp = aca_keyboard_deflection[THGROUP_ATT_PITCHUP - THGROUP_ATT_PITCHUP];
+			if (pitchDown > 0) {
+				rhc_pos[1] = (int)(32768 - pitchDown * 32768);
 			}
-			else if (GetManualControlLevel(THGROUP_ATT_PITCHUP) > 0) {
-				rhc_pos[1] = (int)(32768 + GetManualControlLevel(THGROUP_ATT_PITCHUP) * 32768);
+			else if (pitchUp > 0) {
+				rhc_pos[1] = (int)(32768 + pitchUp * 32768);
 			}
 			// Yaw
-			if (GetManualControlLevel(THGROUP_ATT_YAWLEFT) > 0) {
-				rhc_pos[2] = (int)(32768 + GetManualControlLevel(THGROUP_ATT_YAWLEFT) * 32768);
+			double yawLeft = aca_keyboard_deflection[THGROUP_ATT_YAWLEFT - THGROUP_ATT_PITCHUP];
+			double yawRight = aca_keyboard_deflection[THGROUP_ATT_YAWRIGHT - THGROUP_ATT_PITCHUP];
+			if (yawLeft > 0) {
+				rhc_pos[2] = (int)(32768 - yawLeft * 32768);
 			}
-			else if (GetManualControlLevel(THGROUP_ATT_YAWRIGHT) > 0) {
-				rhc_pos[2] = (int)(32768 - GetManualControlLevel(THGROUP_ATT_YAWRIGHT) * 32768);
+			else if (yawRight > 0) {
+				rhc_pos[2] = (int)(32768 + yawRight * 32768);
 			}
 		}
 
@@ -2162,7 +2168,7 @@ void LEM::SystemsTimestep(double simt, double simdt)
 	//sprintf(oapiDebugString(), "P1 %lf P2 %lf Reg1 %lf WGHX %lf SHX %lf SHXBP %lf", *Pump1OutFlow*LBH, *Pump2OutFlow*LBH, *primGlyReg1Flow*LBH, *waterGlyHXFlow*LBH, *suitHXGlyFlow*LBH, *suitHXGlyBypassFlow*LBH);
 	//sprintf(oapiDebugString(), "AT %.3f PT %.3f GCT %.3f SCT %.3f HXCP %.3f L1 %.3f HXT %.3f L2 %.3f GHT %.3f SHT %.3f HXHP %.3f EI %.3f EO %.3f A %.3f D %.3f", KelvinToFahrenheit(*primglycoltemp), KelvinToFahrenheit(*glycolpumpmanifoldtemp), KelvinToFahrenheit(*glycolsuitcooltemp), KelvinToFahrenheit(*hxcoolingTemp), *hxcoolingPower, KelvinToFahrenheit(*primloop1temp), KelvinToFahrenheit(*waterglycolhxtemp), KelvinToFahrenheit(*primloop2temp), KelvinToFahrenheit(*glycolsuitheattemp), KelvinToFahrenheit(*hxheatingTemp), *hxheatingPower, KelvinToFahrenheit(*primevaptempin), KelvinToFahrenheit(*primevaptempout), KelvinToFahrenheit(*ascbatglycoltemp), KelvinToFahrenheit(*desbatglycoltemp));
 	
-	//sprintf(oapiDebugString(), "Cabin: %.3f캟 Cabin Structure: %.3f캟 Primary Glycol Loop %.3f캟 ASA: %.3f캟 ASAPWM %lf", KelvinToFahrenheit(*CabinTemp), KelvinToFahrenheit(*CabinStructureTemp), KelvinToFahrenheit(*primloop2temp), KelvinToFahrenheit(*ASARad), *ASAFineHtrPWM);
+	//sprintf(oapiDebugString(), "Cabin: %.3f째F Cabin Structure: %.3f째F Primary Glycol Loop %.3f째F ASA: %.3f째F ASAPWM %lf", KelvinToFahrenheit(*CabinTemp), KelvinToFahrenheit(*CabinStructureTemp), KelvinToFahrenheit(*primloop2temp), KelvinToFahrenheit(*ASARad), *ASAFineHtrPWM);
 																											
 	//sprintf(oapiDebugString(), "LCG %lf SEC %lf", LCGPump->Voltage(), SecGlyPump->Voltage());
 	//sprintf(oapiDebugString(), "CM %lf CP %lf CT %lf CE %lf LM %lf LP %lf LT %lf LE %lf", *cdrsuitmass, (*cdrsuitpress)*PSI, (*cdrsuittemp)* 1.8 - 459.67, *cdrsuitenergy, *lmpsuitmass, (*lmpsuitpress)*PSI, (*lmpsuittemp)* 1.8 - 459.67, *lmpsuitenergy);
@@ -2464,10 +2470,14 @@ void LEM::CreateMissionSpecificSystems()
 
 	agc.SetMissionInfo(pMission->GetLGCVersion());
 	aea.SetMissionInfo(pMission->GetAEAVersion());
+	imu.SetDriftRates(pMission->GetLM_IMU_Drift());
+	imu.SetPIPABias(pMission->GetLM_PIPA_Bias());
+	imu.SetPIPAScale(pMission->GetLM_PIPA_Scale());
 	if (pMission->LMHasAscEngArmAssy())
 	{
 		aeaa = new LEM_AEAA();
 	}
+	EventTimerDisplay.SetReverseAtZero(pMission->IsLMEventTimerReversingAtZero());
 }
 
 // SYSTEMS COMPONENTS

@@ -223,6 +223,12 @@ static MESHHANDLE hsat5stg32;
 static MESHHANDLE hsat5stg33;
 static MESHHANDLE hsat5stg34;
 
+static MESHHANDLE hsat5stg3wide;
+static MESHHANDLE hsat5stg31wide;
+static MESHHANDLE hsat5stg32wide;
+static MESHHANDLE hsat5stg33wide;
+static MESHHANDLE hsat5stg34wide;
+
 static MESHHANDLE hsat5stg1low;
 static MESHHANDLE hsat5intstglow;
 static MESHHANDLE hsat5stg2low;
@@ -269,6 +275,12 @@ void LoadSat5Meshes()
 	LOAD_MESH(hsat5stg33low, "ProjectApollo/LowRes/sat5stg33");
 	LOAD_MESH(hsat5stg34low, "ProjectApollo/LowRes/sat5stg34");
 
+	LOAD_MESH(hsat5stg3wide, "ProjectApollo/sat5stg3wide");
+	LOAD_MESH(hsat5stg31wide, "ProjectApollo/sat5stg31wide");
+	LOAD_MESH(hsat5stg32wide, "ProjectApollo/sat5stg32wide");
+	LOAD_MESH(hsat5stg33wide, "ProjectApollo/sat5stg33wide");
+	LOAD_MESH(hsat5stg34wide, "ProjectApollo/sat5stg34wide");
+
 	LOAD_MESH(hsat5stg3, "ProjectApollo/sat5stg3");
 	LOAD_MESH(hsat5stg3base, "ProjectApollo/sat5stg3base");
 	LOAD_MESH(hsat5stg31, "ProjectApollo/sat5stg31");
@@ -308,11 +320,20 @@ void SaturnV::SetupMeshes()
 	{
 		hStage1Mesh = hsat5stg1;
 		hStage2Mesh = hsat5stg2;
-		hStage3Mesh = hsat5stg3;
-		hStageSLA1Mesh = hsat5stg31;
-		hStageSLA2Mesh = hsat5stg32;
-		hStageSLA3Mesh = hsat5stg33;
-		hStageSLA4Mesh = hsat5stg34;
+		if (!UseWideSLA) {
+			hStage3Mesh = hsat5stg3;
+			hStageSLA1Mesh = hsat5stg31;
+			hStageSLA2Mesh = hsat5stg32;
+			hStageSLA3Mesh = hsat5stg33;
+			hStageSLA4Mesh = hsat5stg34;
+		}
+		else {
+			hStage3Mesh = hsat5stg3wide;
+			hStageSLA1Mesh = hsat5stg31wide;
+			hStageSLA2Mesh = hsat5stg32wide;
+			hStageSLA3Mesh = hsat5stg33wide;
+			hStageSLA4Mesh = hsat5stg34wide;
+		}
 	}
 }
 
@@ -987,24 +1008,21 @@ void SaturnV::SetThirdStageEngines (double offset)
 	// Seperation 'thrusters'.
 	//
 
-	if (viewpos != SATVIEW_ENG1 && viewpos != SATVIEW_ENG2) 
-	{
-		int i;
+	int i;
 
-		ph_sep = CreatePropellantResource(0.25);
+	ph_sep = CreatePropellantResource(0.25);
 
-		th_sep[0] = CreateThruster (s_exhaust_pos1, _V( 1,1,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[1] = CreateThruster (s_exhaust_pos2, _V( 1,-1,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[2] = CreateThruster (s_exhaust_pos3, _V( -1,1,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[3] = CreateThruster (s_exhaust_pos4, _V( -1,-1,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[4] = CreateThruster (s_exhaust_pos6, _V( 0,1,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[5] = CreateThruster (s_exhaust_pos7, _V( 0,-1,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[6] = CreateThruster (s_exhaust_pos8, _V( 1,0,0), 1.0, ph_sep, 10.0, 10.0);
-		th_sep[7] = CreateThruster (s_exhaust_pos9, _V( -1,0,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[0] = CreateThruster (s_exhaust_pos1, _V( 1,1,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[1] = CreateThruster (s_exhaust_pos2, _V( 1,-1,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[2] = CreateThruster (s_exhaust_pos3, _V( -1,1,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[3] = CreateThruster (s_exhaust_pos4, _V( -1,-1,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[4] = CreateThruster (s_exhaust_pos6, _V( 0,1,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[5] = CreateThruster (s_exhaust_pos7, _V( 0,-1,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[6] = CreateThruster (s_exhaust_pos8, _V( 1,0,0), 1.0, ph_sep, 10.0, 10.0);
+	th_sep[7] = CreateThruster (s_exhaust_pos9, _V( -1,0,0), 1.0, ph_sep, 10.0, 10.0);
 
-		for (i = 0; i < 8; i++) {
-			AddExhaustStream (th_sep[i], &seperation_junk);
-		}
+	for (i = 0; i < 8; i++) {
+		AddExhaustStream (th_sep[i], &seperation_junk);
 	}
 
 	VECTOR3 m_exhaust_pos1= {0,0,-9+ offset};
@@ -1199,16 +1217,7 @@ void SaturnV::SeparateStage (int new_stage)
 		// Fire 'seperation' thrusters.
 		//
 
-		if (viewpos != SATVIEW_ENG1 && viewpos != SATVIEW_ENG2) 
-		{
-			FireSeperationThrusters(th_sep);
-		}
-
-		if (viewpos == SATVIEW_ENG1) 
-		{
-			oapiSetFocusObject(hstg1);
-			oapiCameraAttach(hstg1, CAM_COCKPIT);
-		}
+		FireSeperationThrusters(th_sep);
 	}
 
 	if (stage == LAUNCH_STAGE_TWO && new_stage == LAUNCH_STAGE_TWO_ISTG_JET)
@@ -1255,10 +1264,7 @@ void SaturnV::SeparateStage (int new_stage)
 		// Fire 'seperation' thrusters.
 		//
 
-		if (viewpos != SATVIEW_ENG1 && viewpos != SATVIEW_ENG2) 
-		{
-			FireSeperationThrusters(th_sep2);
-		}
+		FireSeperationThrusters(th_sep2);
 
 		ConfigureStageMeshes (new_stage);
 	}
@@ -1313,10 +1319,7 @@ void SaturnV::SeparateStage (int new_stage)
 		// Fire 'seperation' thrusters.
 		//
 
-		if (viewpos != SATVIEW_ENG1 && viewpos != SATVIEW_ENG2)
-		{
-			FireSeperationThrusters(th_sep);
-		}
+		FireSeperationThrusters(th_sep);
 	}
 
 	if ((stage == LAUNCH_STAGE_SIVB || stage == STAGE_ORBIT_SIVB) && new_stage != CM_STAGE)

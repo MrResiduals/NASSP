@@ -36,6 +36,39 @@ namespace mission
 		VECTOR3 ofs = _V(0, 0, 0);
 	};
 
+	struct GroundStationData
+	{
+		int Num;			 //0 = crate new station, >=1 = Overload existing station
+
+		char Name[64];		 // Station name
+		char Code[8];		 // Station ID code
+		double Position[2];  // Latitude, Longitude
+		bool Active;         // This entry is valid and active
+		int TrackingCaps;	 // Tracking capabilities
+		int USBCaps;        // Unified S-Band Capabilities
+		int SBandAntenna;   // S-Band Antenna Type
+		int TelemetryCaps;  // Telemetry Handling Capabilities
+		int CommCaps;		 // Radio/Ground Communications Capabilities
+		bool HasRadar;       // Has radar capability
+		bool HasAcqAid;      // Has target acquisition aid
+		int DownTlmCaps;    // Downtelemetry Capabilities
+		int UpTlmCaps;      // Command Capabilities
+		int StationType;    // Station Type
+		int  StationPurpose; // Station Purpose
+	};
+
+	struct GroundStationPosition
+	{
+		int Num;			 //Station number
+		double Position[2];  // Latitude, Longitude
+	};
+
+	struct GroundStationActive
+	{
+		int Num;			 //Station number
+		bool Active;         // This entry is valid and active
+	};
+
 	class Mission
 	{
 	public:
@@ -67,6 +100,8 @@ namespace mission
 		virtual bool LMHasLegs() const;
 		//false = LM has no deflectors, true = LM has deflectors
 		virtual bool LMHasDeflectors() const;
+		//false = LM has no RTG Cask, true = LM has RTG Cask
+		virtual bool LMHasCask() const;
 		//false = CSM has no HGA, true = CSM has a HGA
 		virtual bool CSMHasHGA() const;
 		//false = CSM has no VHF Ranging System, true = CSM has VHF Ranging System
@@ -89,6 +124,18 @@ namespace mission
 		VECTOR3 GetCGOfEmptySM() const;
 		//false = Optics mode switch is not bypassed for CMC to optics commands, true = optics mode switch is bypassed for CMC to optics commands (ECP 792)
 		bool HasRateAidedOptics() const;
+		//
+		MATRIX3 GetCM_IMU_Drift() const;
+		//
+		MATRIX3 GetLM_IMU_Drift() const;
+		//
+		VECTOR3 GetCM_PIPA_Bias() const;
+		//
+		VECTOR3 GetLM_PIPA_Bias() const;
+		//
+		VECTOR3 GetCM_PIPA_Scale() const;
+		//
+		VECTOR3 GetLM_PIPA_Scale() const;
 		//false = Normal polarity (Apollo 14 and earlier), Lateral axis for PGNS and LR input has switched polarity (Apollo 15 and later)
 		bool GetCrossPointerReversePolarity() const;
 		//false = No shades (Apollo 15 and earlier), Shades (Apollo 16 & 17)
@@ -111,6 +158,16 @@ namespace mission
 		virtual const std::string& GetCMPSuitName() const;
 		//Name of LMP to print on suit
 		virtual const std::string& GetLMPSuitName() const;
+		//false = LM event timer continues to count down through zero, true = when reaching zero it starts counting up
+		virtual bool IsLMEventTimerReversingAtZero() const;
+		//Get additional ground station data
+		std::vector<GroundStationData> GetGroundStationData() const;
+		//Overload ground station position
+		std::vector<GroundStationPosition> GetGroundStationPosition() const;
+		//Set ground station active/inactive
+		std::vector<GroundStationActive> GetGroundStationActive() const;
+		//Run special Apollo 13 failure and audio code
+		virtual bool DoApollo13Failures() const;
 	protected:
 		bool GetCueCards(const std::vector<CueCardConfig> &cue, unsigned &counter, unsigned &loc, std::string &meshname, VECTOR3 &ofs);
 
@@ -122,6 +179,10 @@ namespace mission
 		void ReadCueCardLine(char *line, int vehicle);
 
 		void UpdateTEPHEM0();
+
+		void ReadGroundStationLine(char *line);
+		void ReadGroundStationPostionLine(char *line);
+		void ReadGroundStationActiveLine(char *line);
 
 		std::string strFileName;
 		std::string strMissionName;
@@ -146,6 +207,7 @@ namespace mission
 		bool bLMHasAscEngArmAssy;
 		bool bLMHasLegs;
 		bool bLMHasDeflectors;
+		bool bLMHasCask;
 		bool bCSMHasHGA;
 		bool bCSMHasVHFRanging;
 		bool bInvertLMStageBit;
@@ -160,6 +222,19 @@ namespace mission
 		std::vector<CueCardConfig> LMCueCards;
 		double dTEPHEM0;
 		int iLMNumber;
+		bool bLMEventTimerReverseAtZero;
+		std::vector<GroundStationData> AdditionalGroundStations;
+		std::vector<GroundStationPosition> GroundStationsPositions;
+		std::vector<GroundStationActive> GroundStationsActive;
+		bool bApollo13Failures;
+
+		MATRIX3 CM_IMUDriftRates;
+		VECTOR3 CM_PIPABias;
+		VECTOR3 CM_PIPAScale;
+
+		MATRIX3 LM_IMUDriftRates;
+		VECTOR3 LM_PIPABias;
+		VECTOR3 LM_PIPAScale;
 
 		void SetDefaultValues();
 	};

@@ -52,6 +52,7 @@
 #include "csm_telecom.h"
 #include "sps.h"
 #include "ecs.h"
+#include "eps.h"
 #include "csmrcs.h"
 #include "ORDEAL.h"
 #include "MechanicalAccelerometer.h"
@@ -809,11 +810,11 @@ public:
 
 	///
 	/// This function can be used during the countdown to update the MissionTime. Since we launch when
-	/// MissionTime reaches zero, setting MissionTime to (-t) tells the code when to launch.
+	/// MissionTime reaches zero, delay the MissionTime by dt tells the code when to launch.
 	/// \brief Update the launch time.
-	/// \param t Specifies the time in seconds to wait before launch.
+	/// \param t Specifies the time in seconds to delay the launch.
 	///
-	void UpdateLaunchTime(double t);	
+	virtual void UpdateLaunchTime(double dt);
 
 	///
 	/// Set up the default mesh for the virtual cockpit.
@@ -1019,6 +1020,7 @@ public:
 	//CSM to LM interface functions
 	h_Pipe* GetCMTunnelPipe() { return CMTunnel; }
 	h_Pipe* GetCSMO2Hose();
+	void ConnectCSMO2Hose();
 	void ConnectTunnelToCabinVent();
 	bool GetLMDesBatLVOn();
 	bool GetLMDesBatLVHVOffA();
@@ -1279,8 +1281,24 @@ public:
 	virtual SIBSystems *GetSIB() { return NULL; }
 	virtual SICSystems *GetSIC() { return NULL; }
 	SECS *GetSECS() { return &secs; }
+	mission::Mission *GetMission() { return pMission; }
 
 	void ClearMeshes();
+
+	//
+	// Flashlight for VC
+	//
+	void MoveFlashlight();
+	void SetFlashlightOn(bool state);
+	void ToggleFlashlight();
+	SpotLight* flashlight;
+	COLOUR4 flashlightColor;
+	COLOUR4 flashlightColor2;
+	VECTOR3 flashlightPos;
+	VECTOR3 vesselPosGlobal;
+	VECTOR3 flashlightDirGlobal;
+	VECTOR3 flashlightDirLocal;
+	bool flashlightOn;
 
 protected:
 
@@ -1381,6 +1399,18 @@ protected:
 	///
 	bool SLAWillSeparate;
 
+	///
+	/// True if wide ELS-type SLA panels are installed.
+	/// \brief Use wide ELS-type SLA panels.
+	///
+	bool UseWideSLA;
+
+	///
+	/// True if SLA has flashing beacons as on Apollo 7.
+	/// \brief SLA has beacons.
+	///
+	bool SLAHasBeacons;
+
 	bool SIMBayPanelJett;
 
 	bool DeleteLaunchSite;
@@ -1397,9 +1427,21 @@ protected:
 	//
 
 	///
+	/// The current Simulated Time, which runs continuously throughout the mission.
+	/// If the mission elapsed time is not changed before launch, essentially a launch
+	/// delay, then SimulatedTime is identical to MissionTime. This time can be used for
+	/// subsystems that need a steadily updating time, which does not need to have a
+	/// specific time reference/start time.
+	/// \brief Simulated Time.
+	///
+	double SimulatedTime;
+
+	///
 	/// The current Mission Elapsed Time. This is the main variable used for timing
 	/// automated events during the mission, giving the time in seconds from launch
 	/// (negative for the pre-launch countdown).
+	/// It can be changed during pre-launch to enact a launch delay, but should not
+	/// be modified after launch.
 	/// \brief Mission Elapsed Time.
 	///
 	double MissionTime;
@@ -1601,7 +1643,7 @@ protected:
 	GuardedPushSwitch MainDeploySwitch;
 	GuardedPushSwitch CmRcsHeDumpSwitch;
 
-	ToggleSwitch	    EDSSwitch;				
+	ToggleSwitch EDSSwitch;				
 	GuardedToggleSwitch CsmLmFinalSep1Switch;
 	GuardedToggleSwitch CsmLmFinalSep2Switch;
 	GuardedToggleSwitch CmSmSep1Switch;
@@ -1610,15 +1652,18 @@ protected:
 
 	ToggleSwitch   CabinFan1Switch;
 	ToggleSwitch   CabinFan2Switch;
+
 	ThreePosSwitch H2Heater1Switch;
 	ThreePosSwitch H2Heater2Switch;
 	ThreePosSwitch O2Heater1Switch;
-	ThreePosSwitch O2Heater2Switch;	
-	ToggleSwitch   O2PressIndSwitch;	
+	ThreePosSwitch O2Heater2Switch;
+
 	ThreePosSwitch H2Fan1Switch; 
 	ThreePosSwitch H2Fan2Switch; 
 	ThreePosSwitch O2Fan1Switch; 
-	ThreePosSwitch O2Fan2Switch; 
+	ThreePosSwitch O2Fan2Switch;
+
+	ToggleSwitch   O2PressIndSwitch;
 
 	IndicatorSwitch FuelCellPhIndicator;
 	IndicatorSwitch FuelCellRadTempIndicator;
@@ -3597,6 +3642,8 @@ public:
 	TemperatureTransducer WasteH2ODumpTempSensor;
 	TemperatureTransducer UrineDumpTempSensor;
 
+	TemperatureTransducer DockProbeTempSensor;
+
 protected:
 
 	// CM Optics
@@ -3615,15 +3662,15 @@ protected:
 	ElectricLight* SpotLight;
 	ElectricLight* RndzLight;
 
-	// O2 tanks.
+	// O2 Tanks
 	h_Tank *O2Tanks[2];
-	Boiler *O2TanksHeaters[2];
-	Boiler *O2TanksFans[2];
+	Boiler *O2TankHeaters[2];
+	Boiler *O2TankFans[2];
 
-	// H2 tanks
+	// H2 Tanks
 	h_Tank *H2Tanks[2];
-	Boiler *H2TanksHeaters[2];
-	Boiler *H2TanksFans[2];
+	Boiler *H2TankHeaters[2];
+	Boiler *H2TankFans[2];
 
 	//Tunnel Pipe
 	h_Pipe *CMTunnel;
@@ -3708,9 +3755,27 @@ protected:
 	PowerMerge SwitchPower;
 	PowerMerge GaugePower;
 
+	ThreePhasePowerMerge CryoFanMotorsTank1Feeder;
+	ThreePhasePowerMerge CryoFanMotorsTank2Feeder;
+
+	ThreePhasePowerMerge CabinFan1Feeder;
+	ThreePhasePowerMerge CabinFan2Feeder;
+
+	ThreePhasePowerMerge GlycolPump1Feeder;
+	ThreePhasePowerMerge GlycolPump2Feeder;
+
+	ThreePhasePowerMerge SuitCompressor1Feeder;
+	ThreePhasePowerMerge SuitCompressor2Feeder;
+
 	// GSE
 	Pump* GSEGlycolPump;
 	h_Radiator* GSERadiator;
+	h_Tank *GSECryoO2Dewar;
+	h_Tank *GSECryoH2Dewar;
+
+	// EPS
+	CryoPressureSwitch H2CryoPressureSwitch;
+	CryoPressureSwitch O2CryoPressureSwitch;
 
 	// ECS
 	h_Tank *CSMCabin;
@@ -3724,7 +3789,8 @@ protected:
 	h_HeatExchanger *PrimEcsRadiatorExchanger2;
 	h_HeatExchanger *SecEcsRadiatorExchanger1;
 	h_HeatExchanger *SecEcsRadiatorExchanger2;
-	Pump* PrimGlycolPump;
+	Pump *PrimGlycolPump1;
+	Pump *PrimGlycolPump2;
 	Boiler *CabinHeater;
 	Boiler *PrimECSTestHeater;
 	Boiler *SecECSTestHeater;
@@ -3862,12 +3928,6 @@ protected:
     #define SATVIEW_TUNNEL          8
     #define SATVIEW_LOWER_CENTER    9
     #define SATVIEW_UPPER_CENTER    10
-	#define SATVIEW_ENG1			20
-	#define SATVIEW_ENG2			21
-	#define SATVIEW_ENG3			22
-	#define SATVIEW_ENG4			23
-	#define SATVIEW_ENG5			24
-	#define SATVIEW_ENG6			25
 
 	unsigned int	viewpos;
 
@@ -4060,7 +4120,6 @@ protected:
 	void KillDist(OBJHANDLE &hvessel, double kill_dist = 5000.0);
 	void KillAlt(OBJHANDLE &hvessel,double altVS);
 	void RedrawPanel_MFDButton (SURFHANDLE surf, int mfd, int side, int xoffset, int yoffset, int ydist);
-	void CryoTankHeaterSwitchToggled(TwoPositionSwitch *s, int *pump);
 	void FuelCellHeaterSwitchToggled(TwoPositionSwitch *s, int *pump);
 	void FuelCellReactantsSwitchToggled(TwoPositionSwitch *s, CircuitBrakerSwitch *cb, CircuitBrakerSwitch *cbLatch, int *h2open, int *o2open);
 	void MousePanel_MFDButton(int mfd, int event, int mx, int my);
@@ -4334,6 +4393,7 @@ protected:
 	THRUSTER_HANDLE th_att_cm[12], th_att_cm_sys1[6], th_att_cm_sys2[6];    // CM RCS  
 	THRUSTER_HANDLE th_o2_vent;
 	bool th_att_cm_commanded[12];
+	double rhc_keyboard_deflection[6];	// Holds deflection values (0.0 to 1.0) for each Orbiter attitude direction
 
 	PSTREAM_HANDLE dyemarker;
 	PSTREAM_HANDLE wastewaterdump;
@@ -4376,6 +4436,12 @@ protected:
 	double LMAscentFuelMassKg;	///< Mass of fuel in ascent stage of LEM.
 	double LMDescentEmptyMassKg;
 	double LMAscentEmptyMassKg;
+
+	//
+	// Custom Payload data.
+	//
+	double customPayloadMass;
+	char customPayloadClass[256];
 
 	//
 	// Random motion.

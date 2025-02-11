@@ -411,6 +411,8 @@ Saturn::Saturn(OBJHANDLE hObj, int fmodel) : ProjectApolloConnectorVessel (hObj,
 	SCSLogicBus4Feeder("SCS-Logic-Bus-4-Feeder", Panelsdk),
 	SwitchPower("Switch-Power", Panelsdk),
 	GaugePower("Gauge-Power", Panelsdk),
+	CryoFanMotorsTank1Feeder("Cryo-Fan-Motors-Tank-1-Feeder", Panelsdk),
+	CryoFanMotorsTank2Feeder("Cryo-Fan-Motors-Tank-2-Feeder", Panelsdk),
 	SMQuadARCS(ph_rcs0, Panelsdk),
 	SMQuadBRCS(ph_rcs1, Panelsdk),
 	SMQuadCRCS(ph_rcs2, Panelsdk),
@@ -433,9 +435,15 @@ Saturn::Saturn(OBJHANDLE hObj, int fmodel) : ProjectApolloConnectorVessel (hObj,
 	MainChutesDeployPyrosFeeder("Main-Chutes-Deploy-Pyros-Feeder", Panelsdk),
 	MainChutesReleasePyros("Main-Chutes-Release-Pyros", Panelsdk),
 	MainChutesReleasePyrosFeeder("Main-Chutes-Release-Pyros-Feeder", Panelsdk),
+	CabinFan1Feeder("Cabin-Fan-1-Feeder", Panelsdk),
+	CabinFan2Feeder("Cabin-Fan-2-Feeder", Panelsdk),
 	EcsGlycolPumpsSwitch(Panelsdk),
+	GlycolPump1Feeder("Glycol-Pump-1-Feeder", Panelsdk),
+	GlycolPump2Feeder("Glycol-Pump-2-Feeder", Panelsdk),
 	SuitCompressor1Switch(Panelsdk),
 	SuitCompressor2Switch(Panelsdk),
+	SuitCompressor1Feeder("Suit-Compressor-1-Feeder", Panelsdk),
+	SuitCompressor2Feeder("Suit-Compressor-2-Feeder", Panelsdk),
 	BatteryCharger("BatteryCharger", Panelsdk),
 	timedSounds(soundlib),
 	iuCommandConnector(agc, this),
@@ -544,6 +552,7 @@ Saturn::Saturn(OBJHANDLE hObj, int fmodel) : ProjectApolloConnectorVessel (hObj,
 	SPSFuelFeedTempSensor("SPS-Fuel-Feed-Temp-Sensor", 0.0, 200.0),
 	SPSOxidizerFeedTempSensor("SPS-Oxidizer-Feed-Temp-Sensor", 0.0, 200.0),
 	SPSEngVlvTempSensor("SPS-Engine-Valve-Temp-Sensor", 0.0, 200.0),
+	DockProbeTempSensor("Docking-Probe-Temp-Sensor", -100.0, 300.0),
 	vesim(&cbCSMVesim, this),
 	CueCards(vcidx, this, 11),
 	Failures(this)
@@ -708,6 +717,10 @@ void Saturn::initSaturn()
 	SLARotationLimit = 45;
 	SLAWillSeparate = true;
 
+	UseWideSLA = false;
+
+	SLAHasBeacons = false;
+
 	hStage1Mesh = 0;
 	hStage2Mesh = 0;
 	hStage3Mesh = 0;
@@ -766,6 +779,7 @@ void Saturn::initSaturn()
 	// Default mission time to an hour prior to launch.
 	//
 
+	SimulatedTime = 0.0;
 	MissionTime = (-3600);
 	NextMissionEventTime = 0;
 
@@ -788,8 +802,8 @@ void Saturn::initSaturn()
 
 	agc.ControlVessel(this);
 	imu.SetVessel(this, false);
-	dsky.Init(&LightingNumIntLMDCCB, &CMCDCBusFeeder, &NumericRotarySwitch);
-	dsky2.Init(&LightingNumIntLEBCB, &CMCDCBusFeeder, &Panel100NumericRotarySwitch);
+	dsky.Init(&LightingNumIntLMDCCB, &CMCDCBusFeeder, &NumericRotarySwitch, &IntegralRotarySwitch, NULL, NULL);
+	dsky2.Init(&LightingNumIntLEBCB, &CMCDCBusFeeder, &Panel100NumericRotarySwitch, &Panel100IntegralRotarySwitch, NULL, NULL);
 
 	//
 	// Configure SECS.
@@ -990,6 +1004,18 @@ void Saturn::initSaturn()
 	FovSave = 0;
 
 	//
+	// Flashlight
+	//
+	flashlight = 0;
+	flashlightColor = { 1,1,1,0 };
+	flashlightColor2 = { 0,0,0,0 };
+	flashlightPos = { 0,0,0 };
+	vesselPosGlobal = { 0,0,0 };
+	flashlightDirGlobal = { 0,0,1 };
+	flashlightDirLocal = { 0,0,1 };
+	flashlightOn = 0;
+
+	//
 	// Save the last view offset set.
 	//
 
@@ -1095,6 +1121,9 @@ void Saturn::initSaturn()
 	LMAscentEmptyMassKg = 2150.0;
 	LMDescentEmptyMassKg = 2224.0;
 
+	customPayloadMass = 0;
+	customPayloadClass[0] = 0;
+
 	UseATC = false;
 
 	SIISepState = false;
@@ -1185,6 +1214,11 @@ void Saturn::initSaturn()
 	CurrentFuelWeight = 0;
 	LastFuelWeight = numeric_limits<double>::infinity(); // Ensure update at first opportunity
 	currentCoG = _V(0, 0, 0);
+
+	// New keyboard control values
+	for (auto i = 0; i < 6; ++i) {
+		rhc_keyboard_deflection[i] = 0.0;
+	}
 
 	// call only once 
 	if (!InitSaturnCalled) {
@@ -1340,7 +1374,7 @@ void Saturn::clbkPostCreation()
 	// Load Apollo-13 specific sounds.
 	//
 
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 		if (!KranzPlayed)
 			soundlib.LoadMissionSound(SKranz, A13_KRANZ, NULL, INTERNAL_ONLY);
 		if (!CryoStir)
@@ -1395,15 +1429,17 @@ void Saturn::GetApolloName(char *s)
 	sprintf(s, "AS-%d", VehicleNo);
 }
 
-void Saturn::UpdateLaunchTime(double t)
-
+void Saturn::UpdateLaunchTime(double dt)
 {
-	if (t < 0)
+	//Don't allow earlier launch
+	if (dt < 0.0)
+		return;
+	//Don't allow during terminal countdown
+	if (MissionTime >= -186.0)
 		return;
 
-	if (MissionTime < 0) {
-		MissionTime = (-t);
-	}
+	//Update time
+	MissionTime -= dt;
 }
 
 //
@@ -1550,6 +1586,15 @@ void Saturn::clbkPreStep(double simt, double simdt, double mjd)
 
 	Timestep(simt, simdt, mjd);
 
+	if (oapiGetFocusObject() == GetHandle()) {
+		dsky.SendNetworkPacketDSKY();
+	}
+
+	if ((oapiGetFocusObject() == GetHandle()) && (oapiCockpitMode() == COCKPIT_VIRTUAL) && (oapiCameraMode() == CAM_COCKPIT)) {
+		//We have focus on this vessel, and are in the VC
+		MoveFlashlight();
+	}
+
 	sprintf(buffer, "End time(0) %lld", time(0)); 
 	TRACE(buffer);
 }
@@ -1577,7 +1622,7 @@ void Saturn::clbkPostStep(double simt, double simdt, double mjd)
 		// to inhibit Orbiter's thrust control
 		//
 
-		SPSEngine.Timestep(MissionTime, simdt);
+		SPSEngine.Timestep(SimulatedTime, simdt);
 
 		// Better acceleration measurement stability
 		imu.Timestep(simdt);
@@ -1649,6 +1694,7 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	oapiWriteScenario_int (scn, "PANEL_ID", PanelId);
 	oapiWriteScenario_int(scn, "VIEWPOS", viewpos);
 	papiWriteScenario_double (scn, "TCP", TCPO);
+	papiWriteScenario_double(scn, "SIMULATEDTIME", SimulatedTime);
 	papiWriteScenario_double (scn, "MISSNTIME", MissionTime);
 	papiWriteScenario_double (scn, "NMISSNTIME", NextMissionEventTime);
 
@@ -1737,12 +1783,18 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	if (AutoSlow) {
 		oapiWriteScenario_int (scn, "AUTOSLOW", 1);
 	}
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 		oapiWriteScenario_int (scn, "A13STATE", GetA13State());
 	}
 	if (SIVBPayload != PAYLOAD_LEM) {
 		oapiWriteScenario_int (scn, "S4PL", SIVBPayload);
 	}
+	oapiWriteScenario_int(scn, "WIDESLA", UseWideSLA);
+	oapiWriteScenario_int(scn, "SLABEACONS", SLAHasBeacons);
+	oapiWriteScenario_float(scn, "CUSTOMPAYLOADMASS", customPayloadMass);
+	if (customPayloadClass[0])
+		oapiWriteScenario_string(scn, "CUSTOMPAYLOADCLASS", customPayloadClass);
+
 	oapiWriteScenario_string (scn, "LANG", AudioLanguage);
 	
 	if (PayloadName[0])
@@ -1874,6 +1926,8 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	CrewStatus.SaveState(scn);
 	ForwardHatch.SaveState(scn);
 	SideHatch.SaveState(scn);
+	H2CryoPressureSwitch.SaveState(scn, "H2PRESSSWITCHES");
+	O2CryoPressureSwitch.SaveState(scn, "O2PRESSSWITCHES");
 	usb.SaveState(scn);
 	if (pMission->CSMHasHGA()) hga.SaveState(scn);
 	vhftransceiver.SaveState(scn);
@@ -2236,6 +2290,10 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	else if (!strnicmp (line, "SATTYPE", 7)) {
 		sscanf (line+7, "%d", &SaturnType);
 	}
+	else if (!strnicmp(line, "SIMULATEDTIME", 13)) {
+		sscanf(line + 13, "%f", &ftcp);
+		SimulatedTime = ftcp;
+	}
 	else if (!strnicmp(line, "MISSNTIME", 9)) {
         sscanf (line+9, "%f", &ftcp);
 		MissionTime = ftcp;
@@ -2336,6 +2394,23 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	}
 	else if (!strnicmp(line, "S4PL", 4)) {
 		sscanf(line + 4, "%d", &SIVBPayload);
+	}
+	else if (!strnicmp(line, "WIDESLA", 7)) {
+		int i;
+		sscanf(line + 7, "%d", &i);
+		UseWideSLA = (i != 0);
+	}
+	else if (!strnicmp(line, "SLABEACONS", 10)) {
+		int i;
+		sscanf(line + 10, "%d", &i);
+		SLAHasBeacons = (i != 0);
+	}
+	else if (!strnicmp(line, "CUSTOMPAYLOADMASS", 17)) {
+		sscanf(line + 17, "%f", &ftcp);
+		customPayloadMass = ftcp;
+	}
+	else if (!strnicmp(line, "CUSTOMPAYLOADCLASS", 18)) {
+		strncpy(customPayloadClass, line + 19, 256);
 	}
 	else if (!strnicmp(line, "SMFUELLOAD", 10)) {
 		sscanf(line + 10, "%f", &ftcp);
@@ -2569,6 +2644,12 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	    else if (!strnicmp (line, "SIDEHATCH", 9)) {
 		    SideHatch.LoadState(line);
 	    }
+		else if (!strnicmp(line, "H2PRESSSWITCHES", 15)) {
+			H2CryoPressureSwitch.LoadState(line, 15);
+		}
+		else if (!strnicmp(line, "O2PRESSSWITCHES", 15)) {
+			O2CryoPressureSwitch.LoadState(line, 15);
+		}
 	    else if (!strnicmp (line, "UNIFIEDSBAND", 12)) {
 		    usb.LoadState(line);
 	    }
@@ -2769,6 +2850,12 @@ void Saturn::GetScenarioState (FILEHANDLE scn, void *vstatus)
         }
     }
 
+	//Backwards compatibility for simulated time
+	if (SimulatedTime == 0.0)
+	{
+		SimulatedTime = MissionTime;
+	}
+
 	//
 	// Recalculate stage masses.
 	//
@@ -2781,7 +2868,9 @@ void Saturn::GetScenarioState (FILEHANDLE scn, void *vstatus)
 	//
 
 	agc.SetMissionInfo(pMission->GetCMCVersion(), PayloadName);
-
+	imu.SetDriftRates(pMission->GetCM_IMU_Drift());
+	imu.SetPIPABias(pMission->GetCM_PIPA_Bias());
+	imu.SetPIPAScale(pMission->GetCM_PIPA_Scale());
 	secs.SetSaturnType(SaturnType);
 
 	//
@@ -2861,6 +2950,10 @@ void Saturn::UpdatePayloadMass()
 
 	case PAYLOAD_DOCKING_ADAPTER:
 		S4PL_Mass = 4700.0; // see http://www.ibiblio.org/mscorbit/mscforum/index.php?topic=2064.0
+		break;
+
+	case PAYLOAD_CUSTOM:
+		S4PL_Mass = customPayloadMass;
 		break;
 
 	default:
@@ -3053,15 +3146,16 @@ void Saturn::GenericTimestep(double simt, double simdt, double mjd)
 	// Update mission time.
 	//
 
+	SimulatedTime += simdt;
 	MissionTime += simdt;
 
 	//
 	// Panel flash counter.
 	//
 
-	if (MissionTime >= NextFlashUpdate) {
+	if (SimulatedTime >= NextFlashUpdate) {
 		PanelFlashOn = !PanelFlashOn;
-		NextFlashUpdate = MissionTime + 0.25;
+		NextFlashUpdate = SimulatedTime + 0.25;
 	}
 
 	//
@@ -3233,9 +3327,9 @@ void Saturn::GenericTimestep(double simt, double simdt, double mjd)
 
 	if (noiselat > 0.0 || (vAccel.x*vAccel.x + vAccel.y*vAccel.y + vAccel.z*vAccel.z) > 0.01) {
 		JostleViewpoint(noiselat, noiselong, noisefreq, simdt, -seatacc.x / 200.0, -seatacc.y / 200.0, -seatacc.z / 300.0);
-		LastVPAccelTime = MissionTime;
+		LastVPAccelTime = SimulatedTime;
 	}
-	else if (MissionTime<LastVPAccelTime + 5.0){	
+	else if (SimulatedTime <LastVPAccelTime + 5.0){
 		ViewOffsetx *= 0.95;
 		ViewOffsety *= 0.95;
 		ViewOffsetz *= 0.95;
@@ -3283,9 +3377,9 @@ void Saturn::GenericTimestep(double simt, double simdt, double mjd)
 	// Destroy obsolete stages
 	//
 
-	if (MissionTime >= NextDestroyCheckTime) {
+	if (SimulatedTime >= NextDestroyCheckTime) {
 		DestroyStages(simt);
-		NextDestroyCheckTime = MissionTime + 1.0;
+		NextDestroyCheckTime = SimulatedTime + 1.0;
 	}
 
 	//
@@ -3441,6 +3535,41 @@ int Saturn::clbkConsumeDirectKey(char *kstate)
 		}
 	}
 
+	// Override attitude controls, but only if that wouldn't interfere with our DSKY shortcuts.
+	// I'm using the Orbiter thruster group enum for this but the attitude thruster group
+	// starts at a non-zero value. So I subtract the first enum from each entry
+	// to get a zero-based index.
+	// Only override these keys if the user is holding no modifier keys, Alt only, or Ctrl + Alt.
+	if (GetAttitudeMode() == ATTITUDEMODE::ATTMODE_ROT && !(KEYMOD_CONTROL(kstate) && !KEYMOD_ALT(kstate)) && !KEYMOD_SHIFT(kstate)) {
+		// Possible deflection amounts are:
+		// No key modifiers: 10.5° (max proportional rate, but not hardover)
+		// Alt: 11.5° (full deflection, triggering direct switches)
+		// Ctrl + Alt: 1.51° (triggering breakout switches)
+		double deflectionDegrees = KEYMOD_ALT(kstate) ? KEYMOD_CONTROL(kstate) ? 1.51 : 11.5 : 10.5;
+		double deflectionPercent = deflectionDegrees / 11.5;
+
+		rhc_keyboard_deflection[THGROUP_ATT_PITCHUP - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD2) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_PITCHDOWN - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD8) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_BANKLEFT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD4) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_BANKRIGHT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD6) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_YAWLEFT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD1) ? deflectionPercent : 0.0;
+		rhc_keyboard_deflection[THGROUP_ATT_YAWRIGHT - THGROUP_ATT_PITCHUP] =
+			KEYDOWN(kstate, OAPI_KEY_NUMPAD3) ? deflectionPercent : 0.0;
+
+		// Prevent Orbiter from acting upon the attitude control keys
+		RESETKEY(kstate, OAPI_KEY_NUMPAD2);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD8);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD4);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD6);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD1);
+		RESETKEY(kstate, OAPI_KEY_NUMPAD3);
+	}
+
 	return 0;
 }
 
@@ -3450,7 +3579,7 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 
 	if (enableVESIM) vesim.clbkConsumeBufferedKey(key, down, kstate);
 
-	if (KEYMOD_SHIFT(kstate)){
+	if (KEYMOD_SHIFT(kstate) && !KEYMOD_CONTROL(kstate) && !KEYMOD_ALT(kstate)){
 		// Do DSKY stuff
 		DSKYPushSwitch* dskyKeyChanged = nullptr;
 		switch (key) {
@@ -3555,6 +3684,7 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 		}
 		return 0;
 	}
+
 	if (KEYMOD_CONTROL(kstate)) {
 		switch (key) {
 			case OAPI_KEY_D:
@@ -3564,6 +3694,7 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 		}
 		return 0;
 	}
+
 	if (KEYMOD_ALT(kstate))
 	{
 		if (down) {
@@ -3638,6 +3769,10 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 		}
 	}
 
+	if ((down) && (key == OAPI_KEY_F)) {
+		ToggleFlashlight();
+	}
+
 	// MCC CAPCOM interface key handling                                                                                                
 	if (down && !KEYMOD_SHIFT(kstate)) {
 		switch (key) {
@@ -3658,59 +3793,6 @@ int Saturn::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) {
 		}
 	}
 
-	//
-	// We only allow this switch in VC mode, as we need to disable the panel when selecting these
-	// cameras.
-	//
-	// For now this is limited to the Saturn V.
-	//
-
-	if (key == OAPI_KEY_1 && down == true && InVC && stage < LAUNCH_STAGE_TWO && stage >= LAUNCH_STAGE_ONE) {
-		clbkLoadVC(SATVIEW_ENG1);
-		return 1;
-	}
-
-	if (key == OAPI_KEY_2 && down == true && InVC && stage < LAUNCH_STAGE_SIVB && stage >= LAUNCH_STAGE_ONE) {
-		clbkLoadVC(SATVIEW_ENG2);
-		return 1;
-	}
-
-	if (key == OAPI_KEY_3 && down == true && InVC && stage < LAUNCH_STAGE_SIVB && stage >= PRELAUNCH_STAGE)
-	{
-		//
-		// Key 3 switches to position 3 by default, then cycles around them.
-		//
-		switch (viewpos)
-		{
-		case SATVIEW_ENG3:
-			viewpos = SATVIEW_ENG4;
-			break;
-
-		case SATVIEW_ENG4:
-			viewpos = SATVIEW_ENG5;
-			break;
-
-		case SATVIEW_ENG5:
-			viewpos = SATVIEW_ENG6;
-			break;
-
-		case SATVIEW_ENG6:
-			viewpos = SATVIEW_ENG3;
-			break;
-
-		default:
-			viewpos = SATVIEW_ENG3;
-			break;
-		}
-		clbkLoadVC(viewpos);
-		return 1;
-	}
-
-	//Load left seat
-	if (key == OAPI_KEY_4 && down == true && InVC) {
-		clbkLoadVC(SATVIEW_LEFTSEAT);
-		return 1;
-	}
 	return 0;
 }
 
@@ -4581,7 +4663,7 @@ void Saturn::LoadDefaultSounds()
 void Saturn::StageSix(double simt){
 	UpdateMassAndCoG();
 
-	if (ApolloNo == 1301) {
+	if (pMission->DoApollo13Failures()) {
 
 		//
 		// Play cryo-stir audio.
@@ -4717,7 +4799,7 @@ void Saturn::StageSix(double simt){
 			
 			double O2Tank1Mass = O2Tanks[0]->mass/1E3;
 
-			SetThrusterLevel(th_o2_vent, O2Tank1Mass/145149.5584);
+			SetThrusterLevel(th_o2_vent, O2Tank1Mass/145.1495584);
 
 			SetPropellantMass(ph_o2_vent, O2Tank1Mass);
 		}
@@ -4938,6 +5020,14 @@ void Saturn::ConnectTunnelToCabinVent()
 h_Pipe* Saturn::GetCSMO2Hose()
 {
 	return (h_Pipe*)Panelsdk.GetPointerByString("HYDRAULIC:CSMTOLMO2HOSE");
+}
+
+void Saturn::ConnectCSMO2Hose()
+{
+	if (ForwardHatch.IsOpen())
+	{
+		lemECSConnector.ConnectCSMO2Hose();
+	}
 }
 
 bool Saturn::GetLMDesBatLVOn()
