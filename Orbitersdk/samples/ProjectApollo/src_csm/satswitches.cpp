@@ -1832,6 +1832,7 @@ void SaturnEMSDvDisplay::Init(SURFHANDLE digits, SwitchRow &row, Saturn *s)
 	MeterSwitch::Init(row);
 	Digits = digits;
 	Sat = s;
+	minMaxTime = 0;	// Don't animate/interpolate between reported values
 }
 
 void SaturnEMSDvDisplay::DoDrawSwitch(double v, SURFHANDLE drawSurface)
