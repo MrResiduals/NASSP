@@ -303,7 +303,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	divisor = 100;
 	for (int i = 0; i < 3; ++i) {
 		Curdigit = (hours / divisor) % 10;
-		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, (int)((DigitWidth * (i + margin)) * 0.95), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -315,7 +315,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (minutes / divisor) % 10;
-		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, (int)((DigitWidth * (i + margin)) * 0.95), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -327,7 +327,7 @@ void MissionTimer::Render(SURFHANDLE surf, SURFHANDLE digits, bool csm, int TexM
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (seconds / divisor) % 10;
-		oapiBlt(surf, digits, (int)(DigitWidth * (i + margin)) * 0.95, 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, (int)((DigitWidth * (i + margin)) * 0.95), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -342,10 +342,10 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	const int DigitHeight = 21 * TexMul;
 	int Curdigit, divisor;
 
-	// Display tuning fork symbol if CTE reference is lost, and we're operating on internal frequency
-	// TODO: Add the actual logic for choosing whether to display this symbol or not.
-	// Do not merge this PR until this is added!
-	oapiBlt(surf, digits, 0, 0, 0, (int)(DigitHeight * 13.33), DigitWidth, DigitHeight / 2);
+	// Display tuning fork symbol if CTE (CM) or PCMTE (LM) reference is lost, and we're operating on internal frequency
+	if (!externalTimingEquipment->TimingSignal()) {
+		oapiBlt(surf, digits, 0, 0, 0, (int)(DigitHeight * 13.33), DigitWidth, DigitHeight / 2);
+	}
 
 	// Margin of half of a digit on the left for the tuning-fork symbol
 	double margin = 0.5;
@@ -354,7 +354,7 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	divisor = 100;
 	for (int i = 0; i < 3; ++i) {
 		Curdigit = (hours / divisor) % 10;
-		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)) * 0.95, 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, 0, (int)((DigitHeight * (i + margin)) * 0.95), 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -366,7 +366,7 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (minutes / divisor) % 10;
-		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)) * 0.95, 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, 0, (int)((DigitHeight * (i + margin)) * 0.95), 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -378,7 +378,7 @@ void MissionTimer::Render90(SURFHANDLE surf, SURFHANDLE digits, bool csm, int Te
 	divisor = 10;
 	for (int i = 0; i < 2; ++i) {
 		Curdigit = (seconds / divisor) % 10;
-		oapiBlt(surf, digits, 0, (int)(DigitHeight * (i + margin)) * 0.95, 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
+		oapiBlt(surf, digits, 0, (int)((DigitHeight * (i + margin)) * 0.95), 0, DigitHeight * Curdigit, DigitWidth, DigitHeight);
 		// Adjust divisor for next digit
 		divisor /= 10;
 	}
@@ -454,8 +454,8 @@ void LEMEventTimer::Render(SURFHANDLE surf, SURFHANDLE digits, int TexMul)
 	// Seconds
 	Curdigit = seconds % 10;
 	Curdigit2 = (seconds / 10) % 10;
-	oapiBlt(surf, digits, DigitWidth * margin, 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
-	oapiBlt(surf, digits, DigitWidth * (margin + 1), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, (int)(DigitWidth * margin), 0, DigitWidth * Curdigit2, 0, DigitWidth, DigitHeight);
+	oapiBlt(surf, digits, (int)(DigitWidth * (margin + 1)), 0, DigitWidth * Curdigit, 0, DigitWidth, DigitHeight);
 	// I subtract 1 from this final digit's target position to fix floating point rounding causing the last digit to be one pixel further away than the rest.
 }
 
