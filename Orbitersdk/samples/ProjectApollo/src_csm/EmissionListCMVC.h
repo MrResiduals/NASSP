@@ -609,7 +609,7 @@ DWORD LVEngine_8_2[] = {
 
 DWORD LVEngine_8_3[] = {
 	VC_MAT_LVEngine_8_3,
-	VC_MAT_LVEngine_5_3_2
+	VC_MAT_LVEngine_5_3_1
 };
 
 DWORD LVEngine_8_4[] = {
@@ -621,25 +621,25 @@ DWORD LVEngine_8_5[] = {
 	VC_MAT_LVEngine_8_5,
 	VC_MAT_LVEngine_5_4_2,
 	VC_MAT_LVEngine_5_1_1,
-	VC_MAT_LVEngine_5_5_1
+	VC_MAT_LVEngine_5_5_2
 };
 
 DWORD LVEngine_8_6[] = {
 	VC_MAT_LVEngine_8_6,
 	VC_MAT_LVEngine_5_5_3,
-	VC_MAT_LVEngine_5_2_1
+	VC_MAT_LVEngine_5_2_2
 };
 
 DWORD LVEngine_8_7[] = {
 	VC_MAT_LVEngine_8_7,
 	VC_MAT_LVEngine_5_3_3,
-	VC_MAT_LVEngine_5_2_2
+	VC_MAT_LVEngine_5_2_1
 };
 
 DWORD LVEngine_8_8[] = {
 	VC_MAT_LVEngine_8_8,
-	VC_MAT_LVEngine_5_5_2,
-	VC_MAT_LVEngine_5_3_1
+	VC_MAT_LVEngine_5_5_1,
+	VC_MAT_LVEngine_5_3_2
 };
 
 DWORD LiftVectorIndUp[] = {

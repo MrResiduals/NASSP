@@ -1137,12 +1137,12 @@ void Saturn::RegisterActiveAreas() {
 	// AccelerometerCover
 	const VECTOR3 AccelerometerCoverLocation = { -0.80165, 0.631025, 0.34615 };
 	oapiVCRegisterArea(AID_VC_AccelerometerCover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
-	oapiVCSetAreaClickmode_Spherical(AID_VC_AccelerometerCover, AccelerometerCoverLocation + ofs, 0.05);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_AccelerometerCover, AccelerometerCoverLocation + ofs, 0.024);
 
 	// Altimeter Cover
 	const VECTOR3 AltimeterLocation = { -0.524273, 0.916269 , 0.425239 };
 	oapiVCRegisterArea(AID_VC_Altimeter_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
-	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.05);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.035);
 
 	// Ordeal Visibility
 	const VECTOR3 OrdealLocation = { -0.965283, 1.01771, -0.143067 };
