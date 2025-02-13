@@ -654,7 +654,7 @@ void Saturn::InitVC()
 	// Panel 2
 	oapiVCRegisterArea(AID_VC_DSKY_DISPLAY, _R(254*TexMul, 1235*TexMul, 359*TexMul, 1411*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 	oapiVCRegisterArea(AID_VC_DSKY_LIGHTS, _R(110*TexMul, 1240*TexMul, 212*TexMul, 1360*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
-	oapiVCRegisterArea(AID_VC_MISSION_CLOCK, _R(849*TexMul, 949*TexMul, 992*TexMul, 972*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
+	oapiVCRegisterArea(AID_VC_MISSION_CLOCK, _R(838*TexMul, 948*TexMul, 1015*TexMul, 974*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 	oapiVCRegisterArea(AID_VC_CWS_LIGHTS_LEFT, _R(555*TexMul, 743*TexMul, 767*TexMul, 1851*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 	oapiVCRegisterArea(AID_VC_CWS_LIGHTS_RIGHT, _R(810*TexMul, 743*TexMul, 1023*TexMul, 851*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 
@@ -688,7 +688,7 @@ void Saturn::InitVC()
 	oapiVCRegisterArea(AID_VC_DSKY_DISPLAY2, _R(1050*TexMul, 1076*TexMul, 1155*TexMul, 1252*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex2);
 	oapiVCRegisterArea(AID_VC_DSKY_LIGHTS2, _R(906*TexMul, 1081*TexMul, 1008*TexMul, 1201*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex2);
 	oapiVCRegisterArea(AID_VC_EVENT_TIMER306, _R(220*TexMul, 149*TexMul, 238*TexMul, 220*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
-	oapiVCRegisterArea(AID_VC_MISSION_CLOCK306, _R(337*TexMul, 129*TexMul, 360*TexMul, 272*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
+	oapiVCRegisterArea(AID_VC_MISSION_CLOCK306, _R(337*TexMul, 120*TexMul, 360*TexMul, 300*TexMul), PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE, PANEL_MAP_BACKGROUND, MainPanelTex1);
 
 	// CMVC Lighting
 	oapiVCRegisterArea(AID_CMVC_LIGHTING, PANEL_REDRAW_ALWAYS, PANEL_MOUSE_IGNORE);
@@ -1137,12 +1137,12 @@ void Saturn::RegisterActiveAreas() {
 	// AccelerometerCover
 	const VECTOR3 AccelerometerCoverLocation = { -0.80165, 0.631025, 0.34615 };
 	oapiVCRegisterArea(AID_VC_AccelerometerCover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
-	oapiVCSetAreaClickmode_Spherical(AID_VC_AccelerometerCover, AccelerometerCoverLocation + ofs, 0.05);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_AccelerometerCover, AccelerometerCoverLocation + ofs, 0.024);
 
 	// Altimeter Cover
 	const VECTOR3 AltimeterLocation = { -0.524273, 0.916269 , 0.425239 };
 	oapiVCRegisterArea(AID_VC_Altimeter_Cover, PANEL_REDRAW_NEVER, PANEL_MOUSE_LBDOWN);
-	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.05);
+	oapiVCSetAreaClickmode_Spherical(AID_VC_Altimeter_Cover, AltimeterLocation + ofs, 0.035);
 
 	// Ordeal Visibility
 	const VECTOR3 OrdealLocation = { -0.965283, 1.01771, -0.143067 };
