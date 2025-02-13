@@ -24998,26 +24998,25 @@ void RTCC::EMDSSMMD(bool sun, int ind, double param)
 			break;
 		}
 
-		//For first sunrise, check if it is an actual one
-		if (i == 0 && out.IsActualChange == false)
+		//Non-fatal error, mark as best estimate
+		if (out.err == 1 || out.IsActualChange == false)
 		{
-			//Search for sunset from the same GMT
+			tab->data[i].BestAvailableGETSR = true;
 		}
 		else
 		{
-			//Non-fatal error, mark as best estimate
-			if (out.err == 1 || out.IsActualChange == false)
-			{
-				tab->data[i].BestAvailableGETSR = true;
-			}
-			else
-			{
-				tab->data[i].BestAvailableGETSR = false;
-			}
-			tab->data[i].GETSR = out.T_Change;
-			tab->num = i + 1; //This tells the later code that something was found for this line of the display
+			tab->data[i].BestAvailableGETSR = false;
+		}
+		tab->data[i].GETSR = out.T_Change;
+		tab->num = i + 1; //This tells the later code that something was found for this line of the display
 
+		if (out.IsActualChange)
+		{
 			in.GMT = tab->data[i].GETSR + eps; //Search for sunset from sunrise time plus tolerance
+		}
+		else
+		{
+			//Search for sunset from current time
 		}
 
 		//Search for sunset
@@ -25051,14 +25050,28 @@ void RTCC::EMDSSMMD(bool sun, int ind, double param)
 	} while (i < 8);
 
 	//Terminator rise and set search
-	for (i = 0; i < tab->num;i++)
+	for (i = 0; i < tab->num; i++)
 	{
-		if (tab->data[i].GETSR != 0.0)
+		//Search for terminator rise
+		in.terminator = true;
+		in.present = true;
+
+		if (tab->data[i].BestAvailableGETSR)
 		{
-			//Search for terminator rise
-			in.terminator = true;
-			in.present = true;
-			in.GMT = tab->data[i].GETSR - eps; //Search for terminator rise from sunrise time minus tolerance
+			//If the actual sunrise was not found, don't try to find the terminator rise
+			tab->data[i].BestAvailableGETTR = true;
+			in.GMT = tab->data[i].GETTR = tab->data[i].GETSR;
+		}
+		else
+		{
+			if (i == 0 && tab->data[i].BestAvailableGETSR)
+			{
+				in.GMT = tab->data[i].GETSR; //Search for terminator rise from initial time
+			}
+			else
+			{
+				in.GMT = tab->data[i].GETSR - eps; //Search for terminator rise from sunrise time minus tolerance
+			}
 
 			EMMENV(EPHEM2, MANTIMES, &LUNSTAY, in, out);
 
@@ -25083,7 +25096,16 @@ void RTCC::EMDSSMMD(bool sun, int ind, double param)
 				//Error
 				in.GMT = tab->data[i].GETSR - eps; //Search for terminator set from sunrise time minus tolerance
 			}
+		}
 
+		if (tab->data[i].BestAvailableGETSS)
+		{
+			//If the actual sunset was not found, don't try to find the terminator set
+			tab->data[i].BestAvailableGETTS = true;
+			tab->data[i].GETTS = tab->data[i].GETSS;
+		}
+		else
+		{
 			//Search for terminator set
 			in.terminator = true;
 			in.present = false;
