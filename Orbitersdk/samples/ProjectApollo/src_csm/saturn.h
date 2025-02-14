@@ -737,6 +737,24 @@ public:
 		MainState() { word = 0; };
 	};
 
+	union CrewEquipmentState {
+		struct {
+			unsigned wasteDisposalStatus : 1;
+			unsigned panel382CoverStatus : 1;
+			unsigned altimeterCoverStowed : 1;
+			unsigned ordealStowed : 1;
+			unsigned DSKY_GlareshadeStowed : 1;
+			unsigned EMSDV_GlareshadeStowed : 1;
+			unsigned AccelerometerCoverStowed : 1;
+			unsigned MissionTimer_GlareshadeStowed : 1;
+			unsigned Sextant_EyepieceStowed : 1;
+			unsigned Telescope_EyepieceStowed : 1;
+		};
+		unsigned long word;
+
+		CrewEquipmentState() { word = 0; };
+	};
+
 	//
 	// Now the actual code and data for the class.
 	//
@@ -1214,20 +1232,6 @@ public:
 	
 	void SetCMdocktgtMesh();
 
-	/// Set Altimeter Cover
-	void SetAltimeterCover();
-	void SetOrdealMesh();
-
-	/// Waste Disposal and others
-	void SetDSKY_Glareshade();
-	void SetEMSDV_Glareshade();
-	void SetAccelerometerCover();
-	void SetWasteDisposal();
-	void SetPanel382Cover();
-	void SetMissionTimer_Glareshade();
-	void SetSextant_Eyepiece();
-	void SetTelescope_Eyepiece();
-
 	///
 	/// \brief Set VC seats mesh
 	///
@@ -1620,88 +1624,47 @@ protected:
 	int hatchPanel600EnabledRight;
 	int panel382Enabled;
 
-/// BEGINN TEST by JORDAN
+	/// VC animations
 
-/// Waste Disposal
-	int wasteDisposalStatus = true;
-	double wasteDisposalProc;
-	int meshidxWasteDisposal;
-	int meshidxWasteDisposalAll;
+	/// Waste Disposal
 	UINT wasteDisposalAnim;
 	AnimState wasteDisposalState;
 
-/// Panel 382 Cover
-	int panel382CoverStatus = true;
-	double panel382CoverProc;
-	int meshidxpanel382Cover;
+	/// Panel 382 Cover
 	UINT panel382CoverAnim;
 	AnimState panel382CoverState;
 
-/// Altimeter Cover
-	int altimeterCovered;
-	int altimeterCoverStatus;
-	double altimeterCoverProc;
-	int meshidxaltimeterCover;
+	/// Altimeter Cover
 	UINT altimeterCoverAnim;
 	AnimState altimeterCoverState;
 
-/// Ordeal
-	int ordealStowed;
-	int ordealStatus;
-	double ordealProc;
-	int meshidxOrdeal;
+	/// Ordeal
 	UINT ordealAnim;
 	AnimState ordealState;
 
-/// DSKY_Glareshade
-	int DSKY_GlareshadeStowed;
-	int DSKY_GlareshadeStatus;
-	double DSKY_GlareshadeProc;
-	int meshidxDSKY_Glareshade;
+	/// DSKY_Glareshade
 	UINT DSKY_GlareshadeAnim;
 	AnimState DSKY_GlareshadeState;
 
-/// EMSDV_Glareshade
-	int EMSDV_GlareshadeStowed;
-	int EMSDV_GlareshadeStatus;
-	double EMSDV_GlareshadeProc;
-	int meshidxEMSDV_Glareshade;
+	/// EMSDV_Glareshade
 	UINT EMSDV_GlareshadeAnim;
 	AnimState EMSDV_GlareshadeState;
 
-/// AccelerometerCover
-	int AccelerometerCoverStowed;
-	int AccelerometerCoverStatus;
-	double AccelerometerCoverProc;
-	int meshidxAccelerometerCover;
+	/// AccelerometerCover
 	UINT AccelerometerCoverAnim;
 	AnimState AccelerometerCoverState;
 
-/// MissionTimer_Glareshade
-	int MissionTimer_GlareshadeStowed;
-	int MissionTimer_GlareshadeStatus;
-	double MissionTimer_GlareshadeProc;
-	int meshidxMissionTimer_Glareshade;
+	/// MissionTimer_Glareshade
 	UINT MissionTimer_GlareshadeAnim;
 	AnimState MissionTimer_GlareshadeState;
 
-/// Sextant_Eyepiece
-	int Sextant_EyepieceStowed;
-	int Sextant_EyepieceStatus;
-	double Sextant_EyepieceProc;
-	int meshidxSextant_Eyepiece;
+	/// Sextant_Eyepiece
 	UINT Sextant_EyepieceAnim;
 	AnimState Sextant_EyepieceState;
 
-/// Telescope_Eyepiece
-	int Telescope_EyepieceStowed;
-	int Telescope_EyepieceStatus;
-	double Telescope_EyepieceProc;
-	int meshidxTelescope_Eyepiece;
+	/// Telescope_Eyepiece
 	UINT Telescope_EyepieceAnim;
 	AnimState Telescope_EyepieceState;
-
-/// END TEST by JORDAN
 
 	///
 	/// \brief Right-hand FDAI.
@@ -4323,6 +4286,8 @@ protected:
 	void SetAttachState(int s);
 	int GetSLAState();
 	void SetSLAState(int s);
+	int GetCrewEquipmentState();
+	void SetCrewEquipmentState(int s);
 
 	///
 	/// Get the Apollo 13 state flags as an int.
