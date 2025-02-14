@@ -976,14 +976,6 @@ void Saturn::clbkVisualCreated(VISHANDLE vis, int refcount) {
         vcmesh = GetDevMesh(vis, vcidx);
 //		seatsunfoldedmesh = GetDevMesh(vis, seatsunfoldedidx);
 //		seatsfoldedmesh = GetDevMesh(vis, seatsfoldedidx);
-		SetAltimeterCover();
-		SetDSKY_Glareshade();
-		SetEMSDV_Glareshade();
-		SetAccelerometerCover();
-		SetMissionTimer_Glareshade();
-		SetOrdealMesh();
-		SetSextant_Eyepiece();
-		SetTelescope_Eyepiece();
 	}
 }
 
@@ -1773,93 +1765,97 @@ bool Saturn::clbkVCMouseEvent (int id, int event, VECTOR3 &p)
 		return true;
 
 	case AID_VC_Panel382_Cover:
-		if (panel382CoverStatus) {
-			panel382CoverStatus = false;
-		} else {
-			panel382CoverStatus = true;
+		if (panel382CoverState.Closed()) {
+			panel382CoverState.action = AnimState::OPENING;
+			Panel382Cover.SetState(1);
+			//Sat->panel382Enabled = 1;
 		}
-		SetPanel382Cover();
+		else {
+			panel382CoverState.action = AnimState::CLOSING;
+			Panel382Cover.SetState(0);
+			//Sat->panel382Enabled = 0;
+		}
 		return true;
 
 	case AID_VC_Altimeter_Cover:
-		if (altimeterCovered) {
-			altimeterCovered = false;
-		} else {
-			altimeterCovered = true;
+		if (altimeterCoverState.Closed()) {
+			altimeterCoverState.action = AnimState::OPENING;
 		}
-		SetAltimeterCover();
+		else {
+			altimeterCoverState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_DSKY_Glareshade:
-		if (DSKY_GlareshadeStatus) {
-			DSKY_GlareshadeStatus = false;
-		} else {
-			DSKY_GlareshadeStatus = true;
+		if (DSKY_GlareshadeState.Closed()) {
+			DSKY_GlareshadeState.action = AnimState::OPENING;
 		}
-		SetDSKY_Glareshade();
+		else {
+			DSKY_GlareshadeState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_EMSDV_Glareshade:
-		if (EMSDV_GlareshadeStatus) {
-			EMSDV_GlareshadeStatus = false;
-		} else {
-			EMSDV_GlareshadeStatus = true;
+		if (EMSDV_GlareshadeState.Closed()) {
+			EMSDV_GlareshadeState.action = AnimState::OPENING;
 		}
-		SetEMSDV_Glareshade();
+		else {
+			EMSDV_GlareshadeState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_AccelerometerCover:
-		if (AccelerometerCoverStatus) {
-			AccelerometerCoverStatus = false;
-		} else {
-			AccelerometerCoverStatus = true;
+		if (AccelerometerCoverState.Closed()) {
+			AccelerometerCoverState.action = AnimState::OPENING;
 		}
-		SetAccelerometerCover();
+		else {
+			AccelerometerCoverState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_Sextant_Eyepiece:
-		if (Sextant_EyepieceStatus) {
-			Sextant_EyepieceStatus = false;
-		} else {
-			Sextant_EyepieceStatus = true;
+		if (Sextant_EyepieceState.Closed()) {
+			Sextant_EyepieceState.action = AnimState::OPENING;
 		}
-		SetSextant_Eyepiece();
+		else {
+			Sextant_EyepieceState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_Telescope_Eyepiece:
-		if (Telescope_EyepieceStatus) {
-			Telescope_EyepieceStatus = false;
-		} else {
-			Telescope_EyepieceStatus = true;
+		if (Telescope_EyepieceState.Closed()) {
+			Telescope_EyepieceState.action = AnimState::OPENING;
 		}
-		SetTelescope_Eyepiece();
+		else {
+			Telescope_EyepieceState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_MissionTimer_Glareshade:
-		if (MissionTimer_GlareshadeStatus) {
-			MissionTimer_GlareshadeStatus = false;
-		} else {
-			MissionTimer_GlareshadeStatus = true;
+		if (MissionTimer_GlareshadeState.Closed()) {
+			MissionTimer_GlareshadeState.action = AnimState::OPENING;
 		}
-		SetMissionTimer_Glareshade();
+		else {
+			MissionTimer_GlareshadeState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_Waste_Disposal:
-		if (wasteDisposalStatus) {
-			wasteDisposalStatus = false;
-		} else {
-			wasteDisposalStatus = true;
+		if (wasteDisposalState.Closed()) {
+			wasteDisposalState.action = AnimState::OPENING;
 		}
-		SetWasteDisposal();
+		else {
+			wasteDisposalState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_Ordeal_Stowed:
-		if (ordealStowed) {
-			ordealStowed = false;
-		} else {
-			ordealStowed = true;
+		if (ordealState.Closed()) {
+			ordealState.action = AnimState::OPENING;
 		}
-		SetOrdealMesh();
+		else {
+			ordealState.action = AnimState::CLOSING;
+		}
 		return true;
 
 	case AID_VC_COAS:
@@ -2030,9 +2026,9 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 			}
 		 }
 
-		SetVCLighting(vcidx, &CW_Lights[0], MAT_LIGHT, 1, CW_Lights.size()); 	//Caution & Warning Lights
-		SetVCLighting(vcidx, &DSKY_Lights[0], MAT_LIGHT, NumericRotarySwitch.GetOutput() + floodRotaryValue, DSKY_Lights.size());
-		SetVCLighting(vcidx, &DSKY_LEB_Lights[0], MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, DSKY_LEB_Lights.size());
+		if (CW_Lights.size() > 0) SetVCLighting(vcidx, &CW_Lights[0], MAT_LIGHT, 1, CW_Lights.size()); 	//Caution & Warning Lights
+		if (DSKY_Lights.size() > 0) SetVCLighting(vcidx, &DSKY_Lights[0], MAT_LIGHT, NumericRotarySwitch.GetOutput() + floodRotaryValue, DSKY_Lights.size());
+		if (DSKY_LEB_Lights.size() > 0) SetVCLighting(vcidx, &DSKY_LEB_Lights[0], MAT_LIGHT, Panel100NumericRotarySwitch.GetOutput() + floodRotaryValue, DSKY_LEB_Lights.size());
 
 /*
 		// LEB Conditional Lamps
@@ -2756,6 +2752,16 @@ void Saturn::InitVCAnimations() {
 	anim_fdaiRrate_L = anim_fdaiRrate_R = -1;
 	anim_fdaiPrate_L = anim_fdaiPrate_R = -1;
 	anim_fdaiYrate_L = anim_fdaiYrate_R = -1;
+	wasteDisposalAnim = -1;
+	panel382CoverAnim = -1;
+	altimeterCoverAnim = -1;
+	ordealAnim = -1;
+	DSKY_GlareshadeAnim = -1;
+	EMSDV_GlareshadeAnim = -1;
+	AccelerometerCoverAnim = -1;
+	MissionTimer_GlareshadeAnim = -1;
+	Sextant_EyepieceAnim = -1;
+	Telescope_EyepieceAnim = -1;
 }
 
 void Saturn::DefineVCAnimations()
@@ -2772,18 +2778,18 @@ void Saturn::DefineVCAnimations()
 
 	// Panel382Cover
 	static UINT Panel382Cover[1] = { VC_GRP_Panel382_Cover };
-	static MGROUP_ROTATE panel382CoverMesh(meshidxpanel382Cover, Panel382Cover, 1, _V(-1.0863, 0.2566, -0.66875), _V(0, 0, 1), (float)(120.0 * RAD));
+	static MGROUP_ROTATE panel382CoverMesh(0, Panel382Cover, 1, _V(-1.0863, 0.2566, -0.66875), _V(0, 0, 1), (float)(120.0 * RAD));
 	panel382CoverAnim = CreateAnimation(0.0);
 	AddAnimationComponent(panel382CoverAnim, 0, 1, &panel382CoverMesh);
 
 	// Waste Disposal
 	// Define animation for the Rotation Knob
 	static UINT wasteDisposal[1] = { VC_GRP_WasteDisposalDoor };
-	static MGROUP_ROTATE wasteDisposalKnob(meshidxWasteDisposal, wasteDisposal, 1, _V(1.0773, -0.255847, -0.165491), _V(-1, 0, 0), (float)(-60.0 * RAD));
+	static MGROUP_ROTATE wasteDisposalKnob(0, wasteDisposal, 1, _V(1.0773, -0.255847, -0.165491), _V(-1, 0, 0), (float)(-60.0 * RAD));
 
 	// Define animation for both the knob and the frame
 	static UINT wasteDisposalAll[2] = { VC_GRP_WasteDisposalDoor, VC_GRP_WasteDisposalFrame };
-	static MGROUP_ROTATE wasteDisposalKnobAll(meshidxWasteDisposalAll, wasteDisposalAll, 2, _V(1.07709, -0.257737, -0.098881), _V(0, -1, 0), (float)(-120.0 * RAD));
+	static MGROUP_ROTATE wasteDisposalKnobAll(0, wasteDisposalAll, 2, _V(1.07709, -0.257737, -0.098881), _V(0, -1, 0), (float)(-120.0 * RAD));
 
 	wasteDisposalAnim = CreateAnimation(0.0);
 	AddAnimationComponent(wasteDisposalAnim, 0, 0.5, &wasteDisposalKnob);
