@@ -680,32 +680,15 @@ public:
 	COLOUR4 flashlightColor;
 	COLOUR4 flashlightColor2;
 	VECTOR3 flashlightPos;
-	VECTOR3 vesselPosGlobal;
-	VECTOR3 flashlightDirGlobal;
 	VECTOR3 flashlightDirLocal;
 	bool flashlightOn;
-
 
 	// Floodlight LM Pilot
 	void UpdateFloodLights();
 	PointLight* floodLight_Left;
-	COLOUR4 floodLightColor_Left;
-	COLOUR4 floodLightColor2_Left;
-	VECTOR3 floodLightPos_Left;
-	VECTOR3 vesselPosGlobal_Left;
-	VECTOR3 floodLightDirGlobal_Left;
-	VECTOR3 floodLightDirLocal_Left;
-	bool floodLightOn_Left;
 
 	// Floodlight LM Commander
 	PointLight* floodLight_Right;
-	COLOUR4 floodLightColor_Right;
-	COLOUR4 floodLightColor2_Right;
-	VECTOR3 floodLightPos_Right;
-	VECTOR3 vesselPosGlobal_Right;
-	VECTOR3 floodLightDirGlobal_Right;
-	VECTOR3 floodLightDirLocal_Right;
-	bool floodLightOn_Right;
 
 protected:
 

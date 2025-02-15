@@ -47,8 +47,6 @@
 #include "LES.h"
 #include "Mission.h"
 
-#include "CM_VC_Resource.h"
-
 MESHHANDLE hSM;
 MESHHANDLE hSMRCS;
 MESHHANDLE hSMRCSLow;

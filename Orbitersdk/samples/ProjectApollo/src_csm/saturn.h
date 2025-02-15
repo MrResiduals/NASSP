@@ -1314,47 +1314,16 @@ public:
 	COLOUR4 flashlightColor;
 	COLOUR4 flashlightColor2;
 	VECTOR3 flashlightPos;
-	VECTOR3 vesselPosGlobal;
-	VECTOR3 flashlightDirGlobal;
 	VECTOR3 flashlightDirLocal;
 	bool flashlightOn;
 
 	//
-	// FloodLight Panel 5
+	// FloodLight
 	//
 	void UpdateFloodLights();
 	PointLight* floodLight_P5;
-	COLOUR4 floodLightColor_P5;
-	COLOUR4 floodLightColor2_P5;
-	VECTOR3 floodLightPos_P5;
-	VECTOR3 vesselPosGlobal_P5;
-	VECTOR3 floodLightDirGlobal_P5;
-	VECTOR3 floodLightDirLocal_P5;
-	bool floodLightOn_P5;
-
-	//
-	// FloodLight Panel 8
-	//
 	PointLight* floodLight_P8;
-	COLOUR4 floodLightColor_P8;
-	COLOUR4 floodLightColor2_P8;
-	VECTOR3 floodLightPos_P8;
-	VECTOR3 vesselPosGlobal_P8;
-	VECTOR3 floodLightDirGlobal_P8;
-	VECTOR3 floodLightDirLocal_P8;
-	bool floodLightOn_P8;
-
-	//
-	// FloodLight Panel 100(LEB)
-	//
 	PointLight* floodLight_P100;
-	COLOUR4 floodLightColor_P100;
-	COLOUR4 floodLightColor2_P100;
-	VECTOR3 floodLightPos_P100;
-	VECTOR3 vesselPosGlobal_P100;
-	VECTOR3 floodLightDirGlobal_P100;
-	VECTOR3 floodLightDirLocal_P100;
-	bool floodLightOn_P100;
 
 protected:
 

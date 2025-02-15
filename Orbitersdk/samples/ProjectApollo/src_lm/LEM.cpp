@@ -596,34 +596,14 @@ void LEM::Init()
 	flashlightColor = { 1,1,1,0 };
 	flashlightColor2 = { 0,0,0,0 };
 	flashlightPos = { 0,0,0 };
-	vesselPosGlobal = { 0,0,0 };
-	flashlightDirGlobal = { 0,0,1 };
 	flashlightDirLocal = { 0,0,1 };
 	flashlightOn = 0;
 
 	//
-	// FloodLight Right Pilot
+	// FloodLights
 	//
 	floodLight_Right = 0;
-	floodLightColor_Right = { 1,1,1,0 };
-	floodLightColor2_Right = { 0,0,0,0 };
-	floodLightPos_Right = VECTOR3{ 0.238, 0.89, 1.2 };
-	vesselPosGlobal_Right = { 0,0,0 };
-	floodLightDirGlobal_Right = { 0,0,1 };
-	floodLightDirLocal_Right = { 0,0,1 };
-	floodLightOn_Right = true;
-
-	//
-	// FloodLight Left Commander
-	//
 	floodLight_Left = 0;
-	floodLightColor_Left = { 1,1,1,0 };
-	floodLightColor2_Left = { 0,0,0,0 };
-	floodLightPos_Left = VECTOR3{ -0.238, 0.89, 1.2 };
-	vesselPosGlobal_Left = { 0,0,0 };
-	floodLightDirGlobal_Left = { 0,0,1 };
-	floodLightDirLocal_Left = { 0,0,1 };
-	floodLightOn_Left = true;
 
 	DPSPropellant.SetVessel(this);
 	APSPropellant.SetVessel(this);
