@@ -543,6 +543,19 @@ const VECTOR3 Switch_P163Location = { -0.9108, -0.6972, -0.4823 };
 // PLVC switch
 const VECTOR3 Switch_PLVCLocation = { -1.0979, 1.0467, -0.4147 };
 
+// Flood lights
+const VECTOR3 floodLightPos_P5 = { 0.3, 0.85, -0.1 };
+const COLOUR4 floodLightColor_P5 = { 1,1,1,0 };
+const COLOUR4 floodLightColor2_P5 = { 0,0,0,0 };
+
+const VECTOR3 floodLightPos_P8 = { -0.3, 0.85, -0.1 };
+const COLOUR4 floodLightColor_P8 = { 1,1,1,0 };
+const COLOUR4 floodLightColor2_P8 = { 0,0,0,0 };
+
+const VECTOR3 floodLightPos_P100 = { 0.0, 0.0, 0.3 };
+const COLOUR4 floodLightColor_P100 = { 1,1,1,0 };
+const COLOUR4 floodLightColor2_P100 = { 0,0,0,0 };
+
 extern GDIParams g_Param;
 
 void Saturn::InitVC()
@@ -1911,8 +1924,7 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 		/////////////////////
 
 		// First Darken All Lights
-		double floodRotaryValue = FloodRotarySwitch.GetOutput();
-		floodRotaryValue = 0.0;
+		double floodRotaryValue = 0.0; //FloodRotarySwitch.GetOutput();
 
 /// Hardcode Materials with no Texture
 		SetVCLighting(vcidx,   VC_MAT_FDAI_errorneedle, MAT_LIGHT, floodRotaryValue, 1);
@@ -2150,8 +2162,7 @@ bool Saturn::clbkVCRedrawEvent (int id, int event, SURFHANDLE surf)
 
 	case AID_VC_CUE_CARDS_LIGHTING:
 	{
-		double floodRotaryValue = FloodRotarySwitch.GetOutput();
-		floodRotaryValue = 0.0;
+		double floodRotaryValue = 0.0; //FloodRotarySwitch.GetOutput();
 
 		//Get list of mesh indices
 		std::vector<UINT> indices;
@@ -5738,6 +5749,9 @@ void Saturn::MoveFlashlight()
 {
 	if (flashlightOn) { //Only move the light emmitter if the flashlight is on
 		//Huge thanks the Jordan64 for helping get the direction stuff working! :)
+
+		VECTOR3 flashlightDirGlobal, vesselPosGlobal;
+
 		GetCameraOffset(flashlightPos);
 		oapiCameraGlobalDir(&flashlightDirGlobal);
 		GetGlobalPos(vesselPosGlobal);

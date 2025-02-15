@@ -427,6 +427,15 @@ const VECTOR3 UtilityLights_LMPLocation = { 0.1030, 1.0318, 0.8908 };
 const VECTOR3 Sw_RRGyroLocation = { -0.1557, 0.7949, 1.3874 };
 const VECTOR3 AOT_ShaftSelectorLocation = { 0.0640, 0.8800, 1.4792 };
 
+// Flood lights
+const VECTOR3 floodLightPos_Right = { 0.238, 0.89, 1.2 };
+const COLOUR4 floodLightColor_Right = { 1,1,1,0 };
+const COLOUR4 floodLightColor2_Right = { 0,0,0,0 };
+
+const VECTOR3 floodLightPos_Left = { -0.238, 0.89, 1.2 };
+const COLOUR4 floodLightColor_Left = { 1,1,1,0 };
+const COLOUR4 floodLightColor2_Left = { 0,0,0,0 };
+
 // Subtracted from total material count to find L01 location.
 
 void LEM::JostleViewpoint(double amount)
@@ -1625,9 +1634,7 @@ bool LEM::clbkVCRedrawEvent(int id, int event, SURFHANDLE surf)
 
 //		sprintf(oapiDebugString(), "Integral Voltage = %lf", lca.GetNumericVoltage());
 
-		double floodRotaryValue = FloodLights.GetCDRRotaryVoltage() / 28.0;
-		floodRotaryValue = 0.0;
-
+		double floodRotaryValue = 0.0; // FloodLights.GetCDRRotaryVoltage() / 28.0;
 		
 		/// Hardcode Materials with no Texture
 		SetVCLighting(vcidx,   VC_MAT_FDAI_errorneedle, MAT_LIGHT, floodRotaryValue, 1);
@@ -3600,6 +3607,9 @@ void LEM::MoveFlashlight()
 {
 	if (flashlightOn) { //Only move the light emmitter if the flashlight is on
 		//Huge thanks the Jordan64 for helping get the direction stuff working! :)
+
+		VECTOR3 flashlightDirGlobal, vesselPosGlobal;
+
 		GetCameraOffset(flashlightPos);
 		oapiCameraGlobalDir(&flashlightDirGlobal);
 		GetGlobalPos(vesselPosGlobal);
