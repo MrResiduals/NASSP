@@ -1007,46 +1007,15 @@ void Saturn::initSaturn()
 	flashlightColor = { 1,1,1,0 };
 	flashlightColor2 = { 0,0,0,0 };
 	flashlightPos = { 0,0,0 };
-	vesselPosGlobal = { 0,0,0 };
-	flashlightDirGlobal = { 0,0,1 };
 	flashlightDirLocal = { 0,0,1 };
 	flashlightOn = 0;
 
 	//
-	// FloodLight Panel 5
+	// FloodLight
 	//
 	floodLight_P5 = 0;
-	floodLightColor_P5 = { 1,1,1,0 };
-	floodLightColor2_P5 = { 0,0,0,0 };
-	floodLightPos_P5 = VECTOR3{ 0.3, 0.85, -0.1 };
-	vesselPosGlobal_P5 = { 0,0,0 };
-	floodLightDirGlobal_P5 = { 0,0,1 };
-	floodLightDirLocal_P5 = { 0,0,1 };
-	floodLightOn_P5 = true;
-
-	//
-	// FloodLight Panel 8
-	//
 	floodLight_P8 = 0;
-	floodLightColor_P8 = { 1,1,1,0 };
-	floodLightColor2_P8 = { 0,0,0,0 };
-	floodLightPos_P8 = VECTOR3{ -0.3, 0.85, -0.1 };
-	vesselPosGlobal_P8 = { 0,0,0 };
-	floodLightDirGlobal_P8 = { 0,0,1 };
-	floodLightDirLocal_P8 = { 0,0,1 };
-	floodLightOn_P8 = true;
-
-	//
-	// FloodLight Panel 100(LEB)
-	//
 	floodLight_P100 = 0;
-	floodLightColor_P100 = { 1,1,1,0 };
-	floodLightColor2_P100 = { 0,0,0,0 };
-	floodLightPos_P100 = VECTOR3{ 0.0, 0.0, 0.3 };
-	vesselPosGlobal_P100 = { 0,0,0 };
-	floodLightDirGlobal_P100 = { 0,0,1 };
-	floodLightDirLocal_P100 = { 0,0,1 };
-	floodLightOn_P100 = true;
 
 	//
 	// Save the last view offset set.
@@ -1252,6 +1221,18 @@ void Saturn::initSaturn()
 	for (auto i = 0; i < 6; ++i) {
 		rhc_keyboard_deflection[i] = 0.0;
 	}
+
+	//Crew equipment animations (set moving to trigger animation update)
+	wasteDisposalState.Set(AnimState::CLOSING, 0.0);
+	panel382CoverState.Set(AnimState::CLOSING, 0.0);
+	altimeterCoverState.Set(AnimState::OPENING, 1.0);
+	ordealState.Set(AnimState::CLOSING, 0.0);	//In reality the ORDEAL should be stowed for launch
+	DSKY_GlareshadeState.Set(AnimState::OPENING, 1.0);
+	EMSDV_GlareshadeState.Set(AnimState::OPENING, 1.0);
+	AccelerometerCoverState.Set(AnimState::OPENING, 1.0);
+	MissionTimer_GlareshadeState.Set(AnimState::OPENING, 1.0);
+	Sextant_EyepieceState.Set(AnimState::OPENING, 1.0);
+	Telescope_EyepieceState.Set(AnimState::OPENING, 1.0);
 
 	// call only once 
 	if (!InitSaturnCalled) {
@@ -1558,20 +1539,8 @@ void Saturn::Undocking(int port)
 
 void Saturn::DoMeshAnimation(AnimState &state, UINT &anim, double speed, double simdt)
 {
-	if (state.action == AnimState::CLOSING || state.action == AnimState::OPENING) {
-		double dp = simdt / speed;
-		if (state.action == AnimState::CLOSING) {
-			if (state.pos > 0.0)
-				state.pos = max(0.0, state.pos - dp);
-			else
-				state.action = AnimState::CLOSED;
-		}
-		else { // opening
-			if (state.pos < 1.0)
-				state.pos = min(1.0, state.pos + dp);
-			else
-				state.action = AnimState::OPEN;
-		}
+	if (state.Moving()) {
+		state.Move(simdt*speed);
 		SetAnimation(anim, state.pos);
 	}
 }
@@ -1591,94 +1560,6 @@ void Saturn::SetAnimations(double simdt)
 	DoMeshAnimation(MissionTimer_GlareshadeState, MissionTimer_GlareshadeAnim, 2.5, simdt);
 	DoMeshAnimation(Sextant_EyepieceState, Sextant_EyepieceAnim, 2.0, simdt);
 	DoMeshAnimation(Telescope_EyepieceState, Telescope_EyepieceAnim, 2.0, simdt);
-
-/*
-	if (panel382CoverState.action == AnimState::CLOSING || panel382CoverState.action == AnimState::OPENING) {
-		double speed = 0.5; // Anim length in Seconds
-		double dp = simdt / speed;
-		if (panel382CoverState.action == AnimState::CLOSING) {
-			if (panel382CoverState.pos > 0.0)
-				panel382CoverState.pos = max (0.0, panel382CoverState.pos-dp);
-			else
-				panel382CoverState.action = AnimState::CLOSED;
-		} else { // opening
-			if (panel382CoverState.pos < 1.0)
-				panel382CoverState.pos = min (1.0, panel382CoverState.pos+dp);
-			else
-				panel382CoverState.action = AnimState::OPEN;
-		}
-		SetAnimation (panel382CoverAnim, panel382CoverState.pos);
-	}
-
-	if (wasteDisposalState.action == AnimState::CLOSING || wasteDisposalState.action == AnimState::OPENING) {
-		double speed = 1.0; // Anim length in Seconds **NOT SURE ABOUT THIS***
-		//double dp = oapiGetSimStep() * speed;
-		double dp = simdt / speed;
-		if (wasteDisposalState.action == AnimState::CLOSING) {
-			if (wasteDisposalState.pos > 0.0)
-				wasteDisposalState.pos = max (0.0, wasteDisposalState.pos-dp);
-			else
-				wasteDisposalState.action = AnimState::CLOSED;
-		} else { // opening
-			if (wasteDisposalState.pos < 1.0)
-				wasteDisposalState.pos = min (1.0, wasteDisposalState.pos+dp);
-			else
-				wasteDisposalState.action = AnimState::OPEN;
-		}
-		SetAnimation (wasteDisposalAnim, wasteDisposalState.pos);
-	}
-
-	if (altimeterCoverState.action == AnimState::CLOSING || altimeterCoverState.action == AnimState::OPENING) {
-		double speed = 2.0; // Anim length in Seconds
-		double dp = simdt / speed;
-		if (altimeterCoverState.action == AnimState::CLOSING) {
-			if (altimeterCoverState.pos > 0.0)
-				altimeterCoverState.pos = max (0.0, altimeterCoverState.pos-dp);
-			else
-				altimeterCoverState.action = AnimState::CLOSED;
-		} else { // Stowing
-			if (altimeterCoverState.pos < 1.0)
-				altimeterCoverState.pos = min (1.0, altimeterCoverState.pos+dp);
-			else
-				altimeterCoverState.action = AnimState::OPEN; //Stowed
-		}
-		SetAnimation (altimeterCoverAnim, altimeterCoverState.pos);
-	}
-
-	if (ordealState.action == AnimState::CLOSING || ordealState.action == AnimState::OPENING) {
-		double speed = 3.0; // Anim length in Seconds
-		double dp = simdt / speed;
-		if (ordealState.action == AnimState::CLOSING) {
-			if (ordealState.pos > 0.0)
-				ordealState.pos = max (0.0, ordealState.pos-dp);
-			else
-				ordealState.action = AnimState::CLOSED;
-		} else { // Stowing
-			if (ordealState.pos < 1.0)
-				ordealState.pos = min (1.0, ordealState.pos+dp);
-			else
-				ordealState.action = AnimState::OPEN; //Stowed
-		}
-		SetAnimation (ordealAnim, ordealState.pos);
-	}
-
-	if (DSKY_GlareshadeState.action == AnimState::CLOSING || DSKY_GlareshadeState.action == AnimState::OPENING) {
-		double speed = 3.0; // Anim length in Seconds
-		double dp = simdt / speed;
-		if (DSKY_GlareshadeState.action == AnimState::CLOSING) {
-			if (DSKY_GlareshadeState.pos > 0.0)
-				DSKY_GlareshadeState.pos = max (0.0, DSKY_GlareshadeState.pos-dp);
-			else
-				DSKY_GlareshadeState.action = AnimState::CLOSED;
-		} else { // Stowing
-			if (DSKY_GlareshadeState.pos < 1.0)
-				DSKY_GlareshadeState.pos = min (1.0, DSKY_GlareshadeState.pos+dp);
-			else
-				DSKY_GlareshadeState.action = AnimState::OPEN; //Stowed
-		}
-		SetAnimation (DSKY_GlareshadeAnim, DSKY_GlareshadeState.pos);
-	}
-*/
 	// By Jordan End
 }
 
@@ -1874,6 +1755,7 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 	oapiWriteScenario_int (scn, "MAINSTATE",  GetMainState());
 	oapiWriteScenario_int (scn, "ATTACHSTATE",  GetAttachState());
 	oapiWriteScenario_int (scn, "LIGHTSTATE",  GetLightState());
+	oapiWriteScenario_int(scn, "CREWEQUIPMENTSTATE", GetCrewEquipmentState());
 
 	//
 	// Save vessel-specific stats.
@@ -1968,18 +1850,10 @@ void Saturn::clbkSaveState(FILEHANDLE scn)
 		oapiWriteScenario_float(scn, "LMASCEMPTY", LMAscentEmptyMassKg);
 	}
 	oapiWriteScenario_int (scn, "COASENABLED", coasEnabled);
-	oapiWriteScenario_int (scn, "ALTIMETERCOVERED", altimeterCovered);
-	oapiWriteScenario_int (scn, "DSKY_GLARESHADESTOWED", DSKY_GlareshadeStatus);
-	oapiWriteScenario_int (scn, "EMSDV_GLARESHADESTOWED", EMSDV_GlareshadeStatus);
-	oapiWriteScenario_int (scn, "ACCELEROMETERCOVERSTOWED", AccelerometerCoverStatus);
-	oapiWriteScenario_int (scn, "MISSIONTIMER_GLARESHADESTOWED", MissionTimer_GlareshadeStatus);
-	oapiWriteScenario_int (scn, "ORDEALSTOWED", ordealStowed);
 	oapiWriteScenario_int (scn, "ORDEALENABLED", ordealEnabled);
 	oapiWriteScenario_int (scn, "OPTICSDSKYENABLED", opticsDskyEnabled);
 	oapiWriteScenario_int (scn, "HATCHPANEL600ENABLED", hatchPanel600EnabledLeft);
 	oapiWriteScenario_int (scn, "PANEL382ENABLED", panel382Enabled);
-	oapiWriteScenario_int (scn, "SEXTANT_EYEPIECESTATUS", Sextant_EyepieceStatus);
-	oapiWriteScenario_int (scn, "TELESCOPE_EYEPIECESTATUS", Telescope_EyepieceStatus);
 	papiWriteScenario_bool(scn, "FOVFIXED", FovFixed);
 	papiWriteScenario_double(scn, "FOVSAVE", FovSave);
 
@@ -2200,6 +2074,56 @@ void Saturn::SetSLAState(int s)
 	SLAWillSeparate = state.SLAWillSeparate;
 }
 
+int Saturn::GetCrewEquipmentState()
+{
+	//Save as open in the scenario if the animation is more than halfway to open
+	CrewEquipmentState state;
+
+	state.wasteDisposalStatus = wasteDisposalState.pos > 0.5;
+	state.panel382CoverStatus = panel382CoverState.pos > 0.5;
+	state.altimeterCoverStowed = altimeterCoverState.pos > 0.5;
+	state.ordealStowed = ordealState.pos > 0.5;
+	state.DSKY_GlareshadeStowed = DSKY_GlareshadeState.pos > 0.5;
+	state.EMSDV_GlareshadeStowed = EMSDV_GlareshadeState.pos > 0.5;
+	state.AccelerometerCoverStowed = AccelerometerCoverState.pos > 0.5;
+	state.MissionTimer_GlareshadeStowed = MissionTimer_GlareshadeState.pos > 0.5;
+	state.Sextant_EyepieceStowed = Sextant_EyepieceState.pos > 0.5;
+	state.Telescope_EyepieceStowed = Telescope_EyepieceState.pos > 0.5;
+
+	return state.word;
+}
+
+void LoadAnimation(int state, AnimState &Anim)
+{
+	//Utility function to load an animation that is only saved as opened/closed in the scenario
+	if (state == 0)
+	{
+		Anim.Set(AnimState::CLOSING, 0.0);
+	}
+	else
+	{
+		Anim.Set(AnimState::OPENING, 1.0);
+	}
+}
+
+void Saturn::SetCrewEquipmentState(int s)
+{
+	CrewEquipmentState state;
+	
+	state.word = s;
+
+	LoadAnimation(state.wasteDisposalStatus, wasteDisposalState);
+	LoadAnimation(state.panel382CoverStatus, panel382CoverState);
+	LoadAnimation(state.altimeterCoverStowed, altimeterCoverState);
+	LoadAnimation(state.ordealStowed, ordealState);
+	LoadAnimation(state.DSKY_GlareshadeStowed, DSKY_GlareshadeState);
+	LoadAnimation(state.EMSDV_GlareshadeStowed, EMSDV_GlareshadeState);
+	LoadAnimation(state.AccelerometerCoverStowed, AccelerometerCoverState);
+	LoadAnimation(state.MissionTimer_GlareshadeStowed, MissionTimer_GlareshadeState);
+	LoadAnimation(state.Sextant_EyepieceStowed, Sextant_EyepieceState);
+	LoadAnimation(state.Telescope_EyepieceStowed, Telescope_EyepieceState);
+}
+
 int Saturn::GetAttachState()
 
 {
@@ -2384,6 +2308,11 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
         SwitchState = 0;
 		sscanf (line+10, "%d", &SwitchState);
 		SetLightState(SwitchState);
+	}
+	else if (!strnicmp(line, "CREWEQUIPMENTSTATE", 18)) {
+		SwitchState = 0;
+		sscanf(line + 18, "%d", &SwitchState);
+		SetCrewEquipmentState(SwitchState);
 	}
 	else if (!strnicmp (line, "LMPADCNT", 8)) {
 		if (!LMPad) {
@@ -2690,59 +2619,6 @@ bool Saturn::ProcessConfigFileLine(FILEHANDLE scn, char *line)
 	}
 	else if (!strnicmp (line, "COASENABLED", 11)) {
 		sscanf (line + 11, "%i", &coasEnabled);
-	}
-	else if (!strnicmp (line, "ALTIMETERCOVERED", 16)) {
-		sscanf (line + 16, "%i", &altimeterCovered);
-		if (altimeterCovered) {
-			altimeterCoverState.pos = 1.0;
-//			SetAnimation(altimeterCoverAnim, altimeterCoverState.pos);
-		}
-	}
-	else if (!strnicmp (line, "DSKY_GLARESHADESTOWED", 21)) {
-		sscanf (line + 21, "%i", &DSKY_GlareshadeStatus);
-		if (DSKY_GlareshadeStatus) {
-			DSKY_GlareshadeState.pos = 1.0;
-		}
-	}
-	else if (!strnicmp (line, "EMSDV_GLARESHADESTOWED", 22)) {
-		sscanf (line + 22, "%i", &EMSDV_GlareshadeStatus);
-		if (EMSDV_GlareshadeStatus) {
-			EMSDV_GlareshadeState.pos = 1.0;
-		}
-	}
-	else if (!strnicmp (line, "ACCELEROMETERCOVERSTOWED", 24)) {
-		sscanf (line + 24, "%i", &AccelerometerCoverStatus);
-		if (AccelerometerCoverStatus) {
-			AccelerometerCoverState.pos = 1.0;
-		}
-	}
-
-	else if (!strnicmp (line, "MISSIONTIMER_GLARESHADESTOWED", 29)) {
-		sscanf (line + 29, "%i", &MissionTimer_GlareshadeStatus);
-		if (MissionTimer_GlareshadeStatus) {
-			MissionTimer_GlareshadeState.pos = 1.0;
-		}
-	}
-
-	else if (!strnicmp (line, "SEXTANT_EYEPIECESTATUS", 22)) {
-		sscanf (line + 22, "%i", &Sextant_EyepieceStatus);
-		if (Sextant_EyepieceStatus) {
-			Sextant_EyepieceState.pos = 1.0;
-		}
-	}
-
-	else if (!strnicmp (line, "TELESCOPE_EYEPIECESTATUS", 24)) {
-		sscanf (line + 24, "%i", &Telescope_EyepieceStatus);
-		if (Telescope_EyepieceStatus) {
-			Telescope_EyepieceState.pos = 1.0;
-		}
-	}
-
-	else if (!strnicmp (line, "ORDEALSTOWED", 12)) {
-		sscanf (line + 12, "%i", &ordealStowed);
-		if (ordealStowed) {
-			ordealState.pos = 1.0;
-		}
 	}
 	else if (!strnicmp(line, "CHKVAR_", 7)) {
 		for (int i = 0; i < 16; i++) {
