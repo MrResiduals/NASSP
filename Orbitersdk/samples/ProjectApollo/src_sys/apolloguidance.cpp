@@ -78,6 +78,18 @@ ApolloGuidance::ApolloGuidance(SoundLib &s, DSKY &display, IMU &im, CDU &sc, CDU
 	TrackerAlarm = false;
 	GimbalLockAlarm = false;
 
+	for (i = 0; i < 16; i++)
+	{
+		AccumulatedThrust[i] = 0;
+		ThrustOnDelayCounter[i] = 0;
+		ThrustOffDelayCounter[i] = 0;
+		RCSDutyCycle[i] = 0.0;
+	}
+	RCSCycleCounter = 0;
+	ThrustOnDelay = 16; //In units of 1/1600 seconds. Should be overloaded in CMC and LGC constructor.
+	ThrustOffDelay = 16; //In units of 1/1600 seconds.Should be overloaded in CMC and LGC constructor.
+	LastRCSTime = 0.0;
+
 	//
 	// Virtual AGC.
 	//
@@ -986,6 +998,140 @@ int16_t ApolloGuidance::ConvertDecimalToAGCOctal(double x, bool highByte)
 		return i;
 }
 
+void ApolloGuidance::InitRCSActivity()
+{
+	for (int i = 0; i < 16; i++)
+	{
+		AccumulatedThrust[i] = 0;
+	}
+
+	RCSCycleCounter = 0;
+}
+
+void ApolloGuidance::MonitorRCSActivity()
+{
+	bool RCSOn;
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (i < 8)
+		{
+			RCSOn = (OutputChannel[05] >> i) & 1;
+		}
+		else
+		{
+			RCSOn = (OutputChannel[06] >> (i - 8)) & 1;
+		}
+
+		//If RCS is commanded on count up the delay counter. The second condition forces it to count to conclusion.
+		if (RCSOn || (ThrustOnDelayCounter[i] > 0 && ThrustOnDelayCounter[i] < ThrustOnDelay))
+		{
+			ThrustOnDelayCounter[i]++;
+		}
+
+		//If ThrustOnDelayCounter is zero we can skip this
+		if (ThrustOnDelayCounter[i] > 0)
+		{
+			//Similar to ThrustOnDelayCounter, ThrustOffDelayCounter is being forced to count to conclusion
+			if (!RCSOn || (ThrustOffDelayCounter[i] > 0 && ThrustOffDelayCounter[i] < ThrustOffDelay))
+			{
+				ThrustOffDelayCounter[i]++;
+			}
+		}
+
+		//If ThrustOffDelayCounter has reached ThrustOffDelay then we reset everything
+		if (ThrustOffDelayCounter[i] >= ThrustOffDelay)
+		{
+			ThrustOnDelayCounter[i] = 0;
+			ThrustOffDelayCounter[i] = 0;
+		}
+		else
+		{
+			//If ThrustOnDelayCounter has reached ThrustOnDelay then we have thrust
+			if (ThrustOnDelayCounter[i] >= ThrustOnDelay)
+			{
+				AccumulatedThrust[i]++;
+			}
+		}
+
+		/*if (RCSOn)
+		{
+			//On command
+			if (ThrustOnDelayCounter[i] >= ThrustOnDelay)
+			{
+				//Thruster on
+				AccumulatedThrust[i]++;
+			}
+			else
+			{
+				//Thruster starting up
+				ThrustOnDelayCounter[i]++;
+				ThrustOffDelayCounter[i] = 0;
+			}
+		}
+		else
+		{
+			//Off command
+			if (ThrustOnDelayCounter[i] >= ThrustOnDelay)
+			{
+				if (ThrustOffDelayCounter[i] >= ThrustOffDelay)
+				{
+					//Reset
+					ThrustOnDelayCounter[i] = ThrustOffDelayCounter[i] = 0;
+				}
+				else
+				{
+					//Thruster still on
+					ThrustOffDelayCounter[i]++;
+					AccumulatedThrust[i]++;
+				}
+			}
+			else
+			{
+				//Reset
+				ThrustOnDelayCounter[i] = 0;
+			}
+		}*/
+	}
+
+	RCSCycleCounter++;
+}
+
+void ApolloGuidance::CalculateRCSDutyCycle()
+{
+	for (int i = 0; i < 16; i++)
+	{
+		if (RCSCycleCounter > 0)
+		{
+			RCSDutyCycle[i] = (double)AccumulatedThrust[i] / RCSCycleCounter;
+		}
+		else
+		{
+			//In the unlikely case that no cycles were done (requires at least 160 Hz at 0.1x) calculate the duty cycle from current state
+			if (ThrustOnDelayCounter[i] >= ThrustOnDelay && ThrustOffDelayCounter[i] < ThrustOffDelay)
+			{
+				RCSDutyCycle[i] = 1.0;
+			}
+			else
+			{
+				RCSDutyCycle[i] = 0.0;
+			}
+		}
+	}
+}
+
+void ApolloGuidance::ResetRCSDutyCycle()
+{
+	for (int i = 0; i < 16; i++)
+	{
+		RCSDutyCycle[i] = 0.0;
+	}
+}
+
+double ApolloGuidance::GetRCSDutyCycle(int i)
+{
+	return RCSDutyCycle[i];
+}
 
 //
 // Virtual AGC functions.
