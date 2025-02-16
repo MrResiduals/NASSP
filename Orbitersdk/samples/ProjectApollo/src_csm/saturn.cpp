@@ -1545,7 +1545,7 @@ void Saturn::Undocking(int port)
 void Saturn::DoMeshAnimation(AnimState &state, UINT &anim, double speed, double simdt)
 {
 	if (state.Moving()) {
-		state.Move(simdt*speed);
+		state.Move(simdt / speed);
 		SetAnimation(anim, state.pos);
 	}
 }
