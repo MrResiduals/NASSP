@@ -786,9 +786,9 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 		//
 
 		Failures.Timestep();
-		dsky.Timestep(MissionTime);
-		dsky2.Timestep(MissionTime);
-		agc.Timestep(MissionTime, simdt);
+		dsky.Timestep(simt);
+		dsky2.Timestep(simt);
+		agc.Timestep(SimulatedTime, simdt);
 		optics.TimeStep(simdt);
 
 
@@ -812,10 +812,10 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 		rjec.TimeStep(simdt);
 		tvsa.TimeStep(simdt);
 		eda.Timestep(simdt);
-		cws.TimeStep(MissionTime);
-		dockingprobe.TimeStep(MissionTime, simdt);
-		secs.Timestep(MissionTime, simdt);
-		els.Timestep(MissionTime, simdt);
+		cws.TimeStep(SimulatedTime);
+		dockingprobe.TimeStep(simt, simdt);
+		secs.Timestep(simt, simdt);
+		els.Timestep(simt, simdt);
 		ordeal.Timestep(simdt);
 		mechanicalAccelerometer.Timestep(simdt);
 		MissionTimerDisplay.Timestep(simt, simdt, false);
@@ -823,26 +823,26 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 		EventTimerDisplay.Timestep(simt, simdt, true);
 		EventTimer306Display.Timestep(simt, simdt, true);
 		fdaiLeft.SetAttitude(eda.GetFDAI1Attitude());
-		fdaiLeft.Timestep(MissionTime, simdt);
+		fdaiLeft.Timestep(simt, simdt);
 		fdaiRight.SetAttitude(eda.GetFDAI2Attitude());
-		fdaiRight.Timestep(MissionTime, simdt);
-		SPSPropellant.Timestep(MissionTime, simdt);
+		fdaiRight.Timestep(simt, simdt);
+		SPSPropellant.Timestep(simt, simdt);
 		JoystickTimestep();
 		EPSTimestep();
-		SMQuadARCS.Timestep(MissionTime, simdt);
-		SMQuadBRCS.Timestep(MissionTime, simdt);
-		SMQuadCRCS.Timestep(MissionTime, simdt);
-		SMQuadDRCS.Timestep(MissionTime, simdt);
-		CMRCS1.Timestep(MissionTime, simdt);	// Must be after JoystickTimestep
-		CMRCS2.Timestep(MissionTime, simdt);
+		SMQuadARCS.Timestep(simt, simdt);
+		SMQuadBRCS.Timestep(simt, simdt);
+		SMQuadCRCS.Timestep(simt, simdt);
+		SMQuadDRCS.Timestep(simt, simdt);
+		CMRCS1.Timestep(simt, simdt);	// Must be after JoystickTimestep
+		CMRCS2.Timestep(simt, simdt);
 		SideHatch.Timestep(simdt);
 		ForwardHatch.Timestep(simdt);
 
 		//Telecom update is last so telemetry reflects the current state
 		udl.Timestep();
-		pmp.TimeStep(MissionTime);
-		usb.TimeStep(MissionTime);
-		hga.TimeStep(MissionTime, simdt);
+		pmp.TimeStep(simt);
+		usb.TimeStep(SimulatedTime);
+		hga.TimeStep(SimulatedTime, simdt);
 		omnia.TimeStep();
 		omnib.TimeStep();
 		omnic.TimeStep();
@@ -850,7 +850,7 @@ void Saturn::SystemsTimestep(double simt, double simdt, double mjd) {
 		if (pMission->CSMHasVHFRanging()) vhfranging.TimeStep(simdt);
 		vhftransceiver.Timestep();
 		sce.Timestep();
-		dataRecorder.TimeStep( MissionTime, simdt );
+		dataRecorder.TimeStep( SimulatedTime, simdt );
 		RRTsystem.TimeStep(simdt);
 
 		//

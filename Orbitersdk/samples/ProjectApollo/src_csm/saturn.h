@@ -827,11 +827,11 @@ public:
 
 	///
 	/// This function can be used during the countdown to update the MissionTime. Since we launch when
-	/// MissionTime reaches zero, setting MissionTime to (-t) tells the code when to launch.
+	/// MissionTime reaches zero, delay the MissionTime by dt tells the code when to launch.
 	/// \brief Update the launch time.
-	/// \param t Specifies the time in seconds to wait before launch.
+	/// \param t Specifies the time in seconds to delay the launch.
 	///
-	void UpdateLaunchTime(double t);	
+	virtual void UpdateLaunchTime(double dt);
 
 	///
 	/// Set up the default mesh for the virtual cockpit.
@@ -1430,6 +1430,12 @@ protected:
 	///
 	bool UseWideSLA;
 
+	///
+	/// True if SLA has flashing beacons as on Apollo 7.
+	/// \brief SLA has beacons.
+	///
+	bool SLAHasBeacons;
+
 	bool SIMBayPanelJett;
 
 	bool DeleteLaunchSite;
@@ -1446,9 +1452,21 @@ protected:
 	//
 
 	///
+	/// The current Simulated Time, which runs continuously throughout the mission.
+	/// If the mission elapsed time is not changed before launch, essentially a launch
+	/// delay, then SimulatedTime is identical to MissionTime. This time can be used for
+	/// subsystems that need a steadily updating time, which does not need to have a
+	/// specific time reference/start time.
+	/// \brief Simulated Time.
+	///
+	double SimulatedTime;
+
+	///
 	/// The current Mission Elapsed Time. This is the main variable used for timing
 	/// automated events during the mission, giving the time in seconds from launch
 	/// (negative for the pre-launch countdown).
+	/// It can be changed during pre-launch to enact a launch delay, but should not
+	/// be modified after launch.
 	/// \brief Mission Elapsed Time.
 	///
 	double MissionTime;
