@@ -181,7 +181,7 @@ public:
 	void GET_Display_HHMM(char *Buff, double time);
 	void AGC_Display(char * Buff, double time);
 	void FormatLatitude(char * Buff, double lat);
-	void FormatLongitude(char * Buff, double lng, int precision = 2);
+	void FormatLongitude(char * Buff, double lng);
 	void FormatIMUAngle0(char *Buff, double ang); //0 digits
 	void FormatIMUAngle1(char *Buff, double ang); //0 digits
 	void FormatIMUAngle2(char *Buff, double ang); //0 digits

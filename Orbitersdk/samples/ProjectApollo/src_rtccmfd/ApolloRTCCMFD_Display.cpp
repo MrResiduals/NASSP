@@ -3125,7 +3125,7 @@ bool ApolloRTCCMFD::Update(oapi::Sketchpad *skp)
 		Text(skp, 48, 3, "%05d", tab->REVL);
 		Text(skp, 56, 3, tab->REF3);
 		Text_GET_HHHMMSS(skp, 52, 4, tab->GETL);
-		FormatLongitude(Buffer, tab->L, 3);
+		FormatLongitude(Buffer, tab->L);
 		Text(skp, 51, 5, Buffer);
 		Text_GET_HHHMMSS(skp, 52, 6, tab->TO);
 		Text(skp, 48, 7, "%05.1f", tab->K);
