@@ -294,7 +294,8 @@ bool RTCC::CalculationMTP_SL(int fcn, LPVOID &pad, char * upString, char * upDes
 				strncpy(upString, uplinkdata, 1024 * 3);
 				sprintf(upDesc, "CSM & SWS state vectors");
 			}
-		}
+    }
+	}
 	}
 	break;
 	case 16: //NCC preliminary update
