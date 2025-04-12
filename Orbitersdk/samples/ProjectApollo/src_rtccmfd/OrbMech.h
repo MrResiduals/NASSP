@@ -438,7 +438,9 @@ namespace OrbMech {
 	double HHMMSSToSS(double H, double M, double S);
 	double round_to(double value, double precision = 1.0);
 	void SStoHHMMSS(double time, int &hours, int &minutes, double &seconds, double precision = 1.0);
+	void SStoMMSS(double time, int &minutes, double &seconds, double precision = 1.0);
 	void format_time(char *buf, double time);
+	void format_time_XXHMMSS(char *buf, double time);
 	void format_time_prec(char *buf, double time);
 }
 
